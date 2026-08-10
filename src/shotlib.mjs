@@ -220,12 +220,25 @@ export const KINDS = {
     const cam = frameOn(rect, vw, vh, z);
 
     const CLICK_AT = ctx.p.clickAt ?? 0.62;
-    const travel = ease('easeOutQuint', Math.min(1, p / CLICK_AT));
+    const raw = Math.min(1, p / CLICK_AT);
+    const travel = ease('easeOutQuint', raw);
     // Approach from an off-centre corner with a slight arc so it reads human.
     const sx = (ctx.p.fromX ?? 0.72) * vw - vw / 2;
     const sy = (ctx.p.fromY ?? 0.85) * vh - vh / 2;
-    const dx = lerp(sx, 0, travel);
-    const dy = lerp(sy, 0, travel) - Math.sin(travel * Math.PI) * (ctx.p.arc ?? 46);
+
+    // Nobody lands a mouse exactly on target in one motion. Real pointing
+    // overshoots slightly and pulls back — Fitts's law in miniature — and
+    // trembles a little on the way. Without this the cursor glides like a
+    // machine, which is the giveaway even when everything else looks right.
+    const overshoot = Math.sin(Math.min(1, raw / 0.82) * Math.PI) * (ctx.p.overshoot ?? 13);
+    const settle = raw > 0.82 ? 1 - ease('easeOutQuint', (raw - 0.82) / 0.18) : 1;
+    const tremor = (1 - travel) * 1.8;
+    const jx = Math.sin(p * 37 + 1.3) * tremor;
+    const jy = Math.cos(p * 31 + 0.7) * tremor;
+
+    const dx = lerp(sx, 0, travel) - overshoot * settle * 0.55 + jx;
+    const dy = lerp(sy, 0, travel) - Math.sin(travel * Math.PI) * (ctx.p.arc ?? 46)
+             - overshoot * settle * 0.35 + jy;
 
     const sincePress = (p - CLICK_AT) / 0.1;
     const press = p < CLICK_AT ? 0 : Math.max(0, 1 - Math.abs(sincePress - 0.4) * 2.2);

@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 import { mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { COMPONENTS, KINDS, fitZoom } from './shotlib.mjs';
-import { tween, ease, clamp01 } from './lib/easing.mjs';
+import { tween, ease, clamp01, handheld } from './lib/easing.mjs';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
@@ -132,6 +132,19 @@ export async function record(storyboard, outDir, { onProgress, components } = {}
     const zBase = fitZoom(shot.rect, width, height, shot.params.fill ?? 0.78);
     const kind = KINDS[shot.kind] || KINDS.pushIn;
     const { cam, ov } = kind(p, { rect: shot.rect, vw: width, vh: height, zBase, p: shot.params, comp });
+
+    // Handheld layer: a few pixels of wander so the move reads as operated
+    // rather than computed. Applied off ABSOLUTE time so it flows through cuts,
+    // and skipped on title cards (a graphic panel shouldn't sway).
+    if (!shot.isCard && look.handheld !== 0) {
+      const amt = look.handheld ?? 1;
+      const h = handheld(time, storyboard.seed);
+      const scale = Math.min(1.6, cam.zoom || 1);
+      cam.panX = (cam.panX ?? 0) + h.x * 4.2 * amt * scale;
+      cam.y += h.y * 3.4 * amt * scale;
+      cam.rot = (cam.rot ?? 0) + h.rot * 0.055 * amt;
+      cam.zoom *= 1 + h.breath * 0.0016 * amt;
+    }
 
     // Keep the camera inside the document so we never frame blank space.
     cam.y = Math.max(-40, Math.min(cam.y, docHeight - height * 0.55));

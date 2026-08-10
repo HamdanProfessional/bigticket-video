@@ -39,3 +39,32 @@ export function tween(t, start, end, from, to, easing = 'smooth') {
 }
 
 export { clamp01 };
+
+/**
+ * Handheld imperfection.
+ *
+ * A perfectly eased tween is the single clearest "a machine made this" tell —
+ * real operators drift, breathe, and never hold a line exactly. This sums a few
+ * incommensurable sine waves (so the pattern never visibly repeats) into a slow
+ * wander. It is a deterministic function of absolute time, NOT of shot
+ * progress, so the drift carries across cuts the way a real hand would rather
+ * than resetting on every edit.
+ *
+ * Amplitudes are deliberately tiny: a few pixels. Enough to feel alive,
+ * not enough to read as a wobble.
+ */
+export function handheld(t, seed = 0) {
+  const s = (seed % 97) * 0.113;
+  // Frequencies chosen to be mutually irrational-ish: no common period.
+  const a = Math.sin(t * 0.37 + s * 1.7);
+  const b = Math.sin(t * 0.61 + s * 2.9);
+  const c = Math.sin(t * 0.23 + s * 0.8);
+  const d = Math.sin(t * 1.07 + s * 4.1);
+  return {
+    x: a * 0.62 + b * 0.28 + d * 0.10,   // -1..1
+    y: c * 0.55 + b * 0.32 + d * 0.13,
+    rot: a * 0.4 + c * 0.6,
+    breath: b,                            // slow zoom pulse, like breathing
+  };
+}
+

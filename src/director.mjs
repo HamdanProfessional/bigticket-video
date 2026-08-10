@@ -315,6 +315,7 @@ export function direct(prompt, opts = {}) {
         from: +rng.float(0.82, 0.95).toFixed(3),
         to: +rng.float(1.02, 1.16).toFixed(3),
         arc: rng.int(28, 62),
+        overshoot: rng.int(9, 18),
         rot: +rng.float(-0.8, 0.8).toFixed(2),
         blur: rng.int(6, 13),
         distance: rng.int(180, 420),
@@ -413,6 +414,8 @@ export function direct(prompt, opts = {}) {
       letterbox: fmt.portrait ? Math.max(2.4, mood.letterbox * 2.4) : mood.letterbox,
       vignette: mood.vignette,
       brand: true,
+      // Handheld imperfection strength. 0 disables it entirely.
+      handheld: opts.handheld ?? 1,
     },
     duration: +total.toFixed(2),
     shots: shotsOut,
