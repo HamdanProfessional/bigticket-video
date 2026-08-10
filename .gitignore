@@ -1,0 +1,10 @@
+# Rendered output — videos, frame sequences and generated audio
+out/
+
+# Full-page recon screenshots (tens of MB); sitemap.json is kept
+recon/shots/
+
+node_modules/
+*.log
+done.flag
+.DS_Store

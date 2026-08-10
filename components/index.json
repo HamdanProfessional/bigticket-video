@@ -1,0 +1,376 @@
+{
+  "url": "https://shopbigticket.com/",
+  "capturedAt": {
+    "viewport": [
+      1440,
+      810
+    ],
+    "deviceScaleFactor": 2
+  },
+  "docHeight": 5054,
+  "components": [
+    {
+      "name": "logo",
+      "label": "Logo",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "header img, header a img, a[href=\"/\"] img",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 78.9375,
+        "h": 24
+      },
+      "copy": null,
+      "motionKinds": [
+        "pushIn",
+        "hold",
+        "rackFocus"
+      ],
+      "asset": "components/logo.png"
+    },
+    {
+      "name": "hero",
+      "label": "Hero headline",
+      "resolved": true,
+      "theme": "dark",
+      "captionable": false,
+      "clickable": false,
+      "selector": "h1",
+      "rect": {
+        "x": 425.84375,
+        "y": 316.5,
+        "w": 588.3125,
+        "h": 96
+      },
+      "copy": {
+        "kicker": "Big Ticket",
+        "title": "Buy once. Buy well.",
+        "subtitle": "Save as you browse, compare easily."
+      },
+      "motionKinds": [
+        "pushIn",
+        "pullBack",
+        "rackFocus",
+        "hold",
+        "driftDiagonal"
+      ],
+      "asset": "components/hero.png"
+    },
+    {
+      "name": "heroCta",
+      "label": "Hero CTA",
+      "resolved": true,
+      "theme": "dark",
+      "captionable": false,
+      "clickable": true,
+      "selector": "main button, main a[class*=\"button\"]",
+      "rect": {
+        "x": 600,
+        "y": 496.5,
+        "w": 240,
+        "h": 53
+      },
+      "copy": null,
+      "motionKinds": [
+        "cursorClick",
+        "spotlight",
+        "pushIn"
+      ],
+      "asset": "components/heroCta.png"
+    },
+    {
+      "name": "retailers",
+      "label": "Retailer strip",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "h2",
+      "rect": {
+        "x": 0,
+        "y": 865,
+        "w": 1440,
+        "h": 101.09375
+      },
+      "copy": {
+        "kicker": "Works everywhere",
+        "title": "The stores you already browse.",
+        "subtitle": "Best Buy, Target, Macy’s, Walmart, Nordstrom, Williams Sonoma, Amazon."
+      },
+      "motionKinds": [
+        "panAcross",
+        "tiltReveal",
+        "pushIn",
+        "driftDiagonal"
+      ],
+      "asset": "components/retailers.png"
+    },
+    {
+      "name": "howItWorks",
+      "label": "How it works card",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "text=How it works",
+      "rect": {
+        "x": 40.5,
+        "y": 1324.09375,
+        "w": 420,
+        "h": 520
+      },
+      "copy": {
+        "kicker": "How it works",
+        "title": "Three steps. No tabs.",
+        "subtitle": "Discover, organize, and compare products in seconds."
+      },
+      "motionKinds": [
+        "pushIn",
+        "rackFocus",
+        "hold"
+      ],
+      "asset": "components/howItWorks.png"
+    },
+    {
+      "name": "cardInstall",
+      "label": "Install card",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "text=Install the Big Ticket",
+      "rect": {
+        "x": 473.5,
+        "y": 1324.09375,
+        "w": 300,
+        "h": 520
+      },
+      "copy": {
+        "kicker": "Step one",
+        "title": "Install the extension.",
+        "subtitle": "A few clicks, then you’ll wonder how you shopped without it."
+      },
+      "motionKinds": [
+        "spotlight",
+        "pushIn",
+        "rackFocus",
+        "whipTo"
+      ],
+      "asset": "components/cardInstall.png"
+    },
+    {
+      "name": "cardSave",
+      "label": "Save card",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "text=Save as you browse",
+      "rect": {
+        "x": 786.5,
+        "y": 1324.09375,
+        "w": 300,
+        "h": 520
+      },
+      "copy": {
+        "kicker": "Step two",
+        "title": "Save as you browse.",
+        "subtitle": "Everything you love, in one place, ready when you are."
+      },
+      "motionKinds": [
+        "spotlight",
+        "pushIn",
+        "rackFocus",
+        "whipTo"
+      ],
+      "asset": "components/cardSave.png"
+    },
+    {
+      "name": "cardCompare",
+      "label": "Compare card",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "text=Compare. Decide.",
+      "rect": {
+        "x": 1099.5,
+        "y": 1324.09375,
+        "w": 300,
+        "h": 520
+      },
+      "copy": {
+        "kicker": "Step three",
+        "title": "Compare. Decide. Done.",
+        "subtitle": "No switching tabs, no second-guessing."
+      },
+      "motionKinds": [
+        "spotlight",
+        "pushIn",
+        "rackFocus",
+        "whipTo"
+      ],
+      "asset": "components/cardCompare.png"
+    },
+    {
+      "name": "boards",
+      "label": "Boards UI",
+      "resolved": true,
+      "theme": "light",
+      "captionable": true,
+      "clickable": false,
+      "selector": "img[alt=\"My Boards\"]",
+      "rect": {
+        "x": 808,
+        "y": 2380.09375,
+        "w": 384,
+        "h": 288
+      },
+      "copy": {
+        "kicker": "Boards",
+        "title": "Found it. Saved it.",
+        "subtitle": "Everything you love in one place, on your board."
+      },
+      "motionKinds": [
+        "pushIn",
+        "pullBack",
+        "tiltReveal",
+        "spotlight",
+        "driftDiagonal",
+        "rackFocus"
+      ],
+      "asset": "components/boards.png"
+    },
+    {
+      "name": "compare",
+      "label": "Comparison UI",
+      "resolved": true,
+      "theme": "light",
+      "captionable": true,
+      "clickable": false,
+      "selector": "img[alt=\"Comparison\"]",
+      "rect": {
+        "x": 248.8000030517578,
+        "y": 2940.09375,
+        "w": 384.00006103515625,
+        "h": 288
+      },
+      "copy": {
+        "kicker": "Compare",
+        "title": "Your shortlist, actually compared.",
+        "subtitle": "Specs, prices and reviews lined up and ready."
+      },
+      "motionKinds": [
+        "pushIn",
+        "pullBack",
+        "tiltReveal",
+        "spotlight",
+        "driftDiagonal",
+        "rackFocus"
+      ],
+      "asset": "components/compare.png"
+    },
+    {
+      "name": "pdp",
+      "label": "Product detail UI",
+      "resolved": true,
+      "theme": "light",
+      "captionable": true,
+      "clickable": false,
+      "selector": "img[alt=\"Product Detail Page\"]",
+      "rect": {
+        "x": 808,
+        "y": 3500.09375,
+        "w": 384,
+        "h": 288
+      },
+      "copy": {
+        "kicker": "Price",
+        "title": "Same product. Better price.",
+        "subtitle": "Track prices and catch the drop before you buy."
+      },
+      "motionKinds": [
+        "pushIn",
+        "pullBack",
+        "tiltReveal",
+        "spotlight",
+        "driftDiagonal",
+        "rackFocus"
+      ],
+      "asset": "components/pdp.png"
+    },
+    {
+      "name": "sectionArt",
+      "label": "Section artwork",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "img[alt=\"Section\"]",
+      "rect": {
+        "x": 0,
+        "y": 1844.09375,
+        "w": 1440,
+        "h": 400
+      },
+      "copy": null,
+      "motionKinds": [
+        "panAcross",
+        "driftDiagonal",
+        "pullBack"
+      ],
+      "asset": "components/sectionArt.png"
+    },
+    {
+      "name": "finalCta",
+      "label": "Closing CTA",
+      "resolved": true,
+      "theme": "light",
+      "captionable": false,
+      "clickable": false,
+      "selector": "text=Built for better decisions",
+      "rect": {
+        "x": 0,
+        "y": 3924.09375,
+        "w": 1440,
+        "h": 509
+      },
+      "copy": {
+        "kicker": "Join Big Ticket",
+        "title": "Built for better decisions.",
+        "subtitle": "Add to Chrome — it’s free."
+      },
+      "motionKinds": [
+        "pushIn",
+        "pullBack",
+        "hold"
+      ],
+      "asset": "components/finalCta.png"
+    },
+    {
+      "name": "footer",
+      "label": "Footer",
+      "resolved": true,
+      "theme": "dark",
+      "captionable": false,
+      "clickable": false,
+      "selector": "footer",
+      "rect": {
+        "x": 0,
+        "y": 4433.09375,
+        "w": 1440,
+        "h": 621
+      },
+      "copy": null,
+      "motionKinds": [
+        "tiltReveal",
+        "hold",
+        "pullBack"
+      ],
+      "asset": "components/footer.png"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "bigticket-video",
+  "version": "0.1.0",
+  "description": "Prompt-driven ad generator: films a live website in Chromium, cuts it to a procedurally scored soundtrack.",
+  "main": "src/index.mjs",
+  "scripts": {
+    "recon": "node src/recon.mjs",
+    "components": "node src/components.mjs",
+    "make": "node src/make.mjs"
+  },
+  "keywords": [
+    "video",
+    "advertising",
+    "playwright",
+    "ffmpeg",
+    "motion-design",
+    "generative",
+    "screen-recording",
+    "ad-generator"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "playwright": "^1.62.1"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./director": "./src/director.mjs",
+    "./shotlib": "./src/shotlib.mjs",
+    "./record": "./src/record.mjs",
+    "./render": "./src/render.mjs"
+  },
+  "bin": {
+    "bigticket-video": "src/make.mjs"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
+}

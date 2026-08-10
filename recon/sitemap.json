@@ -1,0 +1,2779 @@
+[
+  {
+    "url": "https://shopbigticket.com/",
+    "status": 200,
+    "slug": "index",
+    "title": "Big Ticket | Buy once. Buy well.",
+    "metaDescription": "Buy once. Buy well. Save products, compare instantly, shop smarter with Big Ticket. Track prices, read reviews, and compare product details all in one place. Make better purchasing decisions with our smart shopping assistant.",
+    "docHeight": 5054,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Buy once. Buy well.",
+        "selector": "main.w-full.mx-auto > div.relative.m-0:nth-of-type(1) > div.flex.flex-col > h1.\\32 xl\\:text-\\[60px\\].pb-5",
+        "box": {
+          "x": 426,
+          "y": 317,
+          "w": 588,
+          "h": 96
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Big Ticket works across sites you already browse.",
+        "selector": "div.w-full.mx-auto > div.mb-0.md\\:mb-16 > div.text-center.mb-1:nth-of-type(1) > h2.font-\\[Montserrat\\].font-semibold",
+        "box": {
+          "x": 0,
+          "y": 865,
+          "w": 1440,
+          "h": 101
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Found it. Saved it.\nOn your board.",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(7) > div.w-\\[405px\\].h-\\[166px\\]:nth-of-type(1) > h2.font-\\[Montserrat\\].font-bold",
+        "box": {
+          "x": 252,
+          "y": 2458,
+          "w": 322,
+          "h": 70
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Your shortlist.\nActually compared.",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(10) > div.w-\\[405px\\].h-\\[146px\\]:nth-of-type(2) > h2.font-\\[Montserrat\\].font-bold",
+        "box": {
+          "x": 868,
+          "y": 3026,
+          "w": 324,
+          "h": 71
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Same product.\nBetter price.",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(13) > div.w-\\[405px\\].h-\\[146px\\]:nth-of-type(1) > h2.font-\\[Montserrat\\].font-bold",
+        "box": {
+          "x": 249,
+          "y": 3586,
+          "w": 324,
+          "h": 71
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Built for better decisions.",
+        "selector": "main.w-full.mx-auto > div.border-b-0.md\\:border-b-0:nth-of-type(16) > div.w-full.mx-auto > h2.text-center.text-white",
+        "box": {
+          "x": 347,
+          "y": 4052,
+          "w": 746,
+          "h": 60
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 4495,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 4754,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 4686,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 4686,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 4686,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Add to Chrome - it's free",
+        "selector": "main.w-full.mx-auto > div.relative.m-0:nth-of-type(1) > div.flex.flex-col > button.md\\:max-w-\\[240px\\].max-w-\\[180px\\]",
+        "box": {
+          "x": 600,
+          "y": 497,
+          "w": 240,
+          "h": 53
+        }
+      },
+      {
+        "text": "Add to Chrome - it's free",
+        "selector": "div.flex.flex-nowrap > div.flex.flex-col:nth-of-type(1) > div.pt-\\[260px\\]:nth-of-type(3) > button.chrome-button-glow.w-\\[232px\\]",
+        "box": {
+          "x": 81,
+          "y": 1737,
+          "w": 232,
+          "h": 45
+        }
+      },
+      {
+        "text": "Add to Chrome - it's free",
+        "selector": "div.border-b-0.md\\:border-b-0:nth-of-type(16) > div.w-full.mx-auto > div.md\\:max-w-\\[240px\\].max-w-\\[180px\\] > button.whitespace-nowrap",
+        "box": {
+          "x": 621,
+          "y": 4239,
+          "w": 197,
+          "h": 24
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 4481,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [
+      {
+        "alt": "Section",
+        "src": "https://shopbigticket.com/_next/image?url=%2Fhome%2FSection.png&w=3840&q=75",
+        "selector": "main.w-full.mx-auto > div.w-full.h-\\[250px\\]:nth-of-type(6) > div.absolute.inset-0:nth-of-type(1) > img.w-full.h-full",
+        "box": {
+          "x": 0,
+          "y": 1844,
+          "w": 1440,
+          "h": 400
+        }
+      },
+      {
+        "alt": "My Boards",
+        "src": "https://shopbigticket.com/home/boards.svg",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(7) > div.w-\\[480px\\].h-\\[360px\\]:nth-of-type(2) > img.w-full.h-full",
+        "box": {
+          "x": 807,
+          "y": 2381,
+          "w": 381,
+          "h": 286
+        }
+      },
+      {
+        "alt": "Comparison",
+        "src": "https://shopbigticket.com/home/compares.svg",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(10) > div.w-\\[480px\\].h-\\[360px\\]:nth-of-type(1) > img.w-full.h-full",
+        "box": {
+          "x": 249,
+          "y": 2940,
+          "w": 384,
+          "h": 288
+        }
+      },
+      {
+        "alt": "Product Detail Page",
+        "src": "https://shopbigticket.com/home/pdps.svg",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(13) > div.w-\\[480px\\].h-\\[360px\\]:nth-of-type(2) > img.w-full.h-full",
+        "box": {
+          "x": 808,
+          "y": 3500,
+          "w": 384,
+          "h": 288
+        }
+      }
+    ],
+    "sections": [
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.relative.m-0:nth-of-type(1)",
+        "box": {
+          "x": 0,
+          "y": 101,
+          "w": 1440,
+          "h": 664
+        },
+        "text": "Buy once. Buy well.\n\nSave as you browse, compare easily.\n\nAdd to Chrome - it's free"
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.bg-white.mx-auto:nth-of-type(2)",
+        "box": {
+          "x": 0,
+          "y": 765,
+          "w": 1440,
+          "h": 345
+        },
+        "text": "Big Ticket works across sites you already browse."
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.hidden.xl\\:block:nth-of-type(3)",
+        "box": {
+          "x": 0,
+          "y": 1174,
+          "w": 1440,
+          "h": 670
+        },
+        "text": "How it works.\n\nDiscover, organize, and compare products in seconds, so you can buy with confidence.\n\nAdd to Chrome - it's free\n\nInstall the Big Ticket Extension.\n\nAdd the Big Ticket browser extension in just a few clicks. You'll wonder how you shopped without it.\n\nSave as you browse.\n\nSave your favo"
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.w-full.h-\\[250px\\]:nth-of-type(6)",
+        "box": {
+          "x": 0,
+          "y": 1844,
+          "w": 1440,
+          "h": 400
+        },
+        "text": ""
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.border-b-0.md\\:border-b-0:nth-of-type(16)",
+        "box": {
+          "x": 0,
+          "y": 3924,
+          "w": 1440,
+          "h": 509
+        },
+        "text": "Built for better decisions.\n\nJoin big ticket today.\n\nAdd to Chrome - it's free"
+      }
+    ]
+  },
+  {
+    "url": "https://shopbigticket.com/dashboard",
+    "status": 200,
+    "slug": "dashboard",
+    "title": "Big Ticket | Buy once. Buy well.",
+    "metaDescription": "Buy once. Buy well. Save products, compare instantly, shop smarter with Big Ticket. Track prices, read reviews, and compare product details all in one place. Make better purchasing decisions with our smart shopping assistant.",
+    "docHeight": 5054,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Buy once. Buy well.",
+        "selector": "main.w-full.mx-auto > div.relative.m-0:nth-of-type(1) > div.flex.flex-col > h1.\\32 xl\\:text-\\[60px\\].pb-5",
+        "box": {
+          "x": 426,
+          "y": 317,
+          "w": 588,
+          "h": 96
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Big Ticket works across sites you already browse.",
+        "selector": "div.w-full.mx-auto > div.mb-0.md\\:mb-16 > div.text-center.mb-1:nth-of-type(1) > h2.font-\\[Montserrat\\].font-semibold",
+        "box": {
+          "x": 0,
+          "y": 865,
+          "w": 1440,
+          "h": 101
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Found it. Saved it.\nOn your board.",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(7) > div.w-\\[405px\\].h-\\[166px\\]:nth-of-type(1) > h2.font-\\[Montserrat\\].font-bold",
+        "box": {
+          "x": 249,
+          "y": 2458,
+          "w": 324,
+          "h": 71
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Your shortlist.\nActually compared.",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(10) > div.w-\\[405px\\].h-\\[146px\\]:nth-of-type(2) > h2.font-\\[Montserrat\\].font-bold",
+        "box": {
+          "x": 868,
+          "y": 3026,
+          "w": 324,
+          "h": 71
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Same product.\nBetter price.",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(13) > div.w-\\[405px\\].h-\\[146px\\]:nth-of-type(1) > h2.font-\\[Montserrat\\].font-bold",
+        "box": {
+          "x": 249,
+          "y": 3586,
+          "w": 324,
+          "h": 71
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Built for better decisions.",
+        "selector": "main.w-full.mx-auto > div.border-b-0.md\\:border-b-0:nth-of-type(16) > div.w-full.mx-auto > h2.text-center.text-white",
+        "box": {
+          "x": 347,
+          "y": 4052,
+          "w": 746,
+          "h": 60
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 4495,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 4754,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 4686,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 4686,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 4686,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Add to Chrome - it's free",
+        "selector": "main.w-full.mx-auto > div.relative.m-0:nth-of-type(1) > div.flex.flex-col > button.md\\:max-w-\\[240px\\].max-w-\\[180px\\]",
+        "box": {
+          "x": 600,
+          "y": 497,
+          "w": 240,
+          "h": 53
+        }
+      },
+      {
+        "text": "Add to Chrome - it's free",
+        "selector": "div.flex.flex-nowrap > div.flex.flex-col:nth-of-type(1) > div.pt-\\[260px\\]:nth-of-type(3) > button.chrome-button-glow.w-\\[232px\\]",
+        "box": {
+          "x": 81,
+          "y": 1737,
+          "w": 232,
+          "h": 45
+        }
+      },
+      {
+        "text": "Add to Chrome - it's free",
+        "selector": "div.border-b-0.md\\:border-b-0:nth-of-type(16) > div.w-full.mx-auto > div.md\\:max-w-\\[240px\\].max-w-\\[180px\\] > button.whitespace-nowrap",
+        "box": {
+          "x": 621,
+          "y": 4239,
+          "w": 197,
+          "h": 24
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 4481,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [
+      {
+        "alt": "Section",
+        "src": "https://shopbigticket.com/_next/image?url=%2Fhome%2FSection.png&w=3840&q=75",
+        "selector": "main.w-full.mx-auto > div.w-full.h-\\[250px\\]:nth-of-type(6) > div.absolute.inset-0:nth-of-type(1) > img.w-full.h-full",
+        "box": {
+          "x": 0,
+          "y": 1844,
+          "w": 1440,
+          "h": 400
+        }
+      },
+      {
+        "alt": "My Boards",
+        "src": "https://shopbigticket.com/home/boards.svg",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(7) > div.w-\\[480px\\].h-\\[360px\\]:nth-of-type(2) > img.w-full.h-full",
+        "box": {
+          "x": 808,
+          "y": 2380,
+          "w": 384,
+          "h": 288
+        }
+      },
+      {
+        "alt": "Comparison",
+        "src": "https://shopbigticket.com/home/compares.svg",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(10) > div.w-\\[480px\\].h-\\[360px\\]:nth-of-type(1) > img.w-full.h-full",
+        "box": {
+          "x": 249,
+          "y": 2940,
+          "w": 384,
+          "h": 288
+        }
+      },
+      {
+        "alt": "Product Detail Page",
+        "src": "https://shopbigticket.com/home/pdps.svg",
+        "selector": "main.w-full.mx-auto > div.hidden.xl\\:flex:nth-of-type(13) > div.w-\\[480px\\].h-\\[360px\\]:nth-of-type(2) > img.w-full.h-full",
+        "box": {
+          "x": 808,
+          "y": 3500,
+          "w": 384,
+          "h": 288
+        }
+      }
+    ],
+    "sections": [
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.relative.m-0:nth-of-type(1)",
+        "box": {
+          "x": 0,
+          "y": 101,
+          "w": 1440,
+          "h": 664
+        },
+        "text": "Buy once. Buy well.\n\nSave as you browse, compare easily.\n\nAdd to Chrome - it's free"
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.bg-white.mx-auto:nth-of-type(2)",
+        "box": {
+          "x": 0,
+          "y": 765,
+          "w": 1440,
+          "h": 345
+        },
+        "text": "Big Ticket works across sites you already browse."
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.hidden.xl\\:block:nth-of-type(3)",
+        "box": {
+          "x": 0,
+          "y": 1174,
+          "w": 1440,
+          "h": 670
+        },
+        "text": "How it works.\n\nDiscover, organize, and compare products in seconds, so you can buy with confidence.\n\nAdd to Chrome - it's free\n\nInstall the Big Ticket Extension.\n\nAdd the Big Ticket browser extension in just a few clicks. You'll wonder how you shopped without it.\n\nSave as you browse.\n\nSave your favo"
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.w-full.h-\\[250px\\]:nth-of-type(6)",
+        "box": {
+          "x": 0,
+          "y": 1844,
+          "w": 1440,
+          "h": 400
+        },
+        "text": ""
+      },
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > main.w-full.mx-auto > div.border-b-0.md\\:border-b-0:nth-of-type(16)",
+        "box": {
+          "x": 0,
+          "y": 3924,
+          "w": 1440,
+          "h": 509
+        },
+        "text": "Built for better decisions.\n\nJoin big ticket today.\n\nAdd to Chrome - it's free"
+      }
+    ]
+  },
+  {
+    "url": "https://shopbigticket.com/terms-and-conditions",
+    "status": 200,
+    "slug": "terms_and_conditions",
+    "title": "Terms and Conditions - Big Ticket",
+    "metaDescription": "Terms and Conditions - Big Ticket",
+    "docHeight": 19872,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Terms and Conditions",
+        "selector": "div.w-full.relative > div.h-\\[140px\\].md\\:min-h-\\[150px\\]:nth-of-type(1) > div > h1.text-2xl.md\\:text-3xl",
+        "box": {
+          "x": 80,
+          "y": 140,
+          "w": 481,
+          "h": 44
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 19313,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 19571,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 19504,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 19504,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 19504,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 19299,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [],
+    "sections": [
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(2) > section.text-base.py-4",
+        "box": {
+          "x": 148,
+          "y": 1546,
+          "w": 1145,
+          "h": 811
+        },
+        "text": "1.\nSaving Products: Users may save products of interest through the Big Ticket browser extension, thereby enabling convenient tracking of items across various online retailers.\n2.\nCustomizable Boards: Saved products can be organized into customizable boards within the User's Big Ticket account. Thes"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(4) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 2609,
+          "w": 1145,
+          "h": 1208
+        },
+        "text": "1.\nPermitted Use: You may use Big Ticket to save and track products found online. You agree to use any shared content legally and responsibly.\n2.\nProhibited Activities: You must not (a) violate any applicable law, (b) attempt unauthorized access to our systems or other user accounts, (c) interfere w"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(5) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 3853,
+          "w": 1145,
+          "h": 1240
+        },
+        "text": "1.Account Creation and Login\n1.1\nUsers may create an account with Big Ticket (\"Service\") by providing a valid email address and creating a password. Alternatively, Users may have the option to log in through a supported third-party service, such as Google. By using a third-party service to log in, U"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(6) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 5129,
+          "w": 1145,
+          "h": 1494
+        },
+        "text": "1.\nDefault Data Retention Period\n1.1\nDeletion Upon Request:Once you request to delete your account, we will generally remove or anonymize your personal data from our active systems immediately. However, certain data may remain for up to thirty (30) days to accommodate technical processes, legal requ"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(7) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 6659,
+          "w": 1145,
+          "h": 683
+        },
+        "text": "1\nVarious types of content (\"Content\") may be accessible through the Services. \"Content\" refers collectively to all materials, information, or data, in any form or medium, available on, through, or generated by the Services, including but not limited to product information, product features / specif"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(8) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 7378,
+          "w": 1145,
+          "h": 2880
+        },
+        "text": "1.\nProhibition on Illegal or Unlawful Use: You shall not use the Site, Browser Extension, or Services for any illegal or unlawful purpose. This includes, but is not limited to, any activity that violates applicable local, state, federal, or international law, regulation, or governmental order. Furth"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(9) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 10548,
+          "w": 1145,
+          "h": 1408
+        },
+        "text": "BIG TICKET, INCLUDING ITS AFFILIATES, LICENSORS, SUPPLIERS, AND DISTRIBUTORS, EXPRESSLY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY , INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, "
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(10) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 11992,
+          "w": 1145,
+          "h": 1504
+        },
+        "text": "In using the Big Ticket Chrome browser extension and website, you acknowledge and agree that:\n1.\nThe Big Ticket Services may contain inaccuracies or errors, including but not limited to pricing errors and product detail errors. Big Ticket disclaims all liability for any errors or inaccuracies in the"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(12) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 14256,
+          "w": 1145,
+          "h": 1583
+        },
+        "text": "Big Ticket may provide links to, or display content, products, services, or advertisements from, third-party websites, merchants, data providers, or other third-party entities (collectively, \"Third Parties\"). You acknowledge and agree that:\n\n1.\nNo Endorsement or Warranty: Big Ticket does not control"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(13) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 16092,
+          "w": 1145,
+          "h": 853
+        },
+        "text": "1.\nGoverning Law\nThese Terms and any dispute arising out of or related to your use of the Services shall be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of law principles. To the extent permitted under applicable law, this choice of l"
+      }
+    ]
+  },
+  {
+    "url": "https://shopbigticket.com/privacy-policy",
+    "status": 200,
+    "slug": "privacy_policy",
+    "title": "Privacy Policy - Big Ticket",
+    "metaDescription": "Privacy Policy - Big Ticket",
+    "docHeight": 20452,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Privacy Policy",
+        "selector": "div.w-full.relative > div.h-\\[140px\\].md\\:min-h-\\[200px\\]:nth-of-type(1) > div > h1.text-2xl.md\\:text-3xl",
+        "box": {
+          "x": 80,
+          "y": 182,
+          "w": 299,
+          "h": 44
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 19893,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 20151,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 20084,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 20084,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 20084,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "https://shopbigticket.com",
+        "href": "https://shopbigticket.com/",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "www.shopbigticket.com",
+        "href": "https://shopbigticket.com/",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "support@shopbigticket.com",
+        "href": "mailto:support@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "https://oag.ca.gov/privacy/ccpa",
+        "href": "https://oag.ca.gov/privacy/ccpa",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 19879,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [],
+    "sections": [
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(1) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 769,
+          "w": 1145,
+          "h": 361
+        },
+        "text": "This policy applies to the information we collect:\n1\nThrough Big Ticket's Website and Browser Extension;\n2\nVia email, text, and other electronic messages between you and Big Ticket;\n3\nAny other online services that we provide (collectively \"Services\");\n4\nThrough any future applications or services w"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(4) > section.text-base.py-3",
+        "box": {
+          "x": 148,
+          "y": 2085,
+          "w": 1145,
+          "h": 2967
+        },
+        "text": "Big Ticket collects various types of information when you interact with Our Website, Browser Extension, and Services. This includes information you provide directly, data collected automatically, and data obtained from third parties. The information we collect includes:\n\n\n\n1\nPersonal Information\nInf"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(5) > section.text-base.md\\:text-\\[16px\\]",
+        "box": {
+          "x": 148,
+          "y": 5088,
+          "w": 1145,
+          "h": 2031
+        },
+        "text": "We collect and use your Personal and Non-Personal Information for a variety of business purposes, including the examples provided below.\n1\nTo Provide Our Services:\nWe use your data to create and manage your account, verify the validity of your email and account, and enable core functionalities such "
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(6) > section.text-base.py-3",
+        "box": {
+          "x": 148,
+          "y": 7155,
+          "w": 1145,
+          "h": 329
+        },
+        "text": "We collect information from the following sources:\nData you share directly with us during activities such as account registration, purchases, or form submissions.\nInformation we automatically collect as you interact with our website, such as through cookies, IP tracking, and analytics tools.\nInforma"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(7) > section.text-base.py-3",
+        "box": {
+          "x": 148,
+          "y": 7520,
+          "w": 1145,
+          "h": 2033
+        },
+        "text": "We may disclose aggregated information that may include personal information about our users that we collect or you provide as described in this Privacy Policy:\n1\nBig Ticket participates in affiliate marketing programs and maintains relationships with select third-party business partners. As part of"
+      },
+      {
+        "selector": "div.my-3:nth-of-type(9) > div.text-base.py-3 > div.text-base.py-3 > section.my-10:nth-of-type(2)",
+        "box": {
+          "x": 148,
+          "y": 11157,
+          "w": 1145,
+          "h": 217
+        },
+        "text": "2\nManaging Cookies\nWhen you first visit our Website, you will be prompted to provide consent for the use of cookies. You may manage or withdraw your consent at any time by accessing your browser settings or using the cookie preference tools available on our Website.\nIf you choose to disable cookies,"
+      },
+      {
+        "selector": "div.my-3:nth-of-type(9) > div.text-base.py-3 > div.text-base.py-3 > section.my-10:nth-of-type(4)",
+        "box": {
+          "x": 148,
+          "y": 11780,
+          "w": 1145,
+          "h": 217
+        },
+        "text": "We use these cookies to understand how visitors interact with Our website and Services, helping us to improve the functionality and User experience. These cookies collect information, such as page visits, time spent on the site, and error messages. We use this data to make informed improvements to O"
+      },
+      {
+        "selector": "div.my-3:nth-of-type(9) > div.text-base.py-3 > div.text-base.py-3 > section.my-10:nth-of-type(5)",
+        "box": {
+          "x": 148,
+          "y": 12037,
+          "w": 1145,
+          "h": 217
+        },
+        "text": "These cookies help us remember your preferences and the choices you make on Our platform, such as recently viewed products, language preferences, and other customizable settings. By using these cookies, we can provide you with a more personalized experience. These cookies may also be used to offer e"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(12) > section.text-base.py-3:nth-of-type(4)",
+        "box": {
+          "x": 148,
+          "y": 17024,
+          "w": 1145,
+          "h": 260
+        },
+        "text": "Legal Obligations: We may retain certain personal information if necessary to comply with our legal or regulatory obligations or if we need the information to defend ourselves against legal claims.\nAggregated/Anonymized Data: Even after we delete your profile or personal information, we may continue"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(14) > section.text-base.py-3",
+        "box": {
+          "x": 148,
+          "y": 18714,
+          "w": 1145,
+          "h": 297
+        },
+        "text": "Email:legal@shopbigticket.com\nMailing Address:\nShop Big Ticket Inc.\n228 Park Ave S PMB 62486\nNew York, New York 10003-1502 US"
+      },
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(15) > section.text-base.py-3",
+        "box": {
+          "x": 148,
+          "y": 19328,
+          "w": 1145,
+          "h": 297
+        },
+        "text": "Email:legal@shopbigticket.com\nMailing Address:\nShop Big Ticket Inc.\n228 Park Ave S PMB 62486\nNew York, New York 10003-1502 US"
+      }
+    ]
+  },
+  {
+    "url": "https://shopbigticket.com/about",
+    "status": 200,
+    "slug": "about",
+    "title": "About - Big Ticket",
+    "metaDescription": "About - Big Ticket",
+    "docHeight": 2924,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "About Us",
+        "selector": "main.w-full.relative > header.h-auto.py-\\[17px\\] > div.w-full.mx-auto > h1.text-xl.md\\:text-3xl",
+        "box": {
+          "x": 108,
+          "y": 154,
+          "w": 204,
+          "h": 44
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Big Ticket - your ultimate companion for smarter shopping",
+        "selector": "#intro-heading",
+        "box": {
+          "x": 137,
+          "y": 364,
+          "w": 505,
+          "h": 156
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "You are unique.",
+        "selector": "#features-heading",
+        "box": {
+          "x": 201,
+          "y": 881,
+          "w": 394,
+          "h": 52
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Curated Product Boards",
+        "selector": "div.w-full.lg\\:max-w-\\[462px\\]:nth-of-type(2) > article.flex.gap-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > h3.text-\\[\\#5E1EB9\\].md\\:text-\\[\\#474747\\]",
+        "box": {
+          "x": 836,
+          "y": 797,
+          "w": 196,
+          "h": 24
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Product Comparison",
+        "selector": "div.w-full.lg\\:max-w-\\[462px\\]:nth-of-type(2) > article.flex.gap-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > h3.text-\\[\\#5E1EB9\\].md\\:text-\\[\\#474747\\]",
+        "box": {
+          "x": 836,
+          "y": 926,
+          "w": 168,
+          "h": 24
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Price History",
+        "selector": "div.w-full.lg\\:max-w-\\[462px\\]:nth-of-type(2) > article.flex.gap-2:nth-of-type(3) > div.flex.flex-col:nth-of-type(2) > h3.text-\\[\\#5E1EB9\\].md\\:text-\\[\\#474747\\]",
+        "box": {
+          "x": 836,
+          "y": 1055,
+          "w": 103,
+          "h": 24
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Shop with confidence and clarity.",
+        "selector": "#team-heading",
+        "box": {
+          "x": 838,
+          "y": 1233,
+          "w": 465,
+          "h": 156
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Transparency is at\nthe heart of\neverything we do.",
+        "selector": "#cta-heading",
+        "box": {
+          "x": 177,
+          "y": 1930,
+          "w": 654,
+          "h": 156
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 2365,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 2623,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 2556,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 2556,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 2556,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 2351,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [
+      {
+        "alt": "Big Ticket shopping companion interface showing product comparison features",
+        "src": "https://shopbigticket.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FaboutPage.5ad5fc13.png&w=1080&q=85",
+        "selector": "div.max-w-\\[450px\\].md\\:max-w-\\[720px\\] > div.flex.flex-col > figure.lg\\:block.hidden:nth-of-type(1) > img.object-cover.max-w-\\[507px\\]",
+        "box": {
+          "x": 796,
+          "y": 331,
+          "w": 507,
+          "h": 338
+        }
+      },
+      {
+        "alt": "Team of Big Ticket experts working on improving your shopping experience",
+        "src": "https://shopbigticket.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FaboutGroupImg.26d84002.png&w=1080&q=85",
+        "selector": "section.w-full.px-\\[39px\\]:nth-of-type(3) > div.max-w-\\[293px\\].md\\:max-w-\\[720px\\] > figure.max-w-\\[447px\\].w-full:nth-of-type(1) > img.object-cover.max-w-\\[447px\\]",
+        "box": {
+          "x": 137,
+          "y": 1233,
+          "w": 447,
+          "h": 480
+        }
+      }
+    ],
+    "sections": [
+      {
+        "selector": "div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > div.w-full.min-h-screen > main.w-full.relative > section.w-full.px-0:nth-of-type(1)",
+        "box": {
+          "x": 0,
+          "y": 251,
+          "w": 1440,
+          "h": 498
+        },
+        "text": "Big Ticket - your ultimate companion for smarter shopping\n\nBig Ticket is more than just a browser extension - it's your personal shopping expert. Helping you by curating top products, tracking prices, and comparing items for all your big-ticket purchases."
+      },
+      {
+        "selector": "div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > div.w-full.min-h-screen > main.w-full.relative > section.w-full.px-\\[39px\\]:nth-of-type(2)",
+        "box": {
+          "x": 0,
+          "y": 749,
+          "w": 1440,
+          "h": 428
+        },
+        "text": "You are unique.\n\nThat's why we offer a personalized approach to\nsave you time and help you find the best\nproducts to fit your needs. Big Ticket is here to\nsupport you every step of the way.\n\nCurated Product Boards\n\nOrganize your shopping journey with personalized boards, making it easy to access and"
+      },
+      {
+        "selector": "div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > div.w-full.min-h-screen > main.w-full.relative > section.w-full.px-\\[39px\\]:nth-of-type(3)",
+        "box": {
+          "x": 0,
+          "y": 1233,
+          "w": 1440,
+          "h": 480
+        },
+        "text": "Shop with confidence and clarity.\n\nWe believe that every buying decision, no matter the price tag, should be driven by informed choice rather than uncertainty."
+      },
+      {
+        "selector": "div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > div.w-full.min-h-screen > main.w-full.relative > section.px-0.md\\:px-8:nth-of-type(4)",
+        "box": {
+          "x": 0,
+          "y": 1793,
+          "w": 1440,
+          "h": 430
+        },
+        "text": "Transparency is at\nthe heart of\neverything we do.\n\nWe prioritize trust and transparency in every aspect of our service. From detailed price histories to unbiased product comparisons, our goal is to provide you with all the information you need to feel confident when you make big purchases."
+      }
+    ]
+  },
+  {
+    "url": "https://shopbigticket.com/contact-us",
+    "status": 200,
+    "slug": "contact_us",
+    "title": "Contact Us - Big Ticket",
+    "metaDescription": "Contact Us - Big Ticket",
+    "docHeight": 1622,
+    "headings": [
+      {
+        "tag": "h2",
+        "text": "Couldn't find what  you are looking for?",
+        "selector": "#contact-heading",
+        "box": {
+          "x": 267,
+          "y": 253,
+          "w": 871,
+          "h": 52
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 1063,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 1321,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 1254,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 1254,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 1254,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 1049,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [],
+    "sections": [
+      {
+        "selector": "body.__className_fca8ee > div.mt-\\[70px\\].md\\:mt-\\[101px\\]:nth-of-type(3) > div.w-full.min-h-screen > div.w-full.relative",
+        "box": {
+          "x": 0,
+          "y": 101,
+          "w": 1440,
+          "h": 900
+        },
+        "text": "CONTACT US\nCouldn't find what  you are looking for?\n\nSubmit your question below and we will get back to you as soon as possible\n\nMESSAGE"
+      }
+    ]
+  },
+  {
+    "url": "https://shopbigticket.com/faq",
+    "status": 200,
+    "slug": "faq",
+    "title": "FAQ - Big Ticket",
+    "metaDescription": "Frequently Asked Questions about Big Ticket - Your Smart Shopping Companion",
+    "docHeight": 1922,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "FAQs",
+        "selector": "div.w-full.relative > div.h-auto.py-\\[17px\\] > div.w-full.mx-auto > h1.text-xl.md\\:text-3xl",
+        "box": {
+          "x": 108,
+          "y": 154,
+          "w": 116,
+          "h": 44
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "General Information",
+        "selector": "#category-0",
+        "box": {
+          "x": 202,
+          "y": 362,
+          "w": 1,
+          "h": 1
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "How Big Ticket works",
+        "selector": "#category-1",
+        "box": {
+          "x": 202,
+          "y": 431,
+          "w": 1,
+          "h": 1
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Getting Started",
+        "selector": "#category-2",
+        "box": {
+          "x": 202,
+          "y": 500,
+          "w": 1,
+          "h": 1
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Account",
+        "selector": "#category-3",
+        "box": {
+          "x": 202,
+          "y": 569,
+          "w": 1,
+          "h": 1
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Support",
+        "selector": "#category-4",
+        "box": {
+          "x": 202,
+          "y": 638,
+          "w": 1,
+          "h": 1
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Couldn’t find what\nyou are looking for?",
+        "selector": "#contact-heading",
+        "box": {
+          "x": 120,
+          "y": 918,
+          "w": 572,
+          "h": 112
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 1363,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 1621,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 1554,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 1554,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 1554,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "General Information",
+        "selector": "#faq-trigger-0",
+        "box": {
+          "x": 203,
+          "y": 363,
+          "w": 1034,
+          "h": 53
+        }
+      },
+      {
+        "text": "How Big Ticket works",
+        "selector": "#faq-trigger-1",
+        "box": {
+          "x": 203,
+          "y": 432,
+          "w": 1034,
+          "h": 53
+        }
+      },
+      {
+        "text": "Getting Started",
+        "selector": "#faq-trigger-2",
+        "box": {
+          "x": 203,
+          "y": 501,
+          "w": 1034,
+          "h": 53
+        }
+      },
+      {
+        "text": "Account",
+        "selector": "#faq-trigger-3",
+        "box": {
+          "x": 203,
+          "y": 570,
+          "w": 1034,
+          "h": 53
+        }
+      },
+      {
+        "text": "Support",
+        "selector": "#faq-trigger-4",
+        "box": {
+          "x": 203,
+          "y": 639,
+          "w": 1034,
+          "h": 53
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.flex-col > form.flex-1.min-w-\\[320px\\] > div.flex.justify-center:nth-of-type(4) > button.w-\\[188px\\].h-\\[43px\\]",
+        "box": {
+          "x": 1132,
+          "y": 1162,
+          "w": 188,
+          "h": 43
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 1349,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [],
+    "sections": [
+      {
+        "selector": "div.w-full.min-h-screen > div.w-full.relative > main.max-w-\\[1194px\\].w-full > section.my-12.md\\:my-\\[100px\\]",
+        "box": {
+          "x": 203,
+          "y": 363,
+          "w": 1034,
+          "h": 329
+        },
+        "text": "General Information\nGeneral Information\nHow Big Ticket works\nHow Big Ticket works\nGetting Started\nGetting Started\nAccount\nAccount\nSupport\nSupport"
+      },
+      {
+        "selector": "#contact-section",
+        "box": {
+          "x": 0,
+          "y": 792,
+          "w": 1440,
+          "h": 509
+        },
+        "text": "CONTACT US\n\nCouldn’t find what\nyou are looking for?\n\nSubmit your question below and we will get back to you as soon as possible\n\nMESSAGE\nSubmit"
+      }
+    ]
+  },
+  {
+    "url": "https://shopbigticket.com/referral",
+    "status": 200,
+    "slug": "referral",
+    "title": "Referral Program | Big Ticket",
+    "metaDescription": "Earn a $10 gift card by referring 5 friends to Big Ticket. Share your unique link and track your progress.",
+    "docHeight": 1890,
+    "headings": [
+      {
+        "tag": "h2",
+        "text": "Log in to start referring",
+        "selector": "div.max-w-\\[1352px\\].mx-auto > div.hidden.xl\\:grid:nth-of-type(6) > div.bg-\\[\\#F9F9F9\\].rounded-2xl:nth-of-type(1) > h2.font-montserrat.font-medium",
+        "box": {
+          "x": 76,
+          "y": 958,
+          "w": 711,
+          "h": 50
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "How it works.",
+        "selector": "div.hidden.xl\\:grid:nth-of-type(6) > div.w-\\[535px\\].h-\\[464px\\]:nth-of-type(2) > div.w-\\[455\\.33px\\].h-\\[43px\\]:nth-of-type(1) > h3.font-montserrat.font-medium",
+        "box": {
+          "x": 843,
+          "y": 781,
+          "w": 455,
+          "h": 84
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 1331,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 1589,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 1522,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 1522,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 1522,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Referral Program Terms",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Log In",
+        "selector": "div.max-w-\\[1352px\\].mx-auto > div.hidden.xl\\:grid:nth-of-type(6) > div.bg-\\[\\#F9F9F9\\].rounded-2xl:nth-of-type(1) > button.mt-10.w-\\[263px\\]",
+        "box": {
+          "x": 76,
+          "y": 1120,
+          "w": 263,
+          "h": 53
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 1317,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [
+      {
+        "alt": "Room collage tile",
+        "src": "https://shopbigticket.com/home/Crib.svg",
+        "selector": "div.hidden.xl\\:flex:nth-of-type(1) > div.w-\\[553px\\].h-\\[53px\\] > div.absolute.right-\\[31px\\]:nth-of-type(3) > img.absolute.left-\\[4px\\]:nth-of-type(1)",
+        "box": {
+          "x": 729,
+          "y": 251,
+          "w": 124,
+          "h": 124
+        }
+      },
+      {
+        "alt": "Room collage tile",
+        "src": "https://shopbigticket.com/home/bed.svg",
+        "selector": "div.hidden.xl\\:flex:nth-of-type(1) > div.w-\\[553px\\].h-\\[53px\\] > div.absolute.right-\\[31px\\]:nth-of-type(3) > img.absolute.left-\\[138px\\]:nth-of-type(2)",
+        "box": {
+          "x": 863,
+          "y": 157,
+          "w": 230,
+          "h": 152
+        }
+      },
+      {
+        "alt": "Room collage tile",
+        "src": "https://shopbigticket.com/home/toaster.svg",
+        "selector": "div.hidden.xl\\:flex:nth-of-type(1) > div.w-\\[553px\\].h-\\[53px\\] > div.absolute.right-\\[31px\\]:nth-of-type(3) > img.absolute.left-\\[376px\\]:nth-of-type(3)",
+        "box": {
+          "x": 1101,
+          "y": 195,
+          "w": 111,
+          "h": 112
+        }
+      },
+      {
+        "alt": "Room collage tile",
+        "src": "https://shopbigticket.com/home/chair.svg",
+        "selector": "div.hidden.xl\\:flex:nth-of-type(1) > div.w-\\[553px\\].h-\\[53px\\] > div.absolute.right-\\[31px\\]:nth-of-type(3) > img.absolute.left-\\[495px\\]:nth-of-type(4)",
+        "box": {
+          "x": 1220,
+          "y": 241,
+          "w": 157,
+          "h": 171
+        }
+      },
+      {
+        "alt": "Room collage tile",
+        "src": "https://shopbigticket.com/home/vase.svg",
+        "selector": "div.hidden.xl\\:flex:nth-of-type(1) > div.w-\\[553px\\].h-\\[53px\\] > div.absolute.right-\\[31px\\]:nth-of-type(3) > img.absolute.left-\\[138px\\]:nth-of-type(5)",
+        "box": {
+          "x": 863,
+          "y": 323,
+          "w": 108,
+          "h": 111
+        }
+      },
+      {
+        "alt": "Room collage tile",
+        "src": "https://shopbigticket.com/home/lamp.svg",
+        "selector": "div.hidden.xl\\:flex:nth-of-type(1) > div.w-\\[553px\\].h-\\[53px\\] > div.absolute.right-\\[31px\\]:nth-of-type(3) > img.absolute.left-\\[254px\\]:nth-of-type(6)",
+        "box": {
+          "x": 979,
+          "y": 322,
+          "w": 233,
+          "h": 166
+        }
+      }
+    ],
+    "sections": []
+  },
+  {
+    "url": "https://shopbigticket.com/referral/terms",
+    "status": 200,
+    "slug": "referral_terms",
+    "title": "Referral Program Terms - Big Ticket",
+    "metaDescription": "Big Ticket Referral Program Terms",
+    "docHeight": 5836,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Big Ticket Referral Program Terms",
+        "selector": "div.w-full.relative > div.h-\\[140px\\].md\\:min-h-\\[150px\\]:nth-of-type(1) > div > h1.text-2xl.md\\:text-3xl",
+        "box": {
+          "x": 80,
+          "y": 140,
+          "w": 752,
+          "h": 44
+        }
+      },
+      {
+        "tag": "h1",
+        "text": "Big Ticket Referral Program Terms",
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(1) > h1.text-2xl.font-bold",
+        "box": {
+          "x": 148,
+          "y": 331,
+          "w": 1145,
+          "h": 32
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Join our newsletter",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.flex.justify-between:nth-of-type(1) > div:nth-of-type(1) > h3.font-normal.md\\:font-bold",
+        "box": {
+          "x": 100,
+          "y": 5277,
+          "w": 463,
+          "h": 40
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Buy once. Buy well.",
+        "selector": "div.md\\:col-span-3.col-span-6:nth-of-type(1) > div > div.pt-6.md\\:pt-8 > h3.font-semibold.text-xl",
+        "box": {
+          "x": 140,
+          "y": 5535,
+          "w": 560,
+          "h": 36
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LINKS",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(2) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 740,
+          "y": 5468,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "LEGAL",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-3:nth-of-type(3) > div > h3.font-bold.text-base",
+        "box": {
+          "x": 940,
+          "y": 5468,
+          "w": 160,
+          "h": 56
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "CONNECT WITH US",
+        "selector": "div.grid.grid-cols-6:nth-of-type(2) > div.md\\:col-span-1.col-span-6:nth-of-type(4) > div.mt-8.md\\:mt-0 > h3.font-bold.text-base",
+        "box": {
+          "x": 1140,
+          "y": 5468,
+          "w": 160,
+          "h": 56
+        }
+      }
+    ],
+    "links": [
+      {
+        "text": "",
+        "href": "https://shopbigticket.com/dashboard",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "legal@shopbigticket.com",
+        "href": "mailto:legal@shopbigticket.com",
+        "nav": false,
+        "footer": false
+      },
+      {
+        "text": "Terms and Conditions",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "Privacy Policy.",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "BLOG",
+        "href": "https://blog.shopbigticket.com/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "ABOUT US",
+        "href": "https://shopbigticket.com/about",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "CONTACT US",
+        "href": "https://shopbigticket.com/contact-us",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "FAQs",
+        "href": "https://shopbigticket.com/faq",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFER & EARN",
+        "href": "https://shopbigticket.com/referral",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "TERMS & CONDITIONS",
+        "href": "https://shopbigticket.com/terms-and-conditions",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "PRIVACY POLICY",
+        "href": "https://shopbigticket.com/privacy-policy",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "REFERRAL PROGRAM TERMS",
+        "href": "https://shopbigticket.com/referral/terms",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/people/Big-ticket/61555611281762/",
+        "nav": false,
+        "footer": true
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/shopbigticket/",
+        "nav": false,
+        "footer": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Log in",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].h-\\[45px\\]:nth-of-type(1)",
+        "box": {
+          "x": 1042,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Join",
+        "selector": "div.max-w-lg.md\\:max-w-\\[760px\\] > div.w-full.md\\:h-\\[100px\\] > div.hidden.md\\:flex:nth-of-type(2) > button.max-w-\\[160px\\].w-full:nth-of-type(2)",
+        "box": {
+          "x": 1220,
+          "y": 28,
+          "w": 160,
+          "h": 45
+        }
+      },
+      {
+        "text": "Submit",
+        "selector": "div.flex.justify-between:nth-of-type(1) > div.w-full.max-w-\\[472px\\]:nth-of-type(2) > form.flex.gap-3 > button.max-w-\\[117px\\].w-full",
+        "box": {
+          "x": 1223,
+          "y": 5263,
+          "w": 117,
+          "h": 48
+        }
+      }
+    ],
+    "images": [],
+    "sections": [
+      {
+        "selector": "div.max-w-\\[1305px\\].mt-20:nth-of-type(2) > div.w-full > div.my-3:nth-of-type(3) > section.text-base.py-4",
+        "box": {
+          "x": 148,
+          "y": 1105,
+          "w": 1145,
+          "h": 668
+        },
+        "text": "(a)\nshare your link on any coupon, deal, discount, cashback, or referral-exchange website or service, or in any group, community, or forum used to sell, trade, swap, or distribute referral links to strangers, such as Reddit, Quora, or invitation- or referral-code sites;\n(b)\npost your link on any web"
+      }
+    ]
+  }
+]
