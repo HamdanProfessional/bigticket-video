@@ -358,8 +358,9 @@ export function direct(prompt, opts = {}) {
     // longer is dead air the viewer uses to scroll away.
     const cardBeats = 2;
     const cardDur = +(cardBeats * beat).toFixed(3);
-    // Cards paint over the whole frame, so the component behind one only has
-    // to resolve — it is never seen.
+    // A full-frame card hides whatever is behind it, so it only needs a
+    // component that resolves. A side panel does not: half the frame is live,
+    // so each card is anchored to the component it is about to introduce.
     const anchor = COMPS.hero ? 'hero' : Object.keys(COMPS)[0];
 
     // Deal out entrances without repeating one twice in a row — identical
@@ -369,16 +370,43 @@ export function direct(prompt, opts = {}) {
     let entranceAt = 0;
     const nextEntrance = () => bag[entranceAt++ % bag.length];
 
-    const makeCard = (copy) => ({
-      component: anchor,
-      kind: 'titleCard',
-      duration: cardDur,
-      easing: 'smoother',
-      params: { fill: 0.8, easing: 'smoother', enter: nextEntrance() },
-      caption: { ...copy, align: 'center', anchor: 'center', theme: 'dark' },
-      transitionIn: 'dissolve',
-      isCard: true,
-    });
+    // Cards alternate which edge they take so consecutive ones don't stack.
+    let sideAt = rng.int(0, 2);
+    const nextSide = () => (sideAt++ % 2 ? 'right' : 'left');
+
+    /**
+     * `full` gives a full-frame card — reserved for the sign-off, where the
+     * film has finished showing product and the brand should own the frame.
+     * Everything else is a side panel: the claim and the thing it is claiming
+     * about stay on screen together, which is the difference between an ad and
+     * a slide deck spliced into a screen recording.
+     */
+    const makeCard = (copy, { full = false, over } = {}) => {
+      const side = full ? null : nextSide();
+      return {
+        // Standing over the component it introduces means the panel slides away
+        // onto the very thing it just described, instead of every card cutting
+        // back to the same hero.
+        component: (over && COMPS[over]) ? over : anchor,
+        kind: 'titleCard',
+        duration: cardDur,
+        easing: 'smoother',
+        params: side
+          // `fill` is a fraction of the free column here, not of the frame —
+          // titleCard scales the fit down by the panel's width itself.
+          ? { fill: 0.8, easing: 'smoother', side, panelWidth: rng.float(0.38, 0.44) }
+          : { fill: 0.8, easing: 'smoother', enter: nextEntrance() },
+        caption: {
+          ...copy,
+          align: side ? 'left' : 'center',
+          anchor: 'center',
+          theme: 'dark',
+        },
+        transitionIn: 'dissolve',
+        isCard: true,
+        isPanel: !!side,
+      };
+    };
 
     const out = [];
     let used = 0;
@@ -396,7 +424,7 @@ export function direct(prompt, opts = {}) {
       const prevWasCard = out.length > 0 && out[out.length - 1].isCard;
       if (i > 0 && !prevWasCard && copy && used < 3 && !isClosing
           && s.component !== anchor && !COMPS[s.component].clickable) {
-        out.push(makeCard(copy));
+        out.push(makeCard(copy, { over: s.component }));
         s.caption = null; // the card already said it; don't print it twice
         used++;
       }
@@ -404,9 +432,9 @@ export function direct(prompt, opts = {}) {
       // Cold open: lead with live motion and put the hook card SECOND. Opening
       // on a static panel spends the one second that decides whether anyone
       // keeps watching, before the product has even appeared.
-      if (i === 0) out.push(makeCard(opts.hook || HOOK));
+      if (i === 0) out.push(makeCard(opts.hook || HOOK, { over: shots[1]?.component }));
     }
-    out.push(makeCard(opts.signoff || SIGNOFF));
+    out.push(makeCard(opts.signoff || SIGNOFF, { full: true }));
     finalShots = out;
   }
 

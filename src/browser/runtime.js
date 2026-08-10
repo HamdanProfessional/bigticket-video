@@ -37,7 +37,18 @@
   const barBot = mk('position:absolute;left:0;right:0;bottom:0;height:0;background:#0b0b12;opacity:0');
   const vignette = mk('position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(0,0,0,0.55) 100%)');
   const spot = mk('position:absolute;left:0;top:0;width:0;height:0;opacity:0');
-  const ring = mk('position:absolute;left:0;top:0;width:0;height:0;opacity:0;border:2px solid rgba(124,58,237,.9);border-radius:16px;box-shadow:0 0 0 6px rgba(124,58,237,.16),0 18px 50px rgba(80,40,180,.25)');
+  // Focus border. An SVG rect rather than a CSS border so the stroke can be
+  // *drawn* around the element with dash-offset instead of just fading in —
+  // the line travelling around the component is what reads as "look here".
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const ringSvg = doc.createElementNS(SVGNS, 'svg');
+  ringSvg.setAttribute('fill', 'none');
+  ringSvg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;opacity:0';
+  const ringRect = doc.createElementNS(SVGNS, 'rect');
+  ringRect.setAttribute('fill', 'none');
+  ringRect.setAttribute('stroke-linecap', 'round');
+  ringSvg.appendChild(ringRect);
+  layer.appendChild(ringSvg);
   const wipe = mk('position:absolute;inset:0;opacity:0;background:#ffffff');
 
   // Caption card: the "this is the feature" beat.
@@ -45,7 +56,17 @@
   const capKicker = doc.createElement('div');
   const capTitle = doc.createElement('div');
   const capSub = doc.createElement('div');
-  const FONT = '"Inter","Segoe UI",-apple-system,system-ui,sans-serif';
+  // Type matched to the site itself. An ad set in a different typeface to the
+  // product it is advertising reads as a third-party edit; borrowing the site's
+  // own stack makes the captions look like part of the brand.
+  const siteFont = (() => {
+    try {
+      const h = doc.querySelector('h1, h2, h3') || doc.body;
+      const f = getComputedStyle(h).fontFamily;
+      return f && f.trim().length > 2 ? f : null;
+    } catch { return null; }
+  })();
+  const FONT = siteFont || '"Inter","Segoe UI",-apple-system,system-ui,sans-serif';
   capKicker.style.cssText = `font:600 13px/1.2 ${FONT};letter-spacing:.18em;text-transform:uppercase;opacity:.72;overflow:hidden`;
   capTitle.style.cssText = `font:700 46px/1.12 ${FONT};letter-spacing:-.025em`;
   capSub.style.cssText = `font:400 20px/1.45 ${FONT};opacity:.78;max-width:640px`;
@@ -95,7 +116,10 @@
   const panel = doc.createElement('div');
   panel.style.cssText =
     'position:absolute;inset:0;opacity:0;' +
-    'background:linear-gradient(135deg,#1cc8ee 0%,#5b46e5 46%,#7c3aed 100%)';
+    // Deep ink rather than the site's own violet gradient. A panel in the
+    // brand's exact hero colours sits flush against the hero and the two read
+    // as one purple wall; this stays in the family but clearly separates.
+    'background:linear-gradient(152deg,#0c0921 0%,#1a1046 52%,#33208a 100%)';
   // First child: the panel must sit UNDER the letterbox bars and the caption,
   // otherwise a title card paints over its own bars and they blink out.
   layer.insertBefore(panel, layer.firstChild);
@@ -279,10 +303,35 @@
     barTop.style.opacity = barBot.style.opacity = lb > 0 ? '1' : '0';
 
     vignette.style.opacity = String(o.vignette || 0);
+    // Panel geometry, shared with the caption block below so the copy sits
+    // inside the panel and rides its entrance.
+    let panelSide = null, panelPx = 0, panelDx = 0, panelDy = 0;
     if (o.panel && o.panel.opacity > 0.001) {
+      panelSide = o.panel.side || null;
+      panelDx = o.panel.dx || 0;
+      panelDy = o.panel.dy || 0;
+      // A side panel beats a full-frame card: the product stays on screen next
+      // to the claim instead of being replaced by a slide for three seconds.
+      if (panelSide) {
+        panelPx = Math.round(W * (o.panel.width ?? 0.42));
+        panel.style.left = panelSide === 'right' ? `${W - panelPx}px` : '0px';
+        panel.style.right = 'auto';
+        panel.style.width = `${panelPx}px`;
+        // Cast shadow onto the page, plus a hairline of brand accent on the
+        // inner edge so the join is a deliberate line and not a soft mush.
+        // The drop shadow falls away from the panel; the accent line sits on the
+        // opposite side — the panel's INNER edge, where it meets the page.
+        const away = panelSide === 'right' ? -1 : 1;
+        panel.style.boxShadow =
+          `${44 * away}px 0 110px rgba(12,9,28,.38), inset ${-2 * away}px 0 0 rgba(124,58,237,.9)`;
+      } else {
+        panel.style.left = panel.style.right = '0px';
+        panel.style.width = 'auto';
+        panel.style.boxShadow = 'none';
+      }
       panel.style.opacity = String(o.panel.opacity);
-      const dx = o.panel.dx || 0, dy = o.panel.dy || 0;
-      panel.style.transform = (dx || dy) ? `translate(${dx.toFixed(2)}%,${dy.toFixed(2)}%)` : 'none';
+      panel.style.transform =
+        (panelDx || panelDy) ? `translate(${panelDx.toFixed(2)}%,${panelDy.toFixed(2)}%)` : 'none';
       panel.style.clipPath = o.panel.clip || 'none';
     } else {
       panel.style.opacity = '0';
@@ -312,35 +361,58 @@
       } else spot.style.opacity = '0';
     } else spot.style.opacity = '0';
 
-    // Highlight ring around a component.
+    // Focus border, drawn around the component rather than faded in.
     if (o.highlight && o.highlight.opacity > 0.001) {
       const r = viewRect(o.highlight.sel);
       if (r) {
         const p = o.highlight.pad ?? 10;
-        const grow = (1 - (o.highlight.opacity || 1)) * 14;
-        ring.style.left = `${r.x - p - grow}px`;
-        ring.style.top = `${r.y - p - grow}px`;
-        ring.style.width = `${r.w + p * 2 + grow * 2}px`;
-        ring.style.height = `${r.h + p * 2 + grow * 2}px`;
-        ring.style.borderRadius = `${o.highlight.radius ?? 16}px`;
-        ring.style.opacity = String(o.highlight.opacity);
-      } else ring.style.opacity = '0';
-    } else ring.style.opacity = '0';
+        const w = r.w + p * 2, h = r.h + p * 2;
+        const rad = o.highlight.radius ?? 16;
+        ringSvg.style.left = `${(r.x - p).toFixed(1)}px`;
+        ringSvg.style.top = `${(r.y - p).toFixed(1)}px`;
+        ringSvg.setAttribute('width', Math.max(0, w).toFixed(1));
+        ringSvg.setAttribute('height', Math.max(0, h).toFixed(1));
+        ringRect.setAttribute('x', '1.25');
+        ringRect.setAttribute('y', '1.25');
+        ringRect.setAttribute('width', Math.max(0, w - 2.5).toFixed(1));
+        ringRect.setAttribute('height', Math.max(0, h - 2.5).toFixed(1));
+        ringRect.setAttribute('rx', String(rad));
+        ringRect.setAttribute('stroke', o.highlight.color || '#7c3aed');
+        ringRect.setAttribute('stroke-width', String(o.highlight.width ?? 2.5));
+        // Perimeter of a rounded rect, near enough for a dash pattern.
+        const perim = 2 * (w + h) - 8 * rad + 2 * Math.PI * rad;
+        const draw = o.highlight.draw ?? 1;
+        ringRect.setAttribute('stroke-dasharray', perim.toFixed(1));
+        ringRect.setAttribute('stroke-dashoffset', (perim * (1 - draw)).toFixed(1));
+        ringSvg.style.opacity = String(o.highlight.opacity);
+      } else ringSvg.style.opacity = '0';
+    } else ringSvg.style.opacity = '0';
 
     // Caption card. Type scales with the frame so the same copy works in a
     // 1440-wide landscape ad and a 540-wide vertical one.
     if (o.caption && o.caption.opacity > 0.001) {
       const c = o.caption;
       const clamp = (v, lo, hi) => Math.max(lo, Math.min(v, hi));
-      const titleSize = clamp(W * 0.032, 26, 48);
-      const subSize = clamp(W * 0.0145, 14, 21);
-      const kickSize = clamp(W * 0.009, 10, 13);
-      const padX = clamp(W * 0.064, 30, 92);
+      // Inside a side panel the copy has ~40% of the frame to live in, so it is
+      // measured against the panel rather than the viewport.
+      const colW = panelSide ? panelPx : W;
+      const titleSize = clamp(colW * (panelSide ? 0.088 : 0.032), 22, 48);
+      const subSize = clamp(colW * (panelSide ? 0.038 : 0.0145), 13, 21);
+      const kickSize = clamp(colW * (panelSide ? 0.024 : 0.009), 10, 13);
+      const padX = panelSide ? clamp(colW * 0.115, 22, 68) : clamp(W * 0.064, 30, 92);
       cap.style.padding = `0 ${Math.round(padX)}px`;
       capTitle.style.fontSize = `${titleSize.toFixed(1)}px`;
       capSub.style.fontSize = `${subSize.toFixed(1)}px`;
-      capSub.style.maxWidth = `${Math.round(W * 0.62)}px`;
+      capSub.style.maxWidth = `${Math.round(panelSide ? colW - padX * 2 : W * 0.62)}px`;
       capKicker.style.fontSize = `${kickSize.toFixed(1)}px`;
+      if (panelSide) {
+        cap.style.left = panelSide === 'right' ? `${W - panelPx}px` : '0px';
+        cap.style.right = 'auto';
+        cap.style.width = `${panelPx}px`;
+      } else {
+        cap.style.left = cap.style.right = '0px';
+        cap.style.width = 'auto';
+      }
       const dark = c.theme !== 'light';
       const fg = dark ? '#ffffff' : '#141026';
       capKicker.textContent = c.kicker || '';
@@ -376,16 +448,27 @@
       capKicker.style.color = capTitle.style.color = capSub.style.color = fg;
       capKicker.style.color = dark ? 'rgba(255,255,255,.8)' : 'rgba(20,16,38,.6)';
       if (c.accent) capKicker.style.color = c.accent;
-      cap.style.alignItems = c.align === 'center' ? 'center' : 'flex-start';
-      cap.style.textAlign = c.align === 'center' ? 'center' : 'left';
-      const anchor = c.anchor ?? 'bottom';
+      // A side panel is a column, so its copy always ranges left however the
+      // shot asked for it to be aligned.
+      const alignCentre = !panelSide && c.align === 'center';
+      cap.style.alignItems = alignCentre ? 'center' : 'flex-start';
+      cap.style.textAlign = alignCentre ? 'center' : 'left';
+      const anchor = panelSide ? 'center' : (c.anchor ?? 'bottom');
       cap.style.top = anchor === 'center' ? '50%' : anchor === 'top' ? '13%' : 'auto';
       // Sits clear of the brand mark in the bottom-left corner.
       cap.style.bottom = anchor === 'bottom' ? `${Math.round(H * 0.17)}px` : 'auto';
       // The container no longer fades or rises — each element animates itself
       // above. Fading the whole block as well would flatten the stagger back
       // into the single dissolve this replaced.
-      cap.style.transform = anchor === 'center' ? 'translateY(-50%)' : 'none';
+      // The copy rides the panel's entrance: cap and panel are the same width,
+      // so the panel's percentage translate applies unchanged.
+      // dx is a percentage of the panel's width, which cap now matches, so it
+      // carries across directly; dy is a percentage of the frame HEIGHT, which
+      // cap does not match, so it is converted to pixels first.
+      const capTy = anchor === 'center' ? -50 : 0;
+      cap.style.transform =
+        `translate(${panelDx.toFixed(2)}%, ${capTy}%) translateY(${(panelDy * H / 100).toFixed(1)}px)`;
+      cap.style.clipPath = o.panel && o.panel.clip ? o.panel.clip : 'none';
       cap.style.opacity = String(Math.min(1, c.opacity * 4));
       cap.style.textShadow = dark ? '0 2px 30px rgba(10,6,30,.45)' : 'none';
     } else cap.style.opacity = '0';

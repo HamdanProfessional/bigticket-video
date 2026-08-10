@@ -208,7 +208,14 @@ export const KINDS = {
       cam,
       ov: {
         spotlight: { sel: comp.selResolved, opacity: on, pad: ctx.p.pad ?? 44, strength: ctx.p.strength ?? 0.55 },
-        highlight: { sel: comp.selResolved, opacity: on, pad: ctx.p.pad ?? 14, radius: ctx.p.radius ?? 18 },
+        // The border is DRAWN around the component rather than faded in — a
+        // line travelling the perimeter is what actually reads as "look here".
+        highlight: {
+          sel: comp.selResolved, opacity: on,
+          pad: ctx.p.pad ?? 14, radius: ctx.p.radius ?? 18,
+          width: ctx.p.ringWidth ?? 3,
+          draw: tween(p, 0.08, 0.52, 0, 1, 'easeOutQuint'),
+        },
       },
     };
   },
@@ -249,7 +256,13 @@ export const KINDS = {
       cam,
       ov: {
         cursor: { sel: comp.selResolved, dx, dy, opacity: tween(p, 0, 0.12, 0, 1, 'easeOut'), press, ripple },
-        highlight: { sel: comp.selResolved, opacity: ringOn * 0.9, pad: 8, radius: ctx.p.radius ?? 28 },
+        // Draws in just ahead of the cursor arriving, so the border leads the
+        // eye to the target rather than appearing after the click.
+        highlight: {
+          sel: comp.selResolved, opacity: ringOn * 0.9, pad: 8,
+          radius: ctx.p.radius ?? 28, width: ctx.p.ringWidth ?? 2.5,
+          draw: tween(p, 0.12, 0.5, 0, 1, 'easeOutQuint'),
+        },
       },
     };
   },
@@ -271,18 +284,49 @@ export const KINDS = {
   // than a screen recording.
   titleCard(p, ctx) {
     const { rect, vw, vh, zBase } = ctx;
-    const z = tween(p, 0, 1, zBase * 1.04, zBase * 1.14, 'linear');
+
+    // Side panel: the copy takes a column and the product keeps the rest of the
+    // frame, so the film never cuts away from the thing it is selling.
+    const side = ctx.p.side || null;
+    const frac = ctx.p.panelWidth ?? 0.42;
+
+    // `zBase` fits the component to the WHOLE frame; with a panel it only has
+    // the free column, so the fit is scaled down to match. Never below 1x
+    // though — zooming out past the capture width exposes bare canvas beside
+    // the page, and a crop into a wide component is the better failure.
+    // Never below 1x. Under the capture width the page stops covering the
+    // frame and the browser's own canvas shows through below and beside it —
+    // measured, not assumed. A component too wide for the free column is
+    // cropped by the panel instead, which is the lesser fault.
+    const zFit = side ? Math.max(1, zBase * (1 - frac)) : zBase;
+    const z = tween(p, 0, 1, zFit * 1.04, zFit * 1.14, 'linear');
     const cam = frameOn(rect, vw, vh, z);
+
+    if (side) {
+      // frameOn centres the component; we want it centred in the free column
+      // instead. A component too wide to fit there can only be slid so far
+      // before its far edge leaves the frame — past that point the panel simply
+      // overlaps it, which crops the component rather than the page, and is
+      // what a real ad does anyway.
+      const half = (rect.w * z) / 2;
+      const want = side === 'left' ? vw * (1 + frac) / 2 : vw * (1 - frac) / 2;
+      const limit = side === 'left' ? vw - half : half;
+      const centre = side === 'left'
+        ? Math.max(vw / 2, Math.min(want, limit))
+        : Math.min(vw / 2, Math.max(want, limit));
+      cam.panX += centre - vw / 2;
+    }
 
     // Cards that all cross-fade identically are why a reel reads as a template.
     // The director assigns each one an entrance, so the same storyboard shape
-    // still produces a different-feeling film.
-    const enter = ctx.p.enter || 'fade';
+    // still produces a different-feeling film. A side panel always enters from
+    // its own edge — anything else and it reads as arriving from nowhere.
+    const enter = side || ctx.p.enter || 'fade';
     const IN = 0.22;      // panel is fully in place before the type starts
     const t = ease('easeOutQuint', Math.min(1, p / IN));
     const out = tween(p, 0.82, 1, 1, 0, 'easeIn');
 
-    const panel = { opacity: 1 };
+    const panel = { opacity: 1, side, width: frac };
     switch (enter) {
       case 'left':  panel.dx = (t - 1) * 100; break;      // in from screen-left
       case 'right': panel.dx = (1 - t) * 100; break;
@@ -295,7 +339,9 @@ export const KINDS = {
     // Everything leaves on a dissolve so the hand-off to live footage is soft.
     panel.opacity = Math.min(panel.opacity, out);
 
-    return { cam, ov: { panel, vignette: 0 } };
+    // A full-frame card is its own image and wants no vignette; a side panel
+    // still has live product beside it, which should be graded like any shot.
+    return { cam, ov: side ? { panel } : { panel, vignette: 0 } };
   },
 
   // Camera arrives from one side and settles — the "some come from left/right,

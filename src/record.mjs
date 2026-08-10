@@ -107,6 +107,25 @@ export async function record(storyboard, outDir, { onProgress, components } = {}
   const live = shots.filter((s) => geometry[s.component]);
   if (!live.length) throw new Error('No components resolved on the page — nothing to record.');
 
+  // A side panel only works if its component still reads in the column the
+  // panel leaves free. Full-bleed sections are wider than that column even at
+  // 1x — and the camera cannot zoom out past the capture width without the
+  // browser's own canvas showing through — so those cards fall back to full
+  // frame. Decided here rather than in the director because it needs real
+  // measured geometry, which keeps it correct for any site.
+  let fallbackAt = 0;
+  const ENTER = ['wipe', 'up', 'wipeUp', 'down', 'fade'];
+  for (const s of live) {
+    if (!s.isPanel) continue;
+    const frac = s.params.panelWidth ?? 0.42;
+    const r = geometry[s.component];
+    const zFit = Math.max(1, fitZoom(r, width, height, s.params.fill ?? 0.8) * (1 - frac));
+    if (r.w * zFit <= width * (1 - frac) * 1.02) continue;
+    s.isPanel = false;
+    s.params = { ...s.params, side: null, fill: 0.8, enter: ENTER[fallbackAt++ % ENTER.length] };
+    s.caption = { ...s.caption, align: 'center' };
+  }
+
   // ---- build the timeline ------------------------------------------------
   const timeline = [];
   let t = 0;
@@ -135,8 +154,10 @@ export async function record(storyboard, outDir, { onProgress, components } = {}
 
     // Handheld layer: a few pixels of wander so the move reads as operated
     // rather than computed. Applied off ABSOLUTE time so it flows through cuts,
-    // and skipped on title cards (a graphic panel shouldn't sway).
-    if (!shot.isCard && look.handheld !== 0) {
+    // and skipped on full-frame title cards (a graphic panel shouldn't sway).
+    // Side-panel cards keep it: live product fills most of the frame there, and
+    // freezing it dead beside a moving panel is what gives the trick away.
+    if ((!shot.isCard || shot.isPanel) && look.handheld !== 0) {
       const amt = look.handheld ?? 1;
       const h = handheld(time, storyboard.seed);
       const scale = Math.min(1.6, cam.zoom || 1);
@@ -152,7 +173,16 @@ export async function record(storyboard, outDir, { onProgress, components } = {}
     // Same guard horizontally: a pan that runs past the page edge exposes bare
     // canvas beside the content. The page is exactly `width` wide, so solve for
     // the panX range that still covers the viewport at this zoom.
-    if (cam.zoom >= 1) {
+    // A side panel covers one edge of the frame, so the page only has to reach
+    // the panel's inner edge — the window widens by the panel's width on that
+    // side, which is exactly the room the shot needs to bias the product away.
+    // Panel shots are exempt: the panel covers one edge and the shot bounds its
+    // own slide against the component's far edge, so this clamp would only
+    // fight it — and at panel zoom levels there is no solution that covers the
+    // full frame anyway.
+    if (shot.isPanel) {
+      /* the shot's own bound applies */
+    } else if (cam.zoom >= 1) {
       const ox = cam.originX ?? width / 2;
       const lo = (width - ox) * (1 - cam.zoom);
       const hi = ox * (cam.zoom - 1);

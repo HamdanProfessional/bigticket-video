@@ -166,7 +166,10 @@ def generate(spec):
             if k >= 3 and rng.random() > 0.35 + density:
                 continue
             v = pad_voice(freq, n / SR, warmth, rng)
-            mix[s0:s0 + n] += v[:n] * env * gain
+            # pad_voice builds its own time base, so float rounding can leave it
+            # a sample either side of n. Trim to whatever both actually have.
+            m = min(n, len(v))
+            mix[s0:s0 + m] += v[:m] * env[:m] * gain
 
         # Sub bass, one octave down, softer attack still.
         bfreq = midi_to_hz(chord_root - 12)
