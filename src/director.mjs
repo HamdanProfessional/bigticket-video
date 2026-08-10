@@ -12,43 +12,43 @@ import { COMPONENTS, AFFINITY } from './shotlib.mjs';
 const MOODS = {
   calm: {
     match: /\b(calm|warm|soft|gentle|cosy|cozy|slow|gentle|relax|gentl|serene|gentle)\b/i,
-    shotDur: [3.6, 5.2],
+    shotDur: [2.4, 3.4],
     easings: ['smoother', 'easeOutQuint', 'smooth'],
     kindBias: { slideIn: 1.8, hold: 2.2, driftDiagonal: 2.2, pushIn: 2, pullBack: 1.6, rackFocus: 1.4, whipTo: 0.15, panAcross: 1.2, tiltReveal: 1.2, spotlight: 1.9, cursorClick: 1 },
     letterbox: 1,
     vignette: 0.34,
     transition: ['dissolve', 'dissolve', 'softWipe'],
-    music: { tempo: 62, key: 'F', scale: 'majorSeventh', warmth: 0.92, density: 0.35 },
+    music: { tempo: 78, key: 'F', scale: 'majorSeventh', warmth: 0.92, density: 0.35 },
   },
   premium: {
     match: /\b(premium|luxury|elegant|refined|sophisticat|high[- ]end|cinematic|classy)\b/i,
-    shotDur: [3.2, 4.6],
+    shotDur: [2.2, 3.2],
     easings: ['easeOutQuint', 'smoother', 'anticipate'],
     kindBias: { slideIn: 1.6, pushIn: 2.2, pullBack: 2, rackFocus: 2, spotlight: 2.2, driftDiagonal: 1.5, hold: 1.2, whipTo: 0.4, panAcross: 1, tiltReveal: 1, cursorClick: 1 },
     letterbox: 1,
     vignette: 0.42,
     transition: ['dissolve', 'softWipe', 'flash'],
-    music: { tempo: 70, key: 'D', scale: 'minorNinth', warmth: 0.85, density: 0.45 },
+    music: { tempo: 84, key: 'D', scale: 'minorNinth', warmth: 0.85, density: 0.45 },
   },
   energetic: {
     match: /\b(energetic|fast|punchy|snappy|upbeat|dynamic|bold|hype|exciting)\b/i,
-    shotDur: [1.9, 3.0],
+    shotDur: [1.4, 2.2],
     easings: ['easeOutQuint', 'backOut', 'springOut'],
     kindBias: { slideIn: 2.2, whipTo: 2.4, cursorClick: 2, spotlight: 1.8, pushIn: 1.6, panAcross: 1.4, tiltReveal: 1.2, pullBack: 1, rackFocus: 0.8, hold: 0.3, driftDiagonal: 0.6 },
     letterbox: 0.35,
     vignette: 0.2,
     transition: ['flash', 'wipe', 'dissolve'],
-    music: { tempo: 104, key: 'A', scale: 'majorPent', warmth: 0.6, density: 0.8 },
+    music: { tempo: 120, key: 'A', scale: 'majorPent', warmth: 0.6, density: 0.8 },
   },
   playful: {
     match: /\b(playful|fun|friendly|quirky|light|cheerful|happy|bright)\b/i,
-    shotDur: [2.3, 3.4],
+    shotDur: [1.7, 2.5],
     easings: ['backOut', 'springOut', 'easeOutQuint'],
     kindBias: { slideIn: 2.2, spotlight: 2, cursorClick: 2, whipTo: 1.4, panAcross: 1.6, pushIn: 1.4, tiltReveal: 1.2, pullBack: 1, hold: 0.6, rackFocus: 0.8, driftDiagonal: 1 },
     letterbox: 0.2,
     vignette: 0.18,
     transition: ['wipe', 'flash', 'dissolve'],
-    music: { tempo: 92, key: 'C', scale: 'majorPent', warmth: 0.75, density: 0.65 },
+    music: { tempo: 104, key: 'C', scale: 'majorPent', warmth: 0.75, density: 0.65 },
   },
 };
 const DEFAULT_MOOD = 'calm';
@@ -145,7 +145,7 @@ function detectDuration(prompt) {
   // Long enough to actually say something. A 15s cut names one feature and
   // stops, which reads as a teaser rather than an ad; cards plus three product
   // beats need roughly this much room.
-  return 30;
+  return 24;
 }
 
 export function direct(prompt, opts = {}) {
@@ -282,7 +282,11 @@ export function direct(prompt, opts = {}) {
     // the whole system that makes the edit feel deliberate.
     const beat = 60 / mood.music.tempo;
     const rawDur = rng.float(dlo, dhi);
-    const beats = Math.max(2, Math.round(rawDur / beat / 2) * 2);
+    // Quantise to whole beats, NOT even beats. Forcing even numbers snapped
+    // every shot onto the same 4-beat value, so the whole reel ran at one
+    // unvarying dwell — technically on-grid, monotonous to watch. Odd beat
+    // counts still land on the pulse.
+    const beats = Math.max(2, Math.round(rawDur / beat));
     const dur = +(beats * beat).toFixed(3);
     const comp = COMPS[compName];
     const isFirst = i === 0;
@@ -350,7 +354,9 @@ export function direct(prompt, opts = {}) {
   let finalShots = shots;
   if (opts.cards !== false) {
     const beat = 60 / mood.music.tempo;
-    const cardBeats = Math.max(2, Math.round(2.8 / beat / 2) * 2);
+    // Two beats flat — a card is punctuation between product beats, and any
+    // longer is dead air the viewer uses to scroll away.
+    const cardBeats = 2;
     const cardDur = +(cardBeats * beat).toFixed(3);
     // Cards paint over the whole frame, so the component behind one only has
     // to resolve — it is never seen.
@@ -374,21 +380,31 @@ export function direct(prompt, opts = {}) {
       isCard: true,
     });
 
-    const out = [makeCard(opts.hook || HOOK)];
+    const out = [];
     let used = 0;
-    for (const s of shots) {
+    for (let i = 0; i < shots.length; i++) {
+      const s = shots[i];
       const copy = COMPS[s.component]?.copy;
       // One card per feature beat, up to three — past that it stops being an
       // ad and turns back into the slide deck this replaced.
-      const isClosing = s === shots[shots.length - 1];
+      const isClosing = i === shots.length - 1;
       // The closing component gets the sign-off card, not a duplicate of its
       // own copy immediately beforehand.
-      if (copy && used < 3 && !isClosing && s.component !== anchor && !COMPS[s.component].clickable) {
+      // Never two cards in a row — with the hook moved to second position it
+      // otherwise lands directly against the first feature card, giving three
+      // seconds of text with no product on screen.
+      const prevWasCard = out.length > 0 && out[out.length - 1].isCard;
+      if (i > 0 && !prevWasCard && copy && used < 3 && !isClosing
+          && s.component !== anchor && !COMPS[s.component].clickable) {
         out.push(makeCard(copy));
         s.caption = null; // the card already said it; don't print it twice
         used++;
       }
       out.push(s);
+      // Cold open: lead with live motion and put the hook card SECOND. Opening
+      // on a static panel spends the one second that decides whether anyone
+      // keeps watching, before the product has even appeared.
+      if (i === 0) out.push(makeCard(opts.hook || HOOK));
     }
     out.push(makeCard(opts.signoff || SIGNOFF));
     finalShots = out;
