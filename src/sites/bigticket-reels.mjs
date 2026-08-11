@@ -153,16 +153,24 @@ export const REELS_TOPICS = [
 // Hook on a real product, tap something that responds, pay off on the chart.
 export const REELS_SPINE = ['productShot', 'specGeneral', 'compareOptions', 'priceChart', 'reviewsBlock'];
 
-// Ordered by how much each one sells the product, because padding is drawn
-// from the front of this list. The referral page and the dashboard's lifestyle
-// tiles used to sit high enough to be pulled into a reel about specs and
-// prices — a 3.5s block on a gift-card offer and 1.5s on a stock kitchen photo,
-// neither carrying a price, spec or claim. They stay available for prompts that
-// actually ask for them (see REELS_TOPICS) but no longer volunteer.
+// Product page only, ordered by how much each one sells the product — padding
+// is drawn front-weighted from this list.
+//
+// The dashboard and referral components are deliberately absent, not merely
+// demoted. Filmed, they are worse than they look in the DOM: the product tiles
+// are lifestyle photography, so a tile framed to fill a 9:16 shot is 2.5s of a
+// dark cupboard corner with a caption under it, and `matchHeading` sits below
+// an empty Saved Products block on a fresh account, so half that frame is
+// blank. Neither carries a price, a spec or a claim. Once padding could reach
+// them it did, because the product page only offers seven beats and a 30s reel
+// wants ten.
+//
+// The padding loop revisits an exhausted list rather than failing, and a second
+// angle on the price chart is a better shot than a first angle on a cupboard.
+// All of these stay castable when a prompt actually asks (see REELS_TOPICS).
 export const REELS_FILLER = [
-  'priceChart', 'reviewsBlock', 'specPerformance', 'specDimensions', 'compareOptions',
-  'productShot', 'highlights', 'specGeneral', 'matchHeading', 'tileToaster',
-  'boardTile', 'tileCoffee', 'giftHeadline', 'tileTv',
+  'priceChart', 'reviewsBlock', 'specPerformance', 'specDimensions',
+  'compareOptions', 'productShot', 'specGeneral', 'productTitle',
 ];
 
 export const REELS_HOOK = {
