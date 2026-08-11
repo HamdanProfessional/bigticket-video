@@ -107,20 +107,31 @@ export async function record(storyboard, outDir, { onProgress, components } = {}
   const live = shots.filter((s) => geometry[s.component]);
   if (!live.length) throw new Error('No components resolved on the page — nothing to record.');
 
-  // A side panel only works if its component still reads in the column the
+  // A column panel only works if its component still reads in the space the
   // panel leaves free. Full-bleed sections are wider than that column even at
   // 1x — and the camera cannot zoom out past the capture width without the
-  // browser's own canvas showing through — so those cards fall back to full
-  // frame. Decided here rather than in the director because it needs real
-  // measured geometry, which keeps it correct for any site.
+  // browser's own canvas showing through — so they step down: first to a lower
+  // third, which costs height instead of width, and only to a full-frame card
+  // if the component is too tall for that too. Decided here rather than in the
+  // director because it needs real measured geometry, which keeps it correct
+  // for any site.
   let fallbackAt = 0;
   const ENTER = ['wipe', 'up', 'wipeUp', 'down', 'fade'];
+  const fits = (r, frac, vertical) => {
+    const zFit = Math.max(1, fitZoom(r, width, height, 0.8) * (1 - frac));
+    return vertical
+      ? r.h * zFit <= height * (1 - frac) * 1.02
+      : r.w * zFit <= width * (1 - frac) * 1.02;
+  };
   for (const s of live) {
     if (!s.isPanel) continue;
-    const frac = s.params.panelWidth ?? 0.42;
     const r = geometry[s.component];
-    const zFit = Math.max(1, fitZoom(r, width, height, s.params.fill ?? 0.8) * (1 - frac));
-    if (r.w * zFit <= width * (1 - frac) * 1.02) continue;
+    if (fits(r, s.params.panelWidth ?? 0.42, false)) continue;
+    const bandFrac = 0.34;
+    if (fits(r, bandFrac, true)) {
+      s.params = { ...s.params, side: 'bottom', panelWidth: bandFrac };
+      continue;
+    }
     s.isPanel = false;
     s.params = { ...s.params, side: null, fill: 0.8, enter: ENTER[fallbackAt++ % ENTER.length] };
     s.caption = { ...s.caption, align: 'center' };
@@ -230,7 +241,9 @@ export async function record(storyboard, outDir, { onProgress, components } = {}
         // A shot may override the global vignette (title cards want none).
         vignette: ov.vignette ?? look.vignette,
         caption,
-        wipe,
+        // A cut's transition wins over a shot's own sweep — they only overlap
+        // in the half-second at each end, where the cut is what matters.
+        wipe: wipe || ov.wipe || null,
         brand: { opacity: clamp01(brandOn) * 0.9, dark: comp.theme === 'light' },
       },
     };

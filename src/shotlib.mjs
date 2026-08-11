@@ -291,18 +291,19 @@ export const KINDS = {
     const frac = ctx.p.panelWidth ?? 0.42;
 
     // `zBase` fits the component to the WHOLE frame; with a panel it only has
-    // the free column, so the fit is scaled down to match. Never below 1x
-    // though — zooming out past the capture width exposes bare canvas beside
-    // the page, and a crop into a wide component is the better failure.
-    // Never below 1x. Under the capture width the page stops covering the
-    // frame and the browser's own canvas shows through below and beside it —
-    // measured, not assumed. A component too wide for the free column is
-    // cropped by the panel instead, which is the lesser fault.
+    // the free area, so the fit is scaled down to match. Never below 1x though:
+    // under the capture width the page stops covering the frame and the
+    // browser's own canvas shows through beside and below it — measured, not
+    // assumed. A component too wide for the free area is cropped by the panel
+    // instead, which is the lesser fault.
+    const band = side === 'bottom';
     const zFit = side ? Math.max(1, zBase * (1 - frac)) : zBase;
     const z = tween(p, 0, 1, zFit * 1.04, zFit * 1.14, 'linear');
-    const cam = frameOn(rect, vw, vh, z);
+    // A lower third eats the bottom of the frame, so the component is lifted
+    // into the space above it rather than slid sideways.
+    const cam = frameOn(rect, vw, vh, z, band ? (frac / 2) * vh : 0);
 
-    if (side) {
+    if (side && !band) {
       // frameOn centres the component; we want it centred in the free column
       // instead. A component too wide to fit there can only be slid so far
       // before its far edge leaves the frame — past that point the panel simply
@@ -326,10 +327,11 @@ export const KINDS = {
     const t = ease('easeOutQuint', Math.min(1, p / IN));
     const out = tween(p, 0.82, 1, 1, 0, 'easeIn');
 
-    const panel = { opacity: 1, side, width: frac };
+    const panel = { opacity: 1, side, width: frac, style: ctx.p.panelStyle || 'ink' };
     switch (enter) {
       case 'left':  panel.dx = (t - 1) * 100; break;      // in from screen-left
       case 'right': panel.dx = (1 - t) * 100; break;
+      case 'bottom': panel.dy = (1 - t) * 100; break;     // band rises into place
       case 'up':    panel.dy = (1 - t) * 100; break;      // in from below
       case 'down':  panel.dy = (t - 1) * 100; break;
       case 'wipe':  panel.clip = `inset(0 ${((1 - t) * 100).toFixed(2)}% 0 0)`; break;
@@ -372,6 +374,59 @@ export const KINDS = {
     cam.rot = tween(p, 0, 1, ctx.p.rot ?? 0.6, 0, 'smoother');
     return { cam, ov: {} };
   },
+
+  // Border draws on, breathes, draws off — the same "look here" as spotlight
+  // but without dimming the page. Lighter touch, so it can be used on beats
+  // where killing the surrounding context would lose the story.
+  pulseFocus(p, ctx) {
+    const { rect, vw, vh, zBase, comp } = ctx;
+    const z = tween(p, 0, 1, zBase * 0.99, zBase * 1.07, 'smoother');
+    const cam = frameOn(rect, vw, vh, z);
+    const on = Math.min(tween(p, 0.05, 0.26, 0, 1, 'easeOut'), tween(p, 0.84, 1, 1, 0, 'easeIn'));
+    // Two beats of breath in the stroke weight after it lands.
+    const beat = 1 + Math.sin(Math.max(0, p - 0.4) * Math.PI * 4) * 0.35;
+    return {
+      cam,
+      ov: {
+        highlight: {
+          sel: comp.selResolved, opacity: on,
+          pad: ctx.p.pad ?? 16, radius: ctx.p.radius ?? 20,
+          width: (ctx.p.ringWidth ?? 3) * beat,
+          draw: tween(p, 0.05, 0.44, 0, 1, 'easeOutQuint'),
+        },
+      },
+    };
+  },
+
+  // A band of brand colour sweeps across and the component is behind it when it
+  // clears — a reveal rather than a move. Reads as designed, not recorded.
+  sweepReveal(p, ctx) {
+    const { rect, vw, vh, zBase } = ctx;
+    const z = tween(p, 0, 1, zBase * 1.09, zBase * 1.0, 'easeOutQuint');
+    const cam = frameOn(rect, vw, vh, z);
+    // The camera lags the sweep slightly so the reveal lands on live motion.
+    cam.panX += tween(p, 0, 0.6, (ctx.p.dir === 'left' ? -1 : 1) * 90, 0, 'easeOutQuint');
+    const k = 1 - Math.abs(tween(p, 0, 0.52, -1, 1, 'smoother'));
+    return {
+      cam,
+      ov: {
+        wipe: k > 0.001
+          ? { opacity: 1, color: ctx.p.color || '#5b46e5', cover: k, dir: ctx.p.dir === 'left' ? 'right' : 'left' }
+          : null,
+      },
+    };
+  },
+
+  // Lands from out of focus and oversized, then snaps to rest. The hardest
+  // punctuation in the set — use it once, on the beat that matters.
+  zoomBlurIn(p, ctx) {
+    const { rect, vw, vh, zBase } = ctx;
+    const z = tween(p, 0, 0.62, zBase * (ctx.p.from ?? 1.55), zBase * 1.02, 'easeOutQuint');
+    const cam = frameOn(rect, vw, vh, z);
+    cam.blur = tween(p, 0, 0.38, ctx.p.blur ?? 16, 0, 'easeOut');
+    cam.saturate = tween(p, 0, 0.55, 1.25, 1, 'smooth');
+    return { cam, ov: {} };
+  },
 };
 
 export const KIND_NAMES = Object.keys(KINDS);
@@ -379,18 +434,18 @@ export const KIND_NAMES = Object.keys(KINDS);
 // Which kinds actually suit which component. Prevents nonsense pairings like a
 // cursorClick on the footer while still leaving lots of room to vary.
 export const AFFINITY = {
-  hero: ['pushIn', 'pullBack', 'rackFocus', 'hold', 'driftDiagonal'],
-  heroCta: ['cursorClick', 'spotlight', 'pushIn'],
-  retailers: ['panAcross', 'tiltReveal', 'pushIn', 'driftDiagonal', 'slideIn'],
-  howItWorks: ['pushIn', 'rackFocus', 'hold', 'slideIn'],
-  cardInstall: ['spotlight', 'pushIn', 'rackFocus', 'whipTo', 'slideIn'],
-  cardSave: ['spotlight', 'pushIn', 'rackFocus', 'whipTo', 'slideIn'],
-  cardCompare: ['spotlight', 'pushIn', 'rackFocus', 'whipTo', 'slideIn'],
-  boards: ['pushIn', 'pullBack', 'tiltReveal', 'spotlight', 'driftDiagonal', 'rackFocus', 'slideIn'],
-  compare: ['pushIn', 'pullBack', 'tiltReveal', 'spotlight', 'driftDiagonal', 'rackFocus', 'slideIn'],
-  pdp: ['pushIn', 'pullBack', 'tiltReveal', 'spotlight', 'driftDiagonal', 'rackFocus', 'slideIn'],
-  sectionArt: ['panAcross', 'driftDiagonal', 'pullBack'],
-  finalCta: ['pushIn', 'pullBack', 'hold'],
+  hero: ['pushIn', 'pullBack', 'rackFocus', 'hold', 'driftDiagonal', 'zoomBlurIn'],
+  heroCta: ['cursorClick', 'spotlight', 'pushIn', 'pulseFocus'],
+  retailers: ['panAcross', 'tiltReveal', 'pushIn', 'driftDiagonal', 'slideIn', 'sweepReveal'],
+  howItWorks: ['pushIn', 'rackFocus', 'hold', 'slideIn', 'sweepReveal'],
+  cardInstall: ['spotlight', 'pushIn', 'rackFocus', 'whipTo', 'slideIn', 'pulseFocus'],
+  cardSave: ['spotlight', 'pushIn', 'rackFocus', 'whipTo', 'slideIn', 'pulseFocus'],
+  cardCompare: ['spotlight', 'pushIn', 'rackFocus', 'whipTo', 'slideIn', 'pulseFocus'],
+  boards: ['pushIn', 'pullBack', 'tiltReveal', 'spotlight', 'driftDiagonal', 'rackFocus', 'slideIn', 'sweepReveal', 'zoomBlurIn'],
+  compare: ['pushIn', 'pullBack', 'tiltReveal', 'spotlight', 'driftDiagonal', 'rackFocus', 'slideIn', 'pulseFocus', 'zoomBlurIn'],
+  pdp: ['pushIn', 'pullBack', 'tiltReveal', 'spotlight', 'driftDiagonal', 'rackFocus', 'slideIn', 'sweepReveal', 'pulseFocus'],
+  sectionArt: ['panAcross', 'driftDiagonal', 'pullBack', 'sweepReveal'],
+  finalCta: ['pushIn', 'pullBack', 'hold', 'zoomBlurIn'],
   footer: ['tiltReveal', 'hold', 'pullBack'],
-  logo: ['pushIn', 'hold', 'rackFocus'],
+  logo: ['pushIn', 'hold', 'rackFocus', 'pulseFocus'],
 };

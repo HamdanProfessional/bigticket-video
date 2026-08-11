@@ -113,13 +113,38 @@
   // ad from a screen recording: they segment the film into beats and give the
   // copy somewhere to live that isn't on top of the UI. Inserted BEFORE the
   // caption so the caption reads on top of it.
+  //
+  // Four finishes. `ink` is the default — deep, rather than the site's own
+  // violet gradient, because a panel in the brand's exact hero colours sits
+  // flush against the hero and the two read as one purple wall. The others
+  // exist so a run of cards in one film doesn't look stamped from a template.
+  const PANEL_STYLES = {
+    ink: {
+      bg: 'linear-gradient(152deg,#0c0921 0%,#1a1046 52%,#33208a 100%)',
+      edge: 'rgba(124,58,237,.9)',
+    },
+    // Brand violet at full strength — loud, for the one beat that should shout.
+    brand: {
+      bg: 'linear-gradient(140deg,#5b46e5 0%,#7c3aed 55%,#1cc8ee 140%)',
+      edge: 'rgba(255,255,255,.55)',
+    },
+    // Paper: dark type on near-white. Reads as editorial next to a dark page.
+    paper: {
+      bg: 'linear-gradient(160deg,#ffffff 0%,#f3f0ff 100%)',
+      edge: 'rgba(124,58,237,.75)',
+      light: true,
+    },
+    // Frosted glass over the live page — the product stays faintly readable
+    // through the copy, which is the most "part of the product" of the four.
+    glass: {
+      bg: 'linear-gradient(150deg,rgba(14,10,36,.82) 0%,rgba(38,22,96,.72) 100%)',
+      edge: 'rgba(124,58,237,.9)',
+      blur: 'blur(22px) saturate(1.35)',
+    },
+  };
+
   const panel = doc.createElement('div');
-  panel.style.cssText =
-    'position:absolute;inset:0;opacity:0;' +
-    // Deep ink rather than the site's own violet gradient. A panel in the
-    // brand's exact hero colours sits flush against the hero and the two read
-    // as one purple wall; this stays in the family but clearly separates.
-    'background:linear-gradient(152deg,#0c0921 0%,#1a1046 52%,#33208a 100%)';
+  panel.style.cssText = `position:absolute;inset:0;opacity:0;background:${PANEL_STYLES.ink.bg}`;
   // First child: the panel must sit UNDER the letterbox bars and the caption,
   // otherwise a title card paints over its own bars and they blink out.
   layer.insertBefore(panel, layer.firstChild);
@@ -305,28 +330,42 @@
     vignette.style.opacity = String(o.vignette || 0);
     // Panel geometry, shared with the caption block below so the copy sits
     // inside the panel and rides its entrance.
-    let panelSide = null, panelPx = 0, panelDx = 0, panelDy = 0;
+    let panelSide = null, panelPx = 0, panelH = H, panelDx = 0, panelDy = 0;
+    let panelLight = false;
     if (o.panel && o.panel.opacity > 0.001) {
       panelSide = o.panel.side || null;
       panelDx = o.panel.dx || 0;
       panelDy = o.panel.dy || 0;
-      // A side panel beats a full-frame card: the product stays on screen next
-      // to the claim instead of being replaced by a slide for three seconds.
-      if (panelSide) {
+      const ps = PANEL_STYLES[o.panel.style] || PANEL_STYLES.ink;
+      panelLight = !!ps.light;
+      panel.style.background = ps.bg;
+      panel.style.backdropFilter = ps.blur || 'none';
+      // Cast shadow onto the page, plus a hairline of brand accent on the
+      // panel's INNER edge, so the join is a deliberate line and not a mush.
+      if (panelSide === 'bottom') {
+        // Lower third. The variant that works for full-bleed sections, which
+        // are too wide to leave a usable column beside them.
+        panelH = Math.round(H * (o.panel.width ?? 0.34));
+        panel.style.left = panel.style.right = '0px';
+        panel.style.width = 'auto';
+        panel.style.top = `${H - panelH}px`;
+        panel.style.bottom = '0px';
+        panel.style.height = `${panelH}px`;
+        panel.style.boxShadow = `0 -44px 110px rgba(12,9,28,.38), inset 0 2px 0 ${ps.edge}`;
+      } else if (panelSide) {
         panelPx = Math.round(W * (o.panel.width ?? 0.42));
         panel.style.left = panelSide === 'right' ? `${W - panelPx}px` : '0px';
         panel.style.right = 'auto';
         panel.style.width = `${panelPx}px`;
-        // Cast shadow onto the page, plus a hairline of brand accent on the
-        // inner edge so the join is a deliberate line and not a soft mush.
-        // The drop shadow falls away from the panel; the accent line sits on the
-        // opposite side — the panel's INNER edge, where it meets the page.
+        panel.style.top = panel.style.bottom = '0px';
+        panel.style.height = 'auto';
         const away = panelSide === 'right' ? -1 : 1;
         panel.style.boxShadow =
-          `${44 * away}px 0 110px rgba(12,9,28,.38), inset ${-2 * away}px 0 0 rgba(124,58,237,.9)`;
+          `${44 * away}px 0 110px rgba(12,9,28,.38), inset ${-2 * away}px 0 0 ${ps.edge}`;
       } else {
         panel.style.left = panel.style.right = '0px';
-        panel.style.width = 'auto';
+        panel.style.top = panel.style.bottom = '0px';
+        panel.style.width = panel.style.height = 'auto';
         panel.style.boxShadow = 'none';
       }
       panel.style.opacity = String(o.panel.opacity);
@@ -393,19 +432,21 @@
     if (o.caption && o.caption.opacity > 0.001) {
       const c = o.caption;
       const clamp = (v, lo, hi) => Math.max(lo, Math.min(v, hi));
-      // Inside a side panel the copy has ~40% of the frame to live in, so it is
-      // measured against the panel rather than the viewport.
-      const colW = panelSide ? panelPx : W;
-      const titleSize = clamp(colW * (panelSide ? 0.088 : 0.032), 22, 48);
-      const subSize = clamp(colW * (panelSide ? 0.038 : 0.0145), 13, 21);
-      const kickSize = clamp(colW * (panelSide ? 0.024 : 0.009), 10, 13);
-      const padX = panelSide ? clamp(colW * 0.115, 22, 68) : clamp(W * 0.064, 30, 92);
+      // Inside a column the copy has ~40% of the frame to live in, so it is
+      // measured against the panel rather than the viewport. A lower third is
+      // full width, so it measures against the frame like a full card does.
+      const column = panelSide && panelSide !== 'bottom';
+      const colW = column ? panelPx : W;
+      const titleSize = clamp(colW * (column ? 0.088 : 0.032), 22, 48);
+      const subSize = clamp(colW * (column ? 0.038 : 0.0145), 13, 21);
+      const kickSize = clamp(colW * (column ? 0.024 : 0.009), 10, 13);
+      const padX = column ? clamp(colW * 0.115, 22, 68) : clamp(W * 0.064, 30, 92);
       cap.style.padding = `0 ${Math.round(padX)}px`;
       capTitle.style.fontSize = `${titleSize.toFixed(1)}px`;
       capSub.style.fontSize = `${subSize.toFixed(1)}px`;
-      capSub.style.maxWidth = `${Math.round(panelSide ? colW - padX * 2 : W * 0.62)}px`;
+      capSub.style.maxWidth = `${Math.round(column ? colW - padX * 2 : W * 0.62)}px`;
       capKicker.style.fontSize = `${kickSize.toFixed(1)}px`;
-      if (panelSide) {
+      if (column) {
         cap.style.left = panelSide === 'right' ? `${W - panelPx}px` : '0px';
         cap.style.right = 'auto';
         cap.style.width = `${panelPx}px`;
@@ -413,7 +454,8 @@
         cap.style.left = cap.style.right = '0px';
         cap.style.width = 'auto';
       }
-      const dark = c.theme !== 'light';
+      // A paper panel carries dark type; everything else is light on dark.
+      const dark = panelSide ? !panelLight : c.theme !== 'light';
       const fg = dark ? '#ffffff' : '#141026';
       capKicker.textContent = c.kicker || '';
       buildTitle(c.title || '');
@@ -448,13 +490,16 @@
       capKicker.style.color = capTitle.style.color = capSub.style.color = fg;
       capKicker.style.color = dark ? 'rgba(255,255,255,.8)' : 'rgba(20,16,38,.6)';
       if (c.accent) capKicker.style.color = c.accent;
-      // A side panel is a column, so its copy always ranges left however the
-      // shot asked for it to be aligned.
+      // A panel is a block of its own, so its copy always ranges left however
+      // the shot asked for it to be aligned.
       const alignCentre = !panelSide && c.align === 'center';
       cap.style.alignItems = alignCentre ? 'center' : 'flex-start';
       cap.style.textAlign = alignCentre ? 'center' : 'left';
       const anchor = panelSide ? 'center' : (c.anchor ?? 'bottom');
-      cap.style.top = anchor === 'center' ? '50%' : anchor === 'top' ? '13%' : 'auto';
+      // A lower third centres its copy on the BAND, not on the frame.
+      cap.style.top = panelSide === 'bottom'
+        ? `${Math.round(H - panelH / 2)}px`
+        : anchor === 'center' ? '50%' : anchor === 'top' ? '13%' : 'auto';
       // Sits clear of the brand mark in the bottom-left corner.
       cap.style.bottom = anchor === 'bottom' ? `${Math.round(H * 0.17)}px` : 'auto';
       // The container no longer fades or rises — each element animates itself
@@ -463,11 +508,11 @@
       // The copy rides the panel's entrance: cap and panel are the same width,
       // so the panel's percentage translate applies unchanged.
       // dx is a percentage of the panel's width, which cap now matches, so it
-      // carries across directly; dy is a percentage of the frame HEIGHT, which
-      // cap does not match, so it is converted to pixels first.
-      const capTy = anchor === 'center' ? -50 : 0;
+      // carries across directly; dy is a percentage of the panel's own HEIGHT,
+      // which cap does not match, so it is converted to pixels first.
+      const capTy = (anchor === 'center' || panelSide === 'bottom') ? -50 : 0;
       cap.style.transform =
-        `translate(${panelDx.toFixed(2)}%, ${capTy}%) translateY(${(panelDy * H / 100).toFixed(1)}px)`;
+        `translate(${panelDx.toFixed(2)}%, ${capTy}%) translateY(${(panelDy * panelH / 100).toFixed(1)}px)`;
       cap.style.clipPath = o.panel && o.panel.clip ? o.panel.clip : 'none';
       cap.style.opacity = String(Math.min(1, c.opacity * 4));
       cap.style.textShadow = dark ? '0 2px 30px rgba(10,6,30,.45)' : 'none';

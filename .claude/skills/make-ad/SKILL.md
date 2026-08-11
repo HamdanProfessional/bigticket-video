@@ -31,6 +31,7 @@ it, and offer `--fast`.
 node src/make.mjs "a warm soft ad about saving products to boards"
 node src/make.mjs "punchy 12s ad about comparing prices" --format vertical
 node src/make.mjs "..." --seed 42 --mood premium --duration 25
+node src/make.mjs "..." --panel glass      # pin card finish: ink|brand|paper|glass
 node src/make.mjs "..." --storyboard-only
 node src/make.mjs --batch prompts.txt
 ```
@@ -66,6 +67,12 @@ feature beats and numbered step copy — shorten and cut cards, don't add motion
 If they say it's "too short" or "doesn't say enough", raise `--duration`; cards
 are added on top of it.
 
+Cards are side panels by default (copy in a column, product live beside it),
+stepping down to a lower third for full-bleed sections and to full frame only
+for the sign-off. That step-down happens in `record.mjs` from *measured*
+geometry — if a card looks wrong, read `manifest.json` to see which layout it
+actually got rather than assuming the storyboard's.
+
 ## Verifying output
 
 Always check the result rather than assuming. Extract frames and actually look
@@ -88,3 +95,9 @@ shot dropped (a warning is printed).
   back on. Never "optimise" that back in.
 - Portrait suppresses per-shot captions (the mobile layout already shows its
   headings) and uses deep letterbox bars to mask intruding sections.
+- The camera must never zoom below the capture width. Under 1× the page stops
+  covering the frame and the browser's own canvas shows through below and beside
+  it. This is why a panel crops a wide component instead of shrinking it.
+- When probing a single shot in isolation, give it a real duration. Transitions
+  are 0.42s, so a 0.1s probe shot sits entirely inside a cut and comes back
+  washed white — which looks exactly like a rendering bug that isn't there.

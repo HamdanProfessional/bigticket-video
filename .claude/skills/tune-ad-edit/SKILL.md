@@ -16,7 +16,10 @@ knob, change it, and confirm with `--storyboard-only` (instant) or `--fast`
 | feels like a tutorial | too many feature beats; numbered "Step one/two" copy | shorten `--duration`; rewrite kickers as benefits |
 | is too short / says nothing | 15s only names one feature | raise `--duration`; title cards add ~8s on top |
 | looks like a screen recording | no cards, captions fading as one block | title cards + kinetic type are what fix this |
-| all looks the same | every card cross-fades identically | card entrances: `left/right/up/down/wipe/wipeUp/fade` |
+| all looks the same | every card cross-fades identically | card entrances: `left/right/up/down/wipe/wipeUp/fade`; panel finishes `ink/brand/paper/glass` are dealt from a shuffled bag |
+| cards look cheap / generic | full-frame card replaces the product for 3s | side panel — copy in a column, product live beside it |
+| a card's copy repeats the page's own headline | card anchored to the hero while the hero is on screen | cards anchor to the component they introduce |
+| panel colour merges with the page | panel using the site's own brand gradient | `ink` is deliberately deeper than the brand violet |
 | is blurry | `will-change: transform` caches one rasterisation and scales the bitmap | that's `--fast`; drop it for delivery |
 | cuts feel arbitrary | shots not aligned to the score | durations are quantised to even beats at `mood.music.tempo` |
 | shadow/highlight looks dirty | an ellipse over a rectangular component darkens corners unevenly | rounded-rect cutout via `box-shadow` spread |
@@ -62,5 +65,18 @@ ffmpeg -y -ss 11.5 -i out/<dir>/<name>.mp4 -frames:v 1 -vf scale=520:-1 /tmp/f.p
 ```
 
 `manifest.json` holds the shot list *as recorded*; a component that failed to
-resolve has had its shot dropped, so the finished video can differ from the
-storyboard.
+resolve has had its shot dropped, and a card whose component is too wide for a
+side panel has been stepped down to a lower third or a full frame. The finished
+video can therefore differ from the storyboard.
+
+To check card framing without a 3-minute render, film just the card shots:
+
+```js
+import { record } from './src/record.mjs';
+const sb = JSON.parse(await readFile('out/<dir>/storyboard.json', 'utf8'));
+const cards = sb.shots.filter((s) => s.isCard);
+// Real durations — transitions are 0.42s, so a 0.1s probe shot sits entirely
+// inside a cut and comes back washed white, which reads as a bug that isn't
+// there. This cost me two wrong diagnoses.
+await record({ ...sb, fast: true, shots: cards.map((s) => ({ ...s, duration: 1.6 })) }, 'probe');
+```

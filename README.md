@@ -151,14 +151,52 @@ to a dropped shot rather than a broken render.
 each component to the kinds that flatter it.
 
 `pushIn` · `pullBack` · `panAcross` · `tiltReveal` · `hold` · `rackFocus` ·
-`spotlight` · `cursorClick` · `whipTo` · `driftDiagonal`
+`spotlight` · `cursorClick` · `whipTo` · `driftDiagonal` · `slideIn` ·
+`pulseFocus` · `sweepReveal` · `zoomBlurIn` · `titleCard`
 
 `cursorClick` is the "click on it" beat: a cursor arcs in, presses, and ripples
-on a real button. `spotlight` dims the page and rings a component.
+on a real button. `spotlight` dims the page and rings a component;
+`pulseFocus` rings it without dimming, for beats where losing the surrounding
+context would lose the story. `sweepReveal` passes a band of brand colour
+across and the component is behind it when it clears. `zoomBlurIn` lands from
+out of focus and oversized — the hardest punctuation in the set.
+
+Focus borders are *drawn* around the element (SVG `stroke-dashoffset`) rather
+than faded in; a line travelling the perimeter is what reads as "look here". On
+`cursorClick` it completes just before the pointer lands, so it leads the eye
+instead of confirming the click.
 
 Every reel is guaranteed at least one click beat — if the weighted draw doesn't
 produce one, the clickable component's shot is promoted. Its approach angle, arc
 and click timing still vary per seed.
+
+### Title cards
+
+Cards are what separate an ad from a screen recording. Three layouts:
+
+| layout | when |
+| --- | --- |
+| **side panel** (left/right, 38–44% of frame) | the default — copy takes a column, the product keeps the rest, so the film never cuts away from what it is selling |
+| **lower third** (bottom band, 34% of frame) | full-bleed sections, which are too wide to leave a usable column beside them |
+| **full frame** | the sign-off, and any component too large for either panel |
+
+The step-down is decided at *record* time from measured geometry, not guessed
+in the director, so it stays correct on any site. The camera cannot zoom below
+the capture width without the browser's own canvas showing through, which is
+what bounds how much a panel can shrink a component.
+
+Each card is anchored to the component it introduces, so the panel slides away
+onto the very thing it just described.
+
+Four finishes, dealt from a shuffled bag so one film shows several — pin one
+with `--panel`:
+
+`ink` (deep, the default) · `brand` (violet, loud) · `paper` (dark type on
+near-white) · `glass` (frosted over the live page)
+
+Captions are set in the *site's own* typeface, read from a live heading at
+runtime — an ad set in a different face to the product reads as a third-party
+edit.
 
 ### Components as standalone assets
 
@@ -192,6 +230,7 @@ Pin a variant with `--seed`, or override directly:
 
 ```bash
 node src/make.mjs "..." --seed 42 --duration 20 --mood premium --format vertical
+node src/make.mjs "..." --panel glass         # pin every card to one finish
 node src/make.mjs "..." --storyboard-only     # inspect the plan, render nothing
 node src/make.mjs "..." --keep-frames --no-music
 ```

@@ -40,6 +40,9 @@ const opts = {
   mood: flag('mood') || undefined,
   format: flag('format') || undefined,
   url: flag('url') || undefined,
+  // Pin every card to one finish. Left off, the director deals them from a
+  // shuffled bag so a single film shows several.
+  panelStyle: flag('panel') || undefined,
   storyboardOnly: !!flag('storyboard-only'),
   music: !flag('no-music'),
   keepFrames: !!flag('keep-frames'),
@@ -55,6 +58,7 @@ if (!prompts.length) {
   console.error(
     'usage: node src/make.mjs "<prompt>" [--format landscape|vertical|square]\n' +
     '                          [--seed N] [--duration S] [--mood calm|premium|energetic|playful]\n' +
+    '                          [--panel ink|brand|paper|glass]\n' +
     '                          [--fast] [--storyboard-only] [--no-music] [--keep-frames]\n' +
     '       node src/make.mjs --batch prompts.txt'
   );

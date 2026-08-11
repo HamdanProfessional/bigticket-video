@@ -65,6 +65,10 @@ export async function makeVideo(o = {}) {
     topics: o.topics,
     spine: o.spine,
     filler: o.filler,
+    panelStyle: o.panelStyle,
+    hook: o.hook,
+    signoff: o.signoff,
+    cards: o.cards,
   });
   storyboard.url = o.url || 'https://shopbigticket.com/';
   storyboard.fast = !!o.fast;
