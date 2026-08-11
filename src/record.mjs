@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 import { mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { COMPONENTS, KINDS, fitZoom } from './shotlib.mjs';
-import { tween, ease, clamp01, handheld } from './lib/easing.mjs';
+import { tween, ease, clamp01, handheld, ramp } from './lib/easing.mjs';
 import { CAPTION_LEAD, CAPTION_IN, CAPTION_OUT } from './lib/timing.mjs';
 import { ensureSession } from './auth.mjs';
 
@@ -25,6 +25,46 @@ const TRANSITION = 0.42; // seconds, centred on each cut
 // Pause after a cut jumps the camera, so reveal-on-view content can mount.
 const SETTLE_MS = 200;
 
+/**
+ * Camera-side transitions.
+ *
+ * The overlay transitions below only paint colour over the frame. Instagram's
+ * own set — zoom, spin, warp, glitch — are movements of the picture itself, so
+ * they have to reach the camera. This returns multipliers applied on top of
+ * whatever the shot's motion kind already computed, strongest at the cut and
+ * gone by the edges of the window.
+ *
+ * `edge` runs -1..1 across the cut: negative on the outgoing side, positive on
+ * the incoming one. Several effects flip direction with it, so the shot leaving
+ * and the shot arriving move in sympathy rather than both lurching the same way.
+ */
+function transitionCam(style, edge) {
+  const k = 1 - Math.abs(edge);
+  if (k <= 0) return null;
+  const dir = edge < 0 ? 1 : -1;
+  switch (style) {
+    // Punches into the cut and eases out of it — the default IG zoom cut.
+    case 'zoomCut':
+      return { zoom: 1 + 0.20 * ease('easeIn', k) };
+    // Rotates through the cut. Small angles: 12 degrees reads as a spin at speed.
+    case 'spin':
+      return { zoom: 1 + 0.14 * ease('easeIn', k), rot: dir * 12 * ease('easeIn', k) };
+    // Zoom plus heavy blur — the smear that reads as a warp.
+    case 'warp':
+      return { zoom: 1 + 0.28 * ease('easeIn', k), blur: 16 * ease('easeIn', k) };
+    // Whip pan: the frame smears sideways through the cut and lands. The two
+    // sides travel the same way, so it reads as one continuous camera move
+    // across the edit rather than two shots lurching apart.
+    case 'whip':
+      return { panX: dir * 320 * ease('easeIn', k), blur: 20 * ease('easeIn', k) };
+    // Digital break-up: hard sub-pixel jitter, no smoothing.
+    case 'glitch':
+      return { jitter: k, zoom: 1 + 0.05 * k };
+    default:
+      return null;
+  }
+}
+
 // Builds the transition overlay for a moment in time near a cut.
 function transitionOverlay(style, edge) {
   // edge: -1..1 across the cut, 0 exactly at the cut.
@@ -39,6 +79,18 @@ function transitionOverlay(style, edge) {
       return { opacity: 0.9 * ease('smooth', k), color: '#ffffff', cover: edge < 0 ? ease('smooth', k) : ease('smooth', k), dir: 'up' };
     case 'fadeFromWhite':
       return edge < 0 ? null : { opacity: ease('easeOut', k), color: '#ffffff', cover: 1, dir: 'all' };
+    // A streak of light rakes across the cut. Pure overlay — the camera is
+    // untouched, which is what keeps it from feeling like a zoom.
+    case 'flare':
+      return { opacity: ease('smooth', k), color: '#ffffff', cover: 1, dir: 'all', flare: k, flareDir: edge < 0 ? 1 : -1 };
+    // These three are camera moves; the overlay only softens the seam.
+    case 'zoomCut':
+    case 'spin':
+    case 'warp':
+    case 'whip':
+      return { opacity: ease('smooth', k) * 0.34, color: '#ffffff', cover: 1, dir: 'all' };
+    case 'glitch':
+      return { opacity: 0, color: '#ffffff', cover: 1, dir: 'all', glitch: k };
     case 'dissolve':
     default:
       return { opacity: ease('smooth', k) * 0.55, color: '#ffffff', cover: 1, dir: 'all' };
@@ -202,7 +254,9 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     let idx = timeline.findIndex((s) => time >= s.start && time < s.end);
     if (idx < 0) idx = timeline.length - 1;
     const shot = timeline[idx];
-    const p = clamp01((time - shot.start) / shot.duration);
+    // Speed ramp: warps how fast the shot travels its own path, leaving the
+    // path itself alone. Applied here so every motion kind inherits it.
+    const p = ramp(shot.params.ramp || 'linear', clamp01((time - shot.start) / shot.duration));
 
     // The tab this shot lives on. Cutting between routes is just cutting
     // between tabs; both are already loaded, primed and frozen.
@@ -276,13 +330,33 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
 
     // Transitions live on the cut between this shot and its neighbours.
     let wipe = null;
+    let tcam = null;
     const half = TRANSITION / 2;
     const dIn = time - shot.start;
     const dOut = shot.end - time;
     if (dIn < half) {
       wipe = transitionOverlay(shot.transitionIn, dIn / half);
+      tcam = transitionCam(shot.transitionIn, dIn / half);
     } else if (dOut < half && idx < timeline.length - 1) {
       wipe = transitionOverlay(timeline[idx + 1].transitionIn, -(dOut / half));
+      tcam = transitionCam(timeline[idx + 1].transitionIn, -(dOut / half));
+    }
+
+    // Camera-side transitions ride on top of the shot's own move. Applied after
+    // the clamps above so a zoom-cut is never clipped back to the page edge —
+    // it is meant to overshoot; that overshoot is the effect.
+    if (tcam) {
+      if (tcam.zoom) cam.zoom *= tcam.zoom;
+      if (tcam.panX) cam.panX = (cam.panX ?? 0) + tcam.panX;
+      if (tcam.rot) cam.rot = (cam.rot ?? 0) + tcam.rot;
+      if (tcam.blur) cam.blur = Math.max(cam.blur ?? 0, tcam.blur);
+      if (tcam.jitter) {
+        // Deterministic per-frame jitter: seeded off the frame index so the
+        // same film always breaks up identically.
+        const j = (n) => (((f * 2654435761 + n * 40503) >>> 0) / 4294967296 - 0.5);
+        cam.panX = (cam.panX ?? 0) + j(1) * 26 * tcam.jitter;
+        cam.y += j(2) * 14 * tcam.jitter;
+      }
     }
 
     // Global look: settle the letterbox in at the head, hold it after.
@@ -303,11 +377,32 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
         // A cut's transition wins over a shot's own sweep — they only overlap
         // in the half-second at each end, where the cut is what matters.
         wipe: wipe || ov.wipe || null,
+        safeTop: look.safeTop || 0,
+        safeBottom: look.safeBottom || 0,
         brand: { opacity: clamp01(brandOn) * 0.9, dark: comp.theme === 'light' },
       },
     };
 
     await page.evaluate((st) => window.__BT.frame(st), state);
+
+    // Real interaction. When the cursor reaches the target, actually click it,
+    // so the accordion opens or the dropdown drops on camera. Fires once per
+    // shot, at the same progress point the cursor's press lands, and the page
+    // is given a moment to respond before the frame is captured.
+    if (shot.action && !shot.actionDone && p >= (shot.action.at ?? 0.55)) {
+      shot.actionDone = true;
+      const res = await page.evaluate((s) => window.__BT.click(s), comp.selResolved);
+      if (!res || !res.ok) {
+        console.warn(`  ! click on "${shot.component}" skipped — ${res ? res.reason : 'no runtime'}`);
+      } else {
+        await page.waitForTimeout(shot.action.settle ?? 240);
+        // The click can resize the component (an accordion expands), which
+        // moves everything below it. Re-measure so the camera stays on target
+        // instead of drifting off a stale rect.
+        const fresh = await page.evaluate((n) => window.__BT.pageRect(n), comp.selResolved);
+        if (fresh && fresh.w > 0) shot.rect = fresh;
+      }
+    }
 
     // A cut can jump the camera hundreds of pixels. Reveal-on-view content
     // needs a beat to mount and settle before we capture, or the first frames

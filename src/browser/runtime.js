@@ -51,6 +51,26 @@
   layer.appendChild(ringSvg);
   const wipe = mk('position:absolute;inset:0;opacity:0;background:#ffffff');
 
+  // Light streak for the flare transition — a raking band of light rather than
+  // a flat wash, which is what separates it from a dissolve.
+  const flare = mk('position:absolute;inset:-40% -60%;opacity:0;pointer-events:none');
+
+  // Glitch bands. Offset slices of solid colour sitting where a chroma split
+  // would be; cheaper than compositing the page three times and, at two frames
+  // on a cut, indistinguishable.
+  //
+  // `multiply`, not `screen`. Screen against a white page IS white, so on this
+  // product's light UI the bands washed out to pastel highlighter stripes and
+  // read as a rendering fault rather than an effect. Multiply darkens toward
+  // the band's own hue, which is what a channel split looks like on white.
+  const glitchWrap = mk('position:absolute;inset:0;opacity:0;overflow:hidden;mix-blend-mode:multiply');
+  const glitchBars = [0, 1, 2, 3, 4].map(() => {
+    const b = doc.createElement('div');
+    b.style.cssText = 'position:absolute;left:0;right:0;opacity:.8';
+    glitchWrap.appendChild(b);
+    return b;
+  });
+
   // Scrim behind an on-page caption.
   //
   // A marketing page has whitespace under its headline, so a caption could sit
@@ -179,13 +199,13 @@
       if (el) break;
     }
     if (!el) { registry.delete(name); return null; }
-    // A element can exist in the DOM but be collapsed to 0x0 by a responsive
+    // An element can exist in the DOM but be collapsed to 0x0 by a responsive
     // utility class (this site hides its feature blocks below the xl
     // breakpoint). Framing that would point the camera at nothing, so treat it
     // as unresolved and let the caller drop the shot.
     {
       const r0 = el.getBoundingClientRect();
-      if (r0.width < 40 || r0.height < 20) { registry.delete(name); return null; }
+      if (r0.width === 0 || r0.height === 0) { registry.delete(name); return null; }
     }
     for (let i = 0; i < (spec.climb || 0) && el.parentElement && el.parentElement !== doc.body; i++) {
       el = el.parentElement;
@@ -204,6 +224,18 @@
         if (pr.height > maxH) break;
         el = el.parentElement;
       }
+    }
+    // Minimum framable size, checked AFTER climbing rather than before.
+    //
+    // `text=` deliberately picks the smallest element containing the string,
+    // which for element-level components is often an inner span a few pixels
+    // tall — "Compare Buying Options" inside its button, say. Testing that span
+    // rejected the component before `climb` ever got the chance to walk up to
+    // the button that is actually the target. Hidden elements are still caught
+    // by the 0x0 test above, which fires before any climbing.
+    {
+      const r1 = el.getBoundingClientRect();
+      if (r1.width < 40 || r1.height < 20) { registry.delete(name); return null; }
     }
     registry.set(name, el);
     return name;
@@ -509,8 +541,11 @@
       cap.style.top = panelSide === 'bottom'
         ? `${Math.round(H - panelH / 2)}px`
         : anchor === 'center' ? '50%' : anchor === 'top' ? '13%' : 'auto';
-      // Sits clear of the brand mark in the bottom-left corner.
-      cap.style.bottom = anchor === 'bottom' ? `${Math.round(H * 0.17)}px` : 'auto';
+      // Sits clear of the brand mark in the bottom-left corner — and, in a
+      // Reel, clear of Instagram's own caption and audio strip, which paints
+      // over the bottom fifth of the screen.
+      const safeB = Math.max(0.17, (o.safeBottom || 0) + 0.04);
+      cap.style.bottom = anchor === 'bottom' ? `${Math.round(H * safeB)}px` : 'auto';
       // The container no longer fades or rises — each element animates itself
       // above. Fading the whole block as well would flatten the stagger back
       // into the single dissolve this replaced.
@@ -579,6 +614,41 @@
       wipe.style.clipPath = 'inset(0)';
     }
 
+    // Flare: a hard band of light raking across on a diagonal.
+    if (o.wipe && o.wipe.flare > 0.001) {
+      const k = o.wipe.flare;
+      const dir = o.wipe.flareDir || 1;
+      // Sweeps right across the frame over the life of the transition, so at
+      // the cut itself the brightest part is dead centre.
+      const pos = (0.5 + dir * (1 - k) * 0.9) * 100;
+      flare.style.background =
+        `linear-gradient(104deg, rgba(255,255,255,0) ${(pos - 26).toFixed(1)}%, ` +
+        `rgba(255,255,255,${(0.92 * k).toFixed(3)}) ${pos.toFixed(1)}%, ` +
+        `rgba(190,214,255,${(0.45 * k).toFixed(3)}) ${(pos + 7).toFixed(1)}%, ` +
+        `rgba(255,255,255,0) ${(pos + 28).toFixed(1)}%)`;
+      flare.style.opacity = '1';
+    } else flare.style.opacity = '0';
+
+    // Glitch: slices displaced sideways, tinted toward the channel split.
+    if (o.wipe && o.wipe.glitch > 0.001) {
+      const k = o.wipe.glitch;
+      // Cyan and magenta: the two halves of a chroma split. Under multiply they
+      // darken the page toward those hues instead of bleaching it.
+      const tint = ['#00e5ff', '#ff0060', '#7c3aed', '#00e5ff', '#ff0060'];
+      for (let i = 0; i < glitchBars.length; i++) {
+        const b = glitchBars[i];
+        // Deterministic placement: the same film glitches identically each run.
+        const seed = (i * 2654435761 + Math.round(k * 1000) * 40503) >>> 0;
+        const r1 = (seed % 1000) / 1000, r2 = ((seed >> 10) % 1000) / 1000;
+        b.style.top = `${(r1 * 88).toFixed(1)}%`;
+        // Thin scanline-ish slices read as digital; fat bands read as a bug.
+        b.style.height = `${(0.8 + r2 * 3.4).toFixed(1)}%`;
+        b.style.background = tint[i];
+        b.style.transform = `translateX(${((r2 - 0.5) * 110 * k).toFixed(1)}px)`;
+      }
+      glitchWrap.style.opacity = String(Math.min(1, k * 1.4));
+    } else glitchWrap.style.opacity = '0';
+
     // Persistent brand mark.
     if (o.brand && o.brand.opacity > 0.001) {
       brand.style.opacity = String(o.brand.opacity);
@@ -586,7 +656,8 @@
       // Bottom-left: the top-left corner is where the site puts its own logo,
       // and the two marks stacked on each other read as a rendering fault.
       brand.style.top = 'auto';
-      brand.style.bottom = `${Math.round(H * 0.062 * (o.letterbox || 0)) + 26}px`;
+      brand.style.bottom =
+        `${Math.round(H * Math.max(0.062 * (o.letterbox || 0), o.safeBottom || 0)) + 26}px`;
       brand.firstChild.style.color = o.brand.dark ? '#141026' : '#fff';
     } else brand.style.opacity = '0';
   }
@@ -619,9 +690,39 @@
     doc.head.appendChild(s);
   }
 
+  /**
+   * Really clicks a component, so the UI responds on camera.
+   *
+   * Until now the cursor only mimed it — an accordion stayed shut, a dropdown
+   * stayed closed, and the "click on it" beat was a lie the viewer can spot.
+   *
+   * Clicked in page space via `el.click()` rather than through Playwright's
+   * coordinate-based click, because the camera puts a CSS transform on <body>:
+   * the element's on-screen position is not where the DOM says it is, so a
+   * coordinate click lands somewhere else entirely.
+   *
+   * Refuses to click anything that would navigate. A shot's whole route is a
+   * long-lived tab; following a link would replace the page under the camera
+   * and every later shot on that route would film the wrong thing.
+   */
+  function click(sel) {
+    const el = resolve(sel);
+    if (!el) return { ok: false, reason: 'unresolved' };
+    const link = el.closest('a[href]');
+    if (link) {
+      const href = link.getAttribute('href') || '';
+      const external = /^https?:/i.test(href) && !href.startsWith(location.origin);
+      if (external || (href && href !== '#' && !href.startsWith('javascript:'))) {
+        return { ok: false, reason: 'would navigate: ' + href };
+      }
+    }
+    el.click();
+    return { ok: true };
+  }
+
   window.__BT = {
     frame, pageRect, viewRect, resolve, register, setFastRaster,
-    freezeSiteMotion, maxScroll,
+    freezeSiteMotion, maxScroll, click,
     docHeight: () => root.scrollHeight,
   };
 })();

@@ -12,9 +12,10 @@ import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { makeVideo } from './index.mjs';
 import { APP_PROFILE } from './sites/bigticket-app.mjs';
+import { REELS_PROFILE } from './sites/bigticket-reels.mjs';
 
 const argv = process.argv.slice(2);
-const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast', 'app']);
+const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast', 'app', 'reels']);
 
 const flag = (name, def = null) => {
   const i = argv.indexOf(`--${name}`);
@@ -50,8 +51,13 @@ const opts = {
   fast: !!flag('fast'),
   // Film the signed-in app across its routes instead of the marketing page.
   // Needs BT_EMAIL / BT_PASSWORD in the environment.
-  profile: flag('app') ? APP_PROFILE : undefined,
+  // --reels is the element-level Instagram profile: tight vertical shots on
+  // single elements, with real clicks.
+  profile: flag('reels') ? REELS_PROFILE : flag('app') ? APP_PROFILE : undefined,
 };
+// A profile can insist on a format — the reels components are 44px-tall
+// elements, which have no business being framed across a 1440px landscape.
+if (opts.profile?.defaultFormat && !flag('format')) opts.format = opts.profile.defaultFormat;
 
 const batch = flag('batch');
 const prompts = batch && typeof batch === 'string'

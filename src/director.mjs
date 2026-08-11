@@ -15,40 +15,44 @@ const MOODS = {
     match: /\b(calm|warm|soft|gentle|cosy|cozy|slow|gentle|relax|gentl|serene|gentle)\b/i,
     shotDur: [2.4, 3.4],
     easings: ['smoother', 'easeOutQuint', 'smooth'],
-    kindBias: { slideIn: 1.8, hold: 2.2, driftDiagonal: 2.2, pushIn: 2, pullBack: 1.6, rackFocus: 1.4, whipTo: 0.15, panAcross: 1.2, tiltReveal: 1.2, spotlight: 1.9, cursorClick: 1 , pulseFocus: 1.8, sweepReveal: 0.9, zoomBlurIn: 0.3 },
+    kindBias: { slideIn: 1.8, hold: 2.2, driftDiagonal: 2.2, pushIn: 2, pullBack: 1.6, rackFocus: 1.4, whipTo: 0.15, panAcross: 1.2, tiltReveal: 1.2, spotlight: 1.9, cursorClick: 1 , pulseFocus: 1.8, sweepReveal: 0.9, zoomBlurIn: 0.3 , punchIn: 0.3, tapFocus: 1.2 },
     letterbox: 1,
     vignette: 0.34,
-    transition: ['dissolve', 'dissolve', 'softWipe'],
+    transition: ['dissolve', 'dissolve', 'softWipe', 'flare'],
+    ramps: ['linear', 'swoop', 'rushSettle'],
     music: { tempo: 78, key: 'F', scale: 'majorSeventh', warmth: 0.92, density: 0.35 },
   },
   premium: {
     match: /\b(premium|luxury|elegant|refined|sophisticat|high[- ]end|cinematic|classy)\b/i,
     shotDur: [2.2, 3.2],
     easings: ['easeOutQuint', 'smoother', 'anticipate'],
-    kindBias: { slideIn: 1.6, pushIn: 2.2, pullBack: 2, rackFocus: 2, spotlight: 2.2, driftDiagonal: 1.5, hold: 1.2, whipTo: 0.4, panAcross: 1, tiltReveal: 1, cursorClick: 1 , pulseFocus: 2, sweepReveal: 1.1, zoomBlurIn: 0.6 },
+    kindBias: { slideIn: 1.6, pushIn: 2.2, pullBack: 2, rackFocus: 2, spotlight: 2.2, driftDiagonal: 1.5, hold: 1.2, whipTo: 0.4, panAcross: 1, tiltReveal: 1, cursorClick: 1 , pulseFocus: 2, sweepReveal: 1.1, zoomBlurIn: 0.6 , punchIn: 0.7, tapFocus: 1.4 },
     letterbox: 1,
     vignette: 0.42,
-    transition: ['dissolve', 'softWipe', 'flash'],
+    transition: ['dissolve', 'softWipe', 'flash', 'zoomCut', 'flare'],
+    ramps: ['swoop', 'rushSettle', 'linear', 'holdSnap'],
     music: { tempo: 84, key: 'D', scale: 'minorNinth', warmth: 0.85, density: 0.45 },
   },
   energetic: {
     match: /\b(energetic|fast|punchy|snappy|upbeat|dynamic|bold|hype|exciting)\b/i,
     shotDur: [1.4, 2.2],
     easings: ['easeOutQuint', 'backOut', 'springOut'],
-    kindBias: { slideIn: 2.2, whipTo: 2.4, cursorClick: 2, spotlight: 1.8, pushIn: 1.6, panAcross: 1.4, tiltReveal: 1.2, pullBack: 1, rackFocus: 0.8, hold: 0.3, driftDiagonal: 0.6 , pulseFocus: 1.6, sweepReveal: 2.2, zoomBlurIn: 2 },
+    kindBias: { slideIn: 2.2, whipTo: 2.4, cursorClick: 2, spotlight: 1.8, pushIn: 1.6, panAcross: 1.4, tiltReveal: 1.2, pullBack: 1, rackFocus: 0.8, hold: 0.3, driftDiagonal: 0.6 , pulseFocus: 1.6, sweepReveal: 2.2, zoomBlurIn: 2 , punchIn: 2.6, tapFocus: 2.2 },
     letterbox: 0.35,
     vignette: 0.2,
-    transition: ['flash', 'wipe', 'dissolve'],
+    transition: ['zoomCut', 'glitch', 'whip', 'flash', 'spin', 'warp', 'wipe'],
+    ramps: ['lingerRush', 'rushSettle', 'holdSnap', 'swoop'],
     music: { tempo: 120, key: 'A', scale: 'majorPent', warmth: 0.6, density: 0.8 },
   },
   playful: {
     match: /\b(playful|fun|friendly|quirky|light|cheerful|happy|bright)\b/i,
     shotDur: [1.7, 2.5],
     easings: ['backOut', 'springOut', 'easeOutQuint'],
-    kindBias: { slideIn: 2.2, spotlight: 2, cursorClick: 2, whipTo: 1.4, panAcross: 1.6, pushIn: 1.4, tiltReveal: 1.2, pullBack: 1, hold: 0.6, rackFocus: 0.8, driftDiagonal: 1 , pulseFocus: 1.8, sweepReveal: 2, zoomBlurIn: 1.4 },
+    kindBias: { slideIn: 2.2, spotlight: 2, cursorClick: 2, whipTo: 1.4, panAcross: 1.6, pushIn: 1.4, tiltReveal: 1.2, pullBack: 1, hold: 0.6, rackFocus: 0.8, driftDiagonal: 1 , pulseFocus: 1.8, sweepReveal: 2, zoomBlurIn: 1.4 , punchIn: 2.2, tapFocus: 2 },
     letterbox: 0.2,
     vignette: 0.18,
-    transition: ['wipe', 'flash', 'dissolve'],
+    transition: ['zoomCut', 'wipe', 'flash', 'spin', 'flare', 'dissolve'],
+    ramps: ['rushSettle', 'lingerRush', 'swoop', 'holdSnap'],
     music: { tempo: 104, key: 'C', scale: 'majorPent', warmth: 0.75, density: 0.65 },
   },
 };
@@ -75,6 +79,11 @@ export const FORMATS = {
     width: 540, height: 960, deviceScaleFactor: 2,
     outWidth: 1080, outHeight: 1920,
     portrait: true, mobile: true,
+    // Instagram paints its own UI over a Reel: the caption, handle and audio
+    // strip along the bottom, the top bar above. Anything the ad puts there is
+    // covered by the app. These fractions keep captions and the brand mark
+    // inside the band that stays visible.
+    safeTop: 0.12, safeBottom: 0.22,
   },
   // 4:5 feed post — the same mobile layout, less aggressive crop.
   square: {
@@ -337,7 +346,19 @@ export function direct(prompt, opts = {}) {
         // pulseFocus/sweepReveal in one film doesn't read as a stamp.
         ringWidth: +rng.float(2.2, 3.6).toFixed(2),
         color: rng.pick(['#5b46e5', '#7c3aed', '#1cc8ee']),
+        // How fast the shot travels its own path. A card holds a steady rate so
+        // its copy stays readable; product beats get the ramp.
+        ramp: rng.pick(mood.ramps || ['linear']),
+        // punchIn: how many discrete hits, and how hard each one lands.
+        steps: rng.int(2, 4),
+        stepZoom: +rng.float(0.1, 0.17).toFixed(3),
       },
+      // A real click, not a mimed one, when the component can take it without
+      // navigating. The recorder fires this at the same moment the cursor's
+      // press lands, so the UI's own response IS the shot.
+      action: (comp.interactive && (kind === 'tapFocus' || kind === 'cursorClick'))
+        ? { type: 'click', at: +rng.float(0.44, 0.6).toFixed(2) }
+        : null,
       caption: wantCaption
         ? { ...comp.copy, align: 'left', anchor: 'bottom', theme: comp.theme, accent: '#7c3aed' }
         : null,
@@ -482,6 +503,9 @@ export function direct(prompt, opts = {}) {
       brand: true,
       // Handheld imperfection strength. 0 disables it entirely.
       handheld: opts.handheld ?? 1,
+      // Keeps captions and the brand mark clear of the app's own chrome.
+      safeTop: fmt.safeTop ?? 0,
+      safeBottom: fmt.safeBottom ?? 0,
     },
     duration: +total.toFixed(2),
     shots: shotsOut,

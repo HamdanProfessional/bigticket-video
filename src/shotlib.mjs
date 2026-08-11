@@ -7,7 +7,7 @@
 // KINDS: motion archetypes. Any kind can be applied to any component, which is
 // where the variability comes from — the director picks pairings per prompt.
 
-import { tween, ease, lerp } from './lib/easing.mjs';
+import { tween, ease, lerp, clamp01 } from './lib/easing.mjs';
 
 export const COMPONENTS = {
   logo: {
@@ -413,6 +413,70 @@ export const KINDS = {
         wipe: k > 0.001
           ? { opacity: 1, color: ctx.p.color || '#5b46e5', cover: k, dir: ctx.p.dir === 'left' ? 'right' : 'left' }
           : null,
+      },
+    };
+  },
+
+  /**
+   * Beat-synced punch-in: two or three hard steps into the subject, each
+   * landing on a beat and holding, rather than one continuous push.
+   *
+   * The staple of short-form promos, and completely different in feel from
+   * pushIn — that one glides, this one arrives in discrete hits. `steps` and
+   * `stepZoom` are what the director varies.
+   */
+  punchIn(p, ctx) {
+    const { rect, vw, vh, zBase } = ctx;
+    const steps = Math.max(2, Math.min(4, ctx.p.steps ?? 3));
+    const per = 1 / steps;
+    const i = Math.min(steps - 1, Math.floor(p / per));
+    // Snap hard at the step boundary, then hold dead still until the next one.
+    const into = ease('easeOutQuint', Math.min(1, (p - i * per) / (per * 0.22)));
+    const z = zBase * (1 + (ctx.p.stepZoom ?? 0.13) * (i + into));
+    const cam = frameOn(rect, vw, vh, z);
+    // A touch of kick on impact, gone within the step.
+    cam.rot = (ctx.p.rot ?? 0.5) * (1 - into) * (i % 2 ? -1 : 1);
+    return { cam, ov: {} };
+  },
+
+  /**
+   * Tap. Built for vertical: framed tight on one element, the cursor arrives
+   * from below the way a thumb does, presses, and the element genuinely
+   * responds — the recorder fires a real click at `clickAt`.
+   *
+   * Distinct from cursorClick, which arcs in from the side on a wide frame and
+   * is a camera move as much as an interaction. This one holds still and lets
+   * the UI be the motion.
+   */
+  tapFocus(p, ctx) {
+    const { rect, vw, vh, zBase, comp } = ctx;
+    const z = tween(p, 0, 1, zBase * 1.0, zBase * 1.05, 'smoother');
+    const cam = frameOn(rect, vw, vh, z);
+
+    const at = ctx.p.clickAt ?? 0.55;
+    // Thumb-style approach: up from the bottom of frame, not in from the side.
+    const travel = ease('easeOutQuint', Math.min(1, p / at));
+    const dy = (1 - travel) * (ctx.p.arc ?? 180);
+    const dx = (1 - travel) * (ctx.p.dir === 'left' ? -34 : 34);
+
+    // Press and release around the moment of contact.
+    const press = p >= at && p < at + 0.1 ? 1 - Math.abs((p - at) / 0.1 - 0.5) * 2 : 0;
+    const ripple = p >= at ? clamp01((p - at) / 0.34) : 0;
+
+    // The border draws in ahead of the tap, then the UI's own change carries
+    // the shot — so the border retreats rather than competing with it.
+    const ringOn = Math.min(tween(p, 0.05, 0.3, 0, 1, 'easeOut'), tween(p, at, at + 0.22, 1, 0.25, 'easeOut'));
+
+    return {
+      cam,
+      ov: {
+        cursor: { sel: comp.selResolved, dx, dy, opacity: tween(p, 0, 0.14, 0, 1, 'easeOut'), press, ripple },
+        highlight: {
+          sel: comp.selResolved, opacity: ringOn,
+          pad: ctx.p.pad ?? 10, radius: ctx.p.radius ?? 14,
+          width: ctx.p.ringWidth ?? 2.5,
+          draw: tween(p, 0.05, Math.max(0.18, at - 0.06), 0, 1, 'easeOutQuint'),
+        },
       },
     };
   },

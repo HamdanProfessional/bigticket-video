@@ -53,6 +53,31 @@ export { clamp01 };
  * Amplitudes are deliberately tiny: a few pixels. Enough to feel alive,
  * not enough to read as a wobble.
  */
+/**
+ * Speed ramping — the single most "edited by a person" trick in short-form.
+ *
+ * A shot's internal progress is normally linear in time, so every move plays at
+ * one rate. A ramp warps that progress: linger on the setup, rush through the
+ * middle, settle on the payoff. The camera path is unchanged; only how fast the
+ * shot travels along it changes.
+ *
+ * Input and output are both 0..1, so a ramp can be dropped in front of any
+ * motion kind without the kind knowing about it.
+ */
+export const RAMPS = {
+  linear: (t) => t,
+  // Hangs at the start, then accelerates away — sets up, then reveals.
+  lingerRush: (t) => Math.pow(t, 2.1),
+  // Arrives fast and decelerates into a hold — the classic reveal ramp.
+  rushSettle: (t) => 1 - Math.pow(1 - t, 2.4),
+  // Slow, fast, slow: eases both ends and rips through the middle.
+  swoop: (t) => t * t * t * (t * (t * 6 - 15) + 10),
+  // Creeps, then snaps late. Good under a caption that needs reading time.
+  holdSnap: (t) => (t < 0.62 ? t * 0.3 / 0.62 : 0.3 + ((t - 0.62) / 0.38) ** 1.7 * 0.7),
+};
+
+export const ramp = (name, t) => (RAMPS[name] || RAMPS.linear)(clamp01(t));
+
 export function handheld(t, seed = 0) {
   const s = (seed % 97) * 0.113;
   // Frequencies chosen to be mutually irrational-ish: no common period.
