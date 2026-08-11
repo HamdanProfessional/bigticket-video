@@ -52,7 +52,11 @@ export async function renderVideo({ framesDir, audioPath, outPath, fps, duration
       `noise=alls=${Math.round(4 * grade)}:allf=t+u`,
       // --- programme fades ---------------------------------------------
       `fade=t=in:st=0:d=0.5:color=white`,
-      `fade=t=out:st=${Math.max(0, duration - 0.9).toFixed(2)}:d=0.9:color=white`,
+      // Short, and late. A 0.9s fade-out ate the last 27 frames of the sign-off
+      // card, so every ad threw away its own call to action — the last thing on
+      // screen was blank white, not the CTA. The score still fades over ~2s, so
+      // the ending stays soft without the picture erasing itself.
+      `fade=t=out:st=${Math.max(0, duration - 0.32).toFixed(2)}:d=0.32:color=white`,
       'format=yuv420p',
     ].filter(Boolean).join(','),
     '-movflags', '+faststart',

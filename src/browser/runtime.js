@@ -605,7 +605,16 @@
       const w = o.wipe;
       wipe.style.background = w.color || '#ffffff';
       wipe.style.opacity = String(w.opacity);
-      if (w.dir === 'left') wipe.style.clipPath = `inset(0 0 0 ${((1 - w.cover) * 100).toFixed(2)}%)`;
+      if (w.band) {
+        // A travelling band: leading edge at `pos`, trailing edge a band-width
+        // behind it. Clamped to the frame, so it enters and leaves cleanly
+        // without ever covering the whole picture.
+        const lead = w.pos * (1 + w.band);
+        const trail = lead - w.band;
+        const left = Math.max(0, trail) * 100;
+        const right = Math.max(0, 1 - Math.min(1, lead)) * 100;
+        wipe.style.clipPath = `inset(0 ${right.toFixed(2)}% 0 ${left.toFixed(2)}%)`;
+      } else if (w.dir === 'left') wipe.style.clipPath = `inset(0 0 0 ${((1 - w.cover) * 100).toFixed(2)}%)`;
       else if (w.dir === 'right') wipe.style.clipPath = `inset(0 ${((1 - w.cover) * 100).toFixed(2)}% 0 0)`;
       else if (w.dir === 'up') wipe.style.clipPath = `inset(${((1 - w.cover) * 100).toFixed(2)}% 0 0 0)`;
       else wipe.style.clipPath = 'inset(0)';

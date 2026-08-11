@@ -38,10 +38,15 @@ const SETTLE_MS = 200;
  * the incoming one. Several effects flip direction with it, so the shot leaving
  * and the shot arriving move in sympathy rather than both lurching the same way.
  */
-function transitionCam(style, edge) {
+function transitionCam(style, edge, vw = 1440) {
   const k = 1 - Math.abs(edge);
   if (k <= 0) return null;
   const dir = edge < 0 ? 1 : -1;
+  // Lateral distances are a FRACTION of the frame, not a pixel count. Tuned on
+  // a 1440-wide landscape frame, a 320px whip is 22% of the picture; the same
+  // 320px on a 540-wide vertical frame is 59%, which throws the subject clean
+  // out of shot. Everything horizontal scales with the frame from here on.
+  const px = vw / 1440;
   switch (style) {
     // Punches into the cut and eases out of it — the default IG zoom cut.
     case 'zoomCut':
@@ -49,17 +54,19 @@ function transitionCam(style, edge) {
     // Rotates through the cut. Small angles: 12 degrees reads as a spin at speed.
     case 'spin':
       return { zoom: 1 + 0.14 * ease('easeIn', k), rot: dir * 12 * ease('easeIn', k) };
-    // Zoom plus heavy blur — the smear that reads as a warp.
+    // Zoom-led, not blur-led. At blur 16 on a 540px frame the whole picture
+    // went to uniform mush with no scale cue, which reads as a failed load
+    // rather than a warp. The zoom does the work; the blur only smears it.
     case 'warp':
-      return { zoom: 1 + 0.28 * ease('easeIn', k), blur: 16 * ease('easeIn', k) };
+      return { zoom: 1 + 0.34 * ease('easeIn', k), blur: 9 * px * ease('easeIn', k) };
     // Whip pan: the frame smears sideways through the cut and lands. The two
     // sides travel the same way, so it reads as one continuous camera move
     // across the edit rather than two shots lurching apart.
     case 'whip':
-      return { panX: dir * 320 * ease('easeIn', k), blur: 20 * ease('easeIn', k) };
+      return { panX: dir * 320 * px * ease('easeIn', k), blur: 20 * px * ease('easeIn', k) };
     // Digital break-up: hard sub-pixel jitter, no smoothing.
     case 'glitch':
-      return { jitter: k, zoom: 1 + 0.05 * k };
+      return { jitter: k * px, zoom: 1 + 0.05 * k };
     default:
       return null;
   }
@@ -73,8 +80,17 @@ function transitionOverlay(style, edge) {
   switch (style) {
     case 'flash':
       return { opacity: ease('easeOut', k) * 0.85, color: '#ffffff', cover: 1, dir: 'all' };
+    // A BAND sweeping across, not a full cover.
+    //
+    // The old wipe ramped `cover` to 1 at the cut, which painted the entire
+    // frame #f7f5ff — several consecutive blank frames that read as a dropped
+    // render, not a transition. A cross-dissolve between two pages is not
+    // available to us (they are different tabs), so the wipe has to be a band
+    // that never occludes everything: `pos` travels 0..1 across the cut and the
+    // band is half a frame wide, so at least a quarter of the picture is always
+    // visible on each side.
     case 'wipe':
-      return { opacity: 1, color: '#f7f5ff', cover: edge < 0 ? ease('easeIn', k) : ease('easeOut', k), dir: edge < 0 ? 'left' : 'right' };
+      return { opacity: 1, color: '#f7f5ff', band: 0.5, pos: (edge + 1) / 2 };
     case 'softWipe':
       return { opacity: 0.9 * ease('smooth', k), color: '#ffffff', cover: edge < 0 ? ease('smooth', k) : ease('smooth', k), dir: 'up' };
     case 'fadeFromWhite':
@@ -256,7 +272,8 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     const shot = timeline[idx];
     // Speed ramp: warps how fast the shot travels its own path, leaving the
     // path itself alone. Applied here so every motion kind inherits it.
-    const p = ramp(shot.params.ramp || 'linear', clamp01((time - shot.start) / shot.duration));
+    const pRaw = clamp01((time - shot.start) / shot.duration);
+    const p = ramp(shot.params.ramp || 'linear', pRaw);
 
     // The tab this shot lives on. Cutting between routes is just cutting
     // between tabs; both are already loaded, primed and frozen.
@@ -272,6 +289,25 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     const zBase = fitZoom(shot.rect, width, height, shot.params.fill ?? 0.78);
     const kind = KINDS[shot.kind] || KINDS.pushIn;
     const { cam, ov } = kind(p, { rect: shot.rect, vw: width, vh: height, zBase, p: shot.params, comp });
+
+    /**
+     * Containment: an element that fits the frame must STAY in the frame.
+     *
+     * A component smaller than the viewport is a thing the shot is about — an
+     * accordion row, a product tile, a price table. Cropping it defeats the
+     * shot. But the kinds stack multipliers on top of the fitted zoom (punchIn
+     * ends at 1.68x, pushIn at 1.16x, and transitions add more), and in a 540px
+     * vertical frame a 508px-wide element runs out of room almost immediately.
+     * That is why elements were disappearing off the edges.
+     *
+     * Sections larger than the viewport are exempt: cropping into those is the
+     * whole point of a push, and there is no zoom at which they fit anyway.
+     */
+    const isElement = shot.rect.w <= width && shot.rect.h <= height;
+    const maxZoom = isElement && !shot.isCard
+      ? Math.min((width * 0.94) / shot.rect.w, (height * 0.94) / shot.rect.h)
+      : Infinity;
+    if (cam.zoom > maxZoom) cam.zoom = maxZoom;
 
     // Handheld layer: a few pixels of wander so the move reads as operated
     // rather than computed. Applied off ABSOLUTE time so it flows through cuts,
@@ -336,10 +372,10 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     const dOut = shot.end - time;
     if (dIn < half) {
       wipe = transitionOverlay(shot.transitionIn, dIn / half);
-      tcam = transitionCam(shot.transitionIn, dIn / half);
+      tcam = transitionCam(shot.transitionIn, dIn / half, width);
     } else if (dOut < half && idx < timeline.length - 1) {
       wipe = transitionOverlay(timeline[idx + 1].transitionIn, -(dOut / half));
-      tcam = transitionCam(timeline[idx + 1].transitionIn, -(dOut / half));
+      tcam = transitionCam(timeline[idx + 1].transitionIn, -(dOut / half), width);
     }
 
     // Camera-side transitions ride on top of the shot's own move. Applied after
@@ -350,6 +386,10 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
       if (tcam.panX) cam.panX = (cam.panX ?? 0) + tcam.panX;
       if (tcam.rot) cam.rot = (cam.rot ?? 0) + tcam.rot;
       if (tcam.blur) cam.blur = Math.max(cam.blur ?? 0, tcam.blur);
+      // A transition may punch slightly past the containment limit — it lasts a
+      // fifth of a second at the cut and the overshoot is the effect — but not
+      // far enough to push the subject out of shot.
+      if (cam.zoom > maxZoom * 1.06) cam.zoom = maxZoom * 1.06;
       if (tcam.jitter) {
         // Deterministic per-frame jitter: seeded off the frame index so the
         // same film always breaks up identically.
@@ -389,7 +429,12 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     // so the accordion opens or the dropdown drops on camera. Fires once per
     // shot, at the same progress point the cursor's press lands, and the page
     // is given a moment to respond before the frame is captured.
-    if (shot.action && !shot.actionDone && p >= (shot.action.at ?? 0.55)) {
+    // Fires on RAW progress, not ramped progress. Under a `holdSnap` ramp the
+    // ramped value only reaches 0.54 at 82% of real time, so the accordion
+    // opened with 0.37s of the shot left and the payoff — the whole reason for
+    // the shot — was over before anyone registered it. Real time here
+    // guarantees the result of the click gets the rest of the shot.
+    if (shot.action && !shot.actionDone && pRaw >= (shot.action.at ?? 0.55)) {
       shot.actionDone = true;
       const res = await page.evaluate((s) => window.__BT.click(s), comp.selResolved);
       if (!res || !res.ok) {
@@ -397,10 +442,22 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
       } else {
         await page.waitForTimeout(shot.action.settle ?? 240);
         // The click can resize the component (an accordion expands), which
-        // moves everything below it. Re-measure so the camera stays on target
-        // instead of drifting off a stale rect.
+        // moves everything below it. Re-measure so the camera stays on target.
+        //
+        // Re-REGISTER first, rather than measuring the element we already hold:
+        // this is a React app, and toggling an accordion replaces its DOM node.
+        // The registry's reference is then detached, and a detached node
+        // measures 508x0 — which is exactly what shipped, giving specPerformance
+        // and specDimensions a zero-height rect and framing them by luck.
+        const spec = COMPS[shot.component];
+        await page.evaluate(
+          ([n, s]) => window.__BT.register(n, s),
+          [shot.component, { sel: spec.sel, fallback: spec.fallback, climb: spec.climb || 0, minArea: spec.minArea || 0 }]
+        );
         const fresh = await page.evaluate((n) => window.__BT.pageRect(n), comp.selResolved);
-        if (fresh && fresh.w > 0) shot.rect = fresh;
+        // Both dimensions, not just width — the old guard tested `w > 0` only,
+        // so a 508x0 detached node sailed through it.
+        if (fresh && fresh.w > 0 && fresh.h > 0) shot.rect = fresh;
       }
     }
 

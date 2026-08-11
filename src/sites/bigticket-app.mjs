@@ -72,7 +72,12 @@ export const APP_COMPONENTS = {
     route: PDP,
     sel: 'text=Reviews summary', climb: 3,       // 1200x400
     label: 'AI review summary', theme: 'light', captionable: true,
-    copy: { kicker: 'Powered by AI', title: 'Thirteen reviews, one answer.', subtitle: 'Summarised so you do not have to read them.' },
+    // No hardcoded review count. It said "Thirteen reviews" while the page
+    // behind it read "31 reviews" — the figure had moved since the copy was
+    // written, and an ad that miscounts the number it is bragging about, next
+    // to that number, destroys its own credibility. Any claim quoting live data
+    // has to come from the DOM or not be a number at all.
+    copy: { kicker: 'Powered by AI', title: 'Every review, one answer.', subtitle: 'Summarised so you do not have to read them.' },
   },
   highlights: {
     route: PDP,

@@ -179,6 +179,8 @@ export function direct(prompt, opts = {}) {
     : FORMAT_ALIASES[requested] ? FORMAT_ALIASES[requested]
     : detectFormat(prompt);
   const fmt = FORMATS[fmtName];
+  // Every pixel distance below was tuned on the 1440-wide landscape frame.
+  const pxScale = fmt.width / 1440;
 
   // --- pick the cast of components -------------------------------------
   const wanted = new Set();
@@ -333,11 +335,18 @@ export function direct(prompt, opts = {}) {
         fill: fmt.portrait ? +rng.float(0.78, 0.86).toFixed(3) : +rng.float(0.62, 0.86).toFixed(3),
         from: +rng.float(0.82, 0.95).toFixed(3),
         to: +rng.float(1.02, 1.16).toFixed(3),
-        arc: rng.int(28, 62),
-        overshoot: rng.int(9, 18),
+        // Pixel distances are calibrated against a 1440-wide frame and scaled
+        // to whatever frame this actually is. Unscaled, a 340px slide is 24% of
+        // a landscape frame but 63% of a 540px vertical one, which is how
+        // elements ended up leaving the shot entirely.
+        arc: Math.round(rng.int(28, 62) * pxScale),
+        overshoot: Math.round(rng.int(9, 18) * pxScale),
         rot: +rng.float(-0.8, 0.8).toFixed(2),
-        blur: rng.int(6, 13),
-        distance: rng.int(180, 420),
+        // Blur is a pixel radius, so it scales with the frame like distances do
+        // — an unscaled radius is proportionally ~2.7x stronger on vertical and
+        // turns a rack focus into an out-of-focus frame.
+        blur: Math.max(3, Math.round(rng.int(6, 13) * pxScale)),
+        distance: Math.round(rng.int(180, 420) * pxScale),
         clickAt: +rng.float(0.5, 0.68).toFixed(2),
         // NOT 'from' — that key is already the numeric zoom start for
         // pushIn/pullBack, and reusing it turned their zoom into NaN.
