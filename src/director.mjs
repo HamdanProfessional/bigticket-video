@@ -7,6 +7,7 @@
 
 import { hashString, makeRng } from './lib/rng.mjs';
 import { COMPONENTS, AFFINITY } from './shotlib.mjs';
+import { minShotForHold, MIN_TEXT_HOLD } from './lib/timing.mjs';
 
 // ------------------------------------------------------------------ moods
 const MOODS = {
@@ -286,8 +287,7 @@ export function direct(prompt, opts = {}) {
     // every shot onto the same 4-beat value, so the whole reel ran at one
     // unvarying dwell — technically on-grid, monotonous to watch. Odd beat
     // counts still land on the pulse.
-    const beats = Math.max(2, Math.round(rawDur / beat));
-    const dur = +(beats * beat).toFixed(3);
+    let beats = Math.max(2, Math.round(rawDur / beat));
     const comp = COMPS[compName];
     const isFirst = i === 0;
     const isLast = i === cast.length - 1;
@@ -300,6 +300,12 @@ export function direct(prompt, opts = {}) {
     // and stay in frame, so an overlay caption prints the same words twice.
     // Desktop pushes them out of shot, which is why the caption exists at all.
     const wantCaption = !fmt.portrait && comp.captionable && comp.copy && !prevHadCaption && rng.chance(0.85);
+
+    // A shot carrying text has to outlast its own ramps by MIN_TEXT_HOLD, or
+    // the words are still arriving when they start leaving and nobody reads
+    // them. Rounded UP to whole beats so the cut still lands on the pulse.
+    if (wantCaption) beats = Math.max(beats, Math.ceil(minShotForHold() / beat));
+    const dur = +(beats * beat).toFixed(3);
 
     shots.push({
       component: compName,
@@ -358,9 +364,11 @@ export function direct(prompt, opts = {}) {
   let finalShots = shots;
   if (opts.cards !== false) {
     const beat = 60 / mood.music.tempo;
-    // Two beats flat — a card is punctuation between product beats, and any
-    // longer is dead air the viewer uses to scroll away.
-    const cardBeats = 2;
+    // A card is punctuation between product beats, so it wants to be short —
+    // but not shorter than the copy on it can be read. Whichever is longer:
+    // two beats, or enough beats for the text to hold for MIN_TEXT_HOLD after
+    // it has finished arriving.
+    const cardBeats = Math.max(2, Math.ceil(minShotForHold() / beat));
     const cardDur = +(cardBeats * beat).toFixed(3);
     // A full-frame card hides whatever is behind it, so it only needs a
     // component that resolves. A side panel does not: half the frame is live,

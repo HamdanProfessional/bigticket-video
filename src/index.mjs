@@ -13,12 +13,15 @@ import { fileURLToPath } from 'node:url';
 import { direct } from './director.mjs';
 import { record } from './record.mjs';
 import { renderVideo, renderPoster, run } from './render.mjs';
+import { credentialsFromEnv } from './auth.mjs';
 
 export { direct } from './director.mjs';
 export { record } from './record.mjs';
 export { renderVideo, renderPoster } from './render.mjs';
 export { FORMATS } from './director.mjs';
 export { COMPONENTS, AFFINITY, KINDS, KIND_NAMES, fitZoom, frameOn } from './shotlib.mjs';
+export { login, ensureSession, credentialsFromEnv } from './auth.mjs';
+export { APP_PROFILE } from './sites/bigticket-app.mjs';
 export { makeRng, hashString } from './lib/rng.mjs';
 export { EASINGS, ease, tween } from './lib/easing.mjs';
 
@@ -54,24 +57,35 @@ const slug = (s) =>
 export async function makeVideo(o = {}) {
   if (!o.prompt) throw new Error('makeVideo: `prompt` is required');
 
+  // A profile bundles components/affinity/topics/spine/hook/signoff for a
+  // site; explicit options still win over it.
+  const P = o.profile || {};
+  const pick = (k) => o[k] ?? P[k];
+
   const storyboard = direct(o.prompt, {
     seed: o.seed,
     duration: o.duration,
     mood: o.mood,
     format: o.format,
     fps: o.fps,
-    components: o.components,
-    affinity: o.affinity,
-    topics: o.topics,
-    spine: o.spine,
-    filler: o.filler,
+    components: pick('components'),
+    affinity: pick('affinity'),
+    topics: pick('topics'),
+    spine: pick('spine'),
+    filler: pick('filler'),
     panelStyle: o.panelStyle,
-    hook: o.hook,
-    signoff: o.signoff,
+    hook: pick('hook'),
+    signoff: pick('signoff'),
     cards: o.cards,
   });
   storyboard.url = o.url || 'https://shopbigticket.com/';
   storyboard.fast = !!o.fast;
+  // Where a component with no route of its own is filmed.
+  storyboard.defaultRoute = pick('defaultRoute') || '/';
+  // Which routes the film touches — useful in the storyboard without a render.
+  storyboard.routes = [...new Set(storyboard.shots.map(
+    (s) => (pick('components') || {})[s.component]?.route || storyboard.defaultRoute
+  ))];
 
   const suffix = storyboard.format === 'landscape' ? '' : `-${storyboard.format}`;
   const name = `${slug(o.prompt)}${suffix}-${storyboard.seed.toString(16).slice(0, 6)}`;
@@ -81,9 +95,20 @@ export async function makeVideo(o = {}) {
 
   if (o.storyboardOnly) return { outDir, storyboard, manifest: null, outPath: null };
 
+  // Credentials are never stored on the storyboard or the manifest — they are
+  // handed straight to the recorder and used once to mint a session.
+  const auth = (pick('requiresAuth') || o.auth) ? (o.auth || credentialsFromEnv()) : null;
+  if (pick('requiresAuth') && !auth) {
+    throw new Error(
+      'This profile films the signed-in app, so it needs credentials. ' +
+      'Set BT_EMAIL and BT_PASSWORD in the environment.'
+    );
+  }
+
   const manifest = await record(storyboard, outDir, {
     onProgress: o.onProgress,
-    components: o.components,
+    components: pick('components'),
+    auth,
   });
 
   let audioPath = null;

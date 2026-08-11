@@ -8,3 +8,9 @@ node_modules/
 *.log
 done.flag
 .DS_Store
+
+# Saved login sessions. A storageState file is a bearer credential — it grants
+# access to the account without the password. Never commit one.
+.auth/
+*session.json
+.env

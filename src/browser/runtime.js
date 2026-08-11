@@ -51,6 +51,15 @@
   layer.appendChild(ringSvg);
   const wipe = mk('position:absolute;inset:0;opacity:0;background:#ffffff');
 
+  // Scrim behind an on-page caption.
+  //
+  // A marketing page has whitespace under its headline, so a caption could sit
+  // straight on it. An app does not — filming the product page put "One
+  // product. Every price." directly across the page's own "Reviews" heading and
+  // both became unreadable. A gradient ramp separates the two planes without
+  // hiding the product, which is what every real ad does.
+  const scrim = mk('position:absolute;left:0;right:0;bottom:0;height:0;opacity:0');
+
   // Caption card: the "this is the feature" beat.
   const cap = mk('position:absolute;left:0;right:0;opacity:0;display:flex;flex-direction:column;gap:10px;padding:0 92px;box-sizing:border-box');
   const capKicker = doc.createElement('div');
@@ -516,7 +525,22 @@
       cap.style.clipPath = o.panel && o.panel.clip ? o.panel.clip : 'none';
       cap.style.opacity = String(Math.min(1, c.opacity * 4));
       cap.style.textShadow = dark ? '0 2px 30px rgba(10,6,30,.45)' : 'none';
-    } else cap.style.opacity = '0';
+
+      // A panel already provides the caption's background; only a caption
+      // sitting directly on the page needs the ramp.
+      if (!panelSide && anchor === 'bottom') {
+        // Shorter and denser than the first attempt: at 46% tall and 78% opaque
+        // through the middle, the page's own headings still read through the
+        // caption. The ramp now reaches near-opaque across the band the type
+        // actually occupies, and clears completely above it so the component
+        // itself is never washed out.
+        scrim.style.height = `${Math.round(H * 0.38)}px`;
+        scrim.style.background = dark
+          ? 'linear-gradient(to top,rgba(8,6,22,.97) 0%,rgba(8,6,22,.93) 34%,rgba(8,6,22,.66) 62%,rgba(8,6,22,0) 100%)'
+          : 'linear-gradient(to top,rgba(255,255,255,.99) 0%,rgba(255,255,255,.96) 34%,rgba(255,255,255,.72) 62%,rgba(255,255,255,0) 100%)';
+        scrim.style.opacity = String(Math.min(1, c.opacity * 2.2));
+      } else scrim.style.opacity = '0';
+    } else { cap.style.opacity = '0'; scrim.style.opacity = '0'; }
 
     // Cursor + click ripple.
     if (o.cursor && o.cursor.opacity > 0.001) {

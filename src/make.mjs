@@ -11,9 +11,10 @@
 import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { makeVideo } from './index.mjs';
+import { APP_PROFILE } from './sites/bigticket-app.mjs';
 
 const argv = process.argv.slice(2);
-const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast']);
+const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast', 'app']);
 
 const flag = (name, def = null) => {
   const i = argv.indexOf(`--${name}`);
@@ -47,6 +48,9 @@ const opts = {
   music: !flag('no-music'),
   keepFrames: !!flag('keep-frames'),
   fast: !!flag('fast'),
+  // Film the signed-in app across its routes instead of the marketing page.
+  // Needs BT_EMAIL / BT_PASSWORD in the environment.
+  profile: flag('app') ? APP_PROFILE : undefined,
 };
 
 const batch = flag('batch');
@@ -58,7 +62,7 @@ if (!prompts.length) {
   console.error(
     'usage: node src/make.mjs "<prompt>" [--format landscape|vertical|square]\n' +
     '                          [--seed N] [--duration S] [--mood calm|premium|energetic|playful]\n' +
-    '                          [--panel ink|brand|paper|glass]\n' +
+    '                          [--panel ink|brand|paper|glass] [--app]\n' +
     '                          [--fast] [--storyboard-only] [--no-music] [--keep-frames]\n' +
     '       node src/make.mjs --batch prompts.txt'
   );
@@ -81,6 +85,7 @@ for (const p of prompts) {
     console.log(`\n▸ ${p}`);
     console.log(`  seed ${sb.seed}  mood ${sb.mood}  ${sb.format} ${sb.outWidth}x${sb.outHeight}  ~${sb.duration}s  ${sb.shots.length} shots`);
     console.log(`  ${sb.shots.map((s) => `${s.component}:${s.kind}`).join(' → ')}`);
+    if (sb.routes && sb.routes.length > 1) console.log(`  routes ${sb.routes.join(' · ')}`);
     console.log(`  music ${sb.music.key} ${sb.music.scale} @ ${sb.music.tempo}bpm`);
     console.log(opts.storyboardOnly
       ? `  storyboard → ${path.join(res.outDir, 'storyboard.json')}`
