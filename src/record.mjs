@@ -113,7 +113,28 @@ function transitionOverlay(style, edge) {
   }
 }
 
-export async function record(storyboard, outDir, { onProgress, components, auth } = {}) {
+/**
+ * Renders a storyboard to frames.
+ *
+ * Wrapper exists purely to guarantee the browser is closed. Everything below
+ * used to run inline with a single `browser.close()` at the very end, so any
+ * throw — a bad selector, a typo in a shot kind — skipped it and left a
+ * headless Chromium running with a node process pinned open by its handle.
+ * One such orphan sat on this machine for three hours after a render failed on
+ * an undefined variable.
+ */
+export async function record(storyboard, outDir, opts = {}) {
+  let browser = null;
+  const setBrowser = (b) => { browser = b; };
+  try {
+    return await recordInner(storyboard, outDir, opts, setBrowser);
+  } finally {
+    // `catch`-free on purpose: a close failure must not mask the real error.
+    if (browser) await browser.close().catch(() => {});
+  }
+}
+
+async function recordInner(storyboard, outDir, { onProgress, components, auth } = {}, setBrowser) {
   // Site profile is injectable so this renderer is not tied to one site.
   const COMPS = components || COMPONENTS;
   const { fps, width, height, shots, look } = storyboard;
@@ -128,6 +149,8 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     // the login modal accepts the credentials and then silently fails.
     args: ['--force-color-profile=srgb', '--disable-lcd-text', '--disable-blink-features=AutomationControlled'],
   });
+  // Hand it to the wrapper immediately, so a throw anywhere below still closes.
+  setBrowser(browser);
 
   const origin = new URL(storyboard.url || 'https://shopbigticket.com/').origin;
 
@@ -487,7 +510,8 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     if (onProgress && f % 15 === 0) onProgress(f, frameCount);
   }
 
-  await browser.close();
+  // Closed by the wrapper's `finally`, on the success path as well as on a
+  // throw — closing here too would just be a redundant second call.
 
   const manifest = { ...storyboard, duration: +total.toFixed(3), frameCount, shots: timeline, framesDir };
   await writeFile(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
