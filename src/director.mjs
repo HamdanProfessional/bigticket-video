@@ -35,7 +35,11 @@ const MOODS = {
   },
   energetic: {
     match: /\b(energetic|fast|punchy|snappy|upbeat|dynamic|bold|hype|exciting)\b/i,
-    shotDur: [1.4, 2.2],
+    // Wider than it looks: quantising to whole beats at 120bpm turns this into
+    // 1.0/1.5/2.0/2.5s. The old [1.4,2.2] collapsed onto just 1.5 and 2.0, so
+    // every product beat in a reel was one of two lengths and the edit read as
+    // a metronome.
+    shotDur: [1.1, 2.6],
     easings: ['easeOutQuint', 'backOut', 'springOut'],
     kindBias: { slideIn: 2.2, whipTo: 2.4, cursorClick: 2, spotlight: 1.8, pushIn: 1.6, panAcross: 1.4, tiltReveal: 1.2, pullBack: 1, rackFocus: 0.8, hold: 0.3, driftDiagonal: 0.6 , pulseFocus: 1.6, sweepReveal: 2.2, zoomBlurIn: 2 , punchIn: 2.6, tapFocus: 2.2 },
     letterbox: 0.35,
@@ -250,19 +254,26 @@ export function direct(prompt, opts = {}) {
   // Grow by introducing components the reel hasn't shown yet, and only once
   // the library is exhausted fall back to revisiting one. Never place the same
   // component in adjacent beats — that reads as a stall, not a shot.
+  // Front-weighted, because a profile's filler list is ordered by how well each
+  // component carries a shot and rng.pick is uniform — which made that ordering
+  // decorative. Squaring the draw gives the first entry ~4x the odds of the
+  // fourth without ever locking the tail out, so a padded reel leans on the
+  // strong material and still varies between seeds.
+  const padPick = (pool) => pool[Math.min(pool.length - 1, Math.floor(rng() ** 2 * pool.length))];
+
   while (cast.length < n) {
     const unused = FILLER_LIST.filter((c) => !cast.includes(c));
     const pool = unused.length ? unused : FILLER_LIST;
     let inserted = false;
     for (let attempt = 0; attempt < 8 && !inserted; attempt++) {
-      const pick = rng.pick(pool);
+      const pick = padPick(pool);
       const at = rng.int(1, cast.length - 1);
       if (cast[at - 1] !== pick && cast[at] !== pick) {
         cast.splice(at, 0, pick);
         inserted = true;
       }
     }
-    if (!inserted) cast.splice(cast.length - 1, 0, rng.pick(pool));
+    if (!inserted) cast.splice(cast.length - 1, 0, padPick(pool));
   }
 
   // Padding above can reintroduce names the profile does not define.
@@ -474,7 +485,14 @@ export function direct(prompt, opts = {}) {
       // otherwise lands directly against the first feature card, giving three
       // seconds of text with no product on screen.
       const prevWasCard = out.length > 0 && out[out.length - 1].isCard;
-      if (i > 0 && !prevWasCard && copy && used < 3 && !isClosing
+      // Fewer cards in portrait. A 9:16 cut is short and its cards can't be
+      // brief — the 2s text hold puts a floor of ~3.3s on each — so three of
+      // them plus a hook and a sign-off swallowed nearly half the runtime.
+      // One feature card in portrait. With a hook and a sign-off that is still
+      // three cards; at the ~3.3s floor the text hold imposes, any more and the
+      // reel is mostly caption. The product beats have to carry it.
+      const cardCap = fmt.portrait ? 1 : 3;
+      if (i > 0 && !prevWasCard && copy && used < cardCap && !isClosing
           && s.component !== anchor && !COMPS[s.component].clickable) {
         out.push(makeCard(copy, { over: s.component }));
         s.caption = null; // the card already said it; don't print it twice
@@ -511,7 +529,11 @@ export function direct(prompt, opts = {}) {
       // subject are always partly in frame and get clipped mid-sentence. Bars
       // mask that, and they double as safe zones for the Reels/TikTok UI that
       // overlays the top and bottom of the screen anyway.
-      letterbox: fmt.portrait ? Math.max(2.4, mood.letterbox * 2.4) : mood.letterbox,
+      // Portrait used to force 2.4, which the runtime turns into bars of
+      // H*0.062*2.4 each — 30% of a reel painted black, with the page scaled
+      // into the middle. A phone frame has no width to spare; keep the bars as
+      // a thin cinematic edge and let safeTop/safeBottom do the keep-out work.
+      letterbox: fmt.portrait ? 0.5 : mood.letterbox,
       vignette: mood.vignette,
       brand: true,
       // Handheld imperfection strength. 0 disables it entirely.

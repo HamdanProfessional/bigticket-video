@@ -478,10 +478,15 @@
       // full width, so it measures against the frame like a full card does.
       const column = panelSide && panelSide !== 'bottom';
       const colW = column ? panelPx : W;
-      const titleSize = clamp(colW * (column ? 0.088 : 0.032), 22, 48);
-      const subSize = clamp(colW * (column ? 0.038 : 0.0145), 13, 21);
-      const kickSize = clamp(colW * (column ? 0.024 : 0.009), 10, 13);
-      const padX = column ? clamp(colW * 0.115, 22, 68) : clamp(W * 0.064, 30, 92);
+      // Vertical needs much bigger type than landscape. Desktop-scale captions
+      // on a 1080x1920 canvas gave a headline a cap height around 1.7% of the
+      // frame — small body copy on a phone held at arm's length, not a
+      // headline. Portrait roughly triples it.
+      const portrait = H > W;
+      const titleSize = clamp(colW * (column ? 0.088 : portrait ? 0.085 : 0.032), 22, portrait ? 62 : 48);
+      const subSize = clamp(colW * (column ? 0.038 : portrait ? 0.034 : 0.0145), 13, portrait ? 27 : 21);
+      const kickSize = clamp(colW * (column ? 0.024 : portrait ? 0.020 : 0.009), 10, portrait ? 18 : 13);
+      const padX = column ? clamp(colW * 0.115, 22, 68) : clamp(W * (portrait ? 0.075 : 0.064), 30, 92);
       cap.style.padding = `0 ${Math.round(padX)}px`;
       capTitle.style.fontSize = `${titleSize.toFixed(1)}px`;
       capSub.style.fontSize = `${subSize.toFixed(1)}px`;

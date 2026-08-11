@@ -327,8 +327,14 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth } 
      * whole point of a push, and there is no zoom at which they fit anyway.
      */
     const isElement = shot.rect.w <= width && shot.rect.h <= height;
+    // Wide-but-short elements — a 508px spec row in a 540px frame — fit at 0.94
+    // width, which pins them to zoom 1 and flattens every punch-in the mood
+    // asked for. Let those go edge to edge instead: losing 6% of a row that
+    // reads left-label / right-value is worse than a hair of crop.
+    const wideThin = isElement && shot.rect.w > width * 0.8 && shot.rect.h < height * 0.25;
+    const inset = wideThin ? 1.0 : 0.94;
     const maxZoom = isElement && !shot.isCard
-      ? Math.min((width * 0.94) / shot.rect.w, (height * 0.94) / shot.rect.h)
+      ? Math.min((width * inset) / shot.rect.w, (height * 0.94) / shot.rect.h)
       : Infinity;
     if (cam.zoom > maxZoom) cam.zoom = maxZoom;
 

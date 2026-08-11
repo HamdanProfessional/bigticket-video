@@ -153,9 +153,16 @@ export const REELS_TOPICS = [
 // Hook on a real product, tap something that responds, pay off on the chart.
 export const REELS_SPINE = ['productShot', 'specGeneral', 'compareOptions', 'priceChart', 'reviewsBlock'];
 
+// Ordered by how much each one sells the product, because padding is drawn
+// from the front of this list. The referral page and the dashboard's lifestyle
+// tiles used to sit high enough to be pulled into a reel about specs and
+// prices — a 3.5s block on a gift-card offer and 1.5s on a stock kitchen photo,
+// neither carrying a price, spec or claim. They stay available for prompts that
+// actually ask for them (see REELS_TOPICS) but no longer volunteer.
 export const REELS_FILLER = [
-  'priceChart', 'reviewsBlock', 'tileToaster', 'specPerformance', 'matchHeading',
-  'tileCoffee', 'giftHeadline', 'specDimensions', 'tileTv', 'boardTile',
+  'priceChart', 'reviewsBlock', 'specPerformance', 'specDimensions', 'compareOptions',
+  'productShot', 'highlights', 'specGeneral', 'matchHeading', 'tileToaster',
+  'boardTile', 'tileCoffee', 'giftHeadline', 'tileTv',
 ];
 
 export const REELS_HOOK = {
