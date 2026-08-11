@@ -486,7 +486,11 @@ export function direct(prompt, opts = {}) {
       // keeps watching, before the product has even appeared.
       if (i === 0) out.push(makeCard(opts.hook || HOOK, { over: shots[1]?.component }));
     }
-    out.push(makeCard(opts.signoff || SIGNOFF, { full: true }));
+    // The sign-off holds solid to the last frame rather than dissolving — it is
+    // the call to action, and it was fading out before the video did.
+    const signoffCard = makeCard(opts.signoff || SIGNOFF, { full: true });
+    signoffCard.params.holdOut = true;
+    out.push(signoffCard);
     finalShots = out;
   }
 

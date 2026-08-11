@@ -353,14 +353,17 @@ export async function record(storyboard, outDir, { onProgress, components, auth 
     if (shot.caption) {
       const inT = Math.min(0.9, CAPTION_IN / shot.duration);
       const outT = 1 - Math.min(0.9, CAPTION_OUT / shot.duration);
-      const op = Math.min(
-        tween(p, CAPTION_LEAD, CAPTION_LEAD + inT, 0, 1, 'easeOutQuint'),
-        tween(p, outT, 1, 1, 0, 'easeIn')
-      );
+      const fadeIn = tween(p, CAPTION_LEAD, CAPTION_LEAD + inT, 0, 1, 'easeOutQuint');
+      // A held card's copy stays up with its panel — the out-tween is skipped
+      // outright rather than pushed out of range. Moving `outT` past 1 does NOT
+      // disable it: tween() returns its `to` value when end <= start, so an
+      // out-of-range window returns 0 immediately and blanked the sign-off copy
+      // completely, leaving a bare lilac panel as the last frame of the ad.
+      const op = shot.params.holdOut ? fadeIn : Math.min(fadeIn, tween(p, outT, 1, 1, 0, 'easeIn'));
       // Raw 0..1 progress for the kinetic type: the runtime staggers words,
       // kicker, rule and subtitle off these rather than one shared opacity.
       const inP = clamp01((p - CAPTION_LEAD) / Math.max(0.01, inT));
-      const outP = clamp01((p - outT) / Math.max(0.01, 1 - outT));
+      const outP = shot.params.holdOut ? 0 : clamp01((p - outT) / Math.max(0.01, 1 - outT));
       caption = { ...shot.caption, opacity: clamp01(op), inP, outP };
     }
 

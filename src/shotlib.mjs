@@ -325,7 +325,11 @@ export const KINDS = {
     const enter = side || ctx.p.enter || 'fade';
     const IN = 0.22;      // panel is fully in place before the type starts
     const t = ease('easeOutQuint', Math.min(1, p / IN));
-    const out = tween(p, 0.82, 1, 1, 0, 'easeIn');
+    // Mid-film cards dissolve out so the hand-off back to live footage is soft.
+    // The CLOSING card must not: fading it left the sign-off copy floating
+    // half-transparent over the page for the last half second, so the most
+    // important frame in the ad was also its least legible one.
+    const out = ctx.p.holdOut ? 1 : tween(p, 0.82, 1, 1, 0, 'easeIn');
 
     const panel = { opacity: 1, side, width: frac, style: ctx.p.panelStyle || 'ink' };
     switch (enter) {
