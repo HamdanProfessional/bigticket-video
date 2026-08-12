@@ -405,7 +405,16 @@ export function direct(prompt, opts = {}) {
     // is a silent punchline. Descriptive copy keeps both the coin flip and the
     // no-two-in-a-row rule, which is what stops a feature tour reading as a
     // wall of text.
-    const claims = comp.copy && hasTokens(comp.copy.title);
+    // "Is this a claim or a label?" was tested by asking whether the copy quotes
+    // a number. That is a proxy, and it failed on the most important line in the
+    // ad: "Big Ticket checks every retailer." names the advertiser and what it
+    // does, contains no digits, and was therefore silently demoted to
+    // decoration and suppressed in portrait — so every cut ran without ever
+    // saying who was advertising.
+    //
+    // A narrative profile's copy is written as ad lines throughout, so in one
+    // the answer is simply yes.
+    const claims = comp.copy && (narrative || hasTokens(comp.copy.title));
     // Say it once. Padding revisits a strong component on purpose — a second
     // angle on the price chart is a good shot — but the caption is the claim,
     // and repeating it verbatim two beats later reads as a stutter rather than

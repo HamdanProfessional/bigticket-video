@@ -33,7 +33,7 @@ export const REELS_COMPONENTS = {
     label: 'Product image', theme: 'light', captionable: true,
     // Quotes the page. See lib/tokens.mjs — a line whose numbers cannot be
     // resolved is dropped rather than printed with a hole in it.
-    copy: { kicker: '', title: 'One product. Every retailer.', subtitle: '' },
+    copy: { kicker: '', title: 'Buying something big?', subtitle: '' },
   },
   // Accordion rows. These really open — the click is the point of the shot.
   specGeneral: {
@@ -54,24 +54,24 @@ export const REELS_COMPONENTS = {
     route: PDP, sel: 'text=Compare Buying Options', climb: 1,  // 508x40
     label: 'Compare buying options', theme: 'light', clickable: true, interactive: true,
     captionable: true,
-    copy: { kicker: '', title: '{sellers} retailers. Same price.', subtitle: '' },
+    copy: { kicker: '', title: 'Big Ticket compares every seller.', subtitle: '' },
   },
   priceChart: {
     route: PDP, sel: 'text=Pricing History', climb: 1,         // section with the 508x180 svg
     label: 'Price history chart', theme: 'light', captionable: true,
-    copy: { kicker: '', title: 'But it was {low} in {lowDate}.', subtitle: '' },
+    copy: { kicker: '', title: "And every price it's ever been.", subtitle: '' },
   },
   // The argument's punchline. Separate from priceChart so the chart can be
   // framed twice with two different lines rather than repeating one.
   priceDelta: {
     route: PDP, sel: 'text=Pricing History', climb: 1,
     label: 'Price history (delta)', theme: 'light', captionable: true,
-    copy: { kicker: '', title: "So you'd overpay by {overLow}.", subtitle: '' },
+    copy: { kicker: '', title: "This one's been {overLow} cheaper.", subtitle: '' },
   },
   reviewsBlock: {
     route: PDP, sel: 'text=Review Highlights', climb: 1,       // 508x37 heading block
     label: 'Review highlights', theme: 'light', captionable: true,
-    copy: { kicker: '', title: '{reviewCount} reviews, one answer.', subtitle: '' },
+    copy: { kicker: '', title: 'AI reads the reviews for you.', subtitle: '' },
   },
 
   // ---- dashboard: a real product grid ----------------------------------
@@ -197,21 +197,41 @@ export const REELS_FILLER = [
 
 // The hook quotes the price, because a number is a stronger opening than a
 // slogan — and if the page will not give one up, the generic line still runs.
+// The hook states the PROBLEM, in the viewer's words.
+//
+// Earlier hooks were about this toaster: "You're about to spend $229.95." That
+// makes the toaster the subject of the ad. The toaster is the demo — the
+// subject is not knowing where the best deal is, and the product is the answer
+// to that. An ad promotes the thing being sold, and the thing being sold here
+// is Big Ticket.
 export const REELS_HOOK = {
   kicker: '',
-  title: "You're about to spend {price}.",
+  title: "You don't know where the best deal is.",
   subtitle: '',
 };
 
 // Two beats of the argument have no component of their own on the page, so
 // they are not in this file — they are the hook and the sign-off.
 
-// "Buy once. Buy well." is the site's own footer line — a nice sentiment and
-// not a product claim. This company compares what the same product costs at
-// every retailer, and what it has cost over time, so the sign-off says that.
+// The sign-off names the advertiser and says where to get it.
+//
+// Every cut before this one ended on a line about the price — "Buy once. Buy
+// well.", "Know the real price." — and a viewer who watched the whole thing
+// still could not say who had advertised to them or what was being sold. The
+// brand appeared once, as a watermark. An ad has to identify itself and ask
+// for the click.
+//
+// The sign-off also has to be where the VIEWER wins.
+//
+// An earlier cut ended on "So you'd overpay by $30." — every number in it true,
+// and the arc was: you are about to be ripped off, here is exactly how much,
+// goodbye. That makes the product the bearer of bad news rather than the thing
+// that saves you, and nobody shares an ad that ends on their own loss. The same
+// $30 reframed as money still in your pocket is the identical fact and the
+// opposite feeling.
 export const REELS_SIGNOFF = {
   kicker: '',
-  title: 'Know the real price.',
+  title: 'Big Ticket. Free on Chrome.',
   subtitle: '',
 };
 
