@@ -74,6 +74,7 @@ export async function makeVideo(o = {}) {
     spine: pick('spine'),
     filler: pick('filler'),
     panelStyle: o.panelStyle,
+    captionStyle: o.captionStyle,
     hook: pick('hook'),
     signoff: pick('signoff'),
     cards: o.cards,
@@ -88,7 +89,11 @@ export async function makeVideo(o = {}) {
   ))];
 
   const suffix = storyboard.format === 'landscape' ? '' : `-${storyboard.format}`;
-  const name = `${slug(o.prompt)}${suffix}-${storyboard.seed.toString(16).slice(0, 6)}`;
+  // The graphics package is part of the identity of the cut. Without it, the
+  // same prompt rendered in two styles silently overwrites itself — which is
+  // exactly what you are doing when you are comparing two styles.
+  const styled = o.captionStyle ? `-${slug(storyboard.look.captionStyle)}` : '';
+  const name = `${slug(o.prompt)}${suffix}${styled}-${storyboard.seed.toString(16).slice(0, 6)}`;
   const outDir = o.outDir || path.join('out', name);
   await mkdir(outDir, { recursive: true });
   await writeFile(path.join(outDir, 'storyboard.json'), JSON.stringify(storyboard, null, 2));

@@ -120,6 +120,10 @@ const TOPICS = [
 // named. Ordered by how well they carry a shot on their own.
 const FILLER = ['boards', 'compare', 'pdp', 'retailers', 'cardInstall', 'cardSave', 'cardCompare', 'howItWorks', 'hero'];
 
+// Graphics packages. See CAPTION_LOOKS in browser/runtime.js for what each one
+// actually sets — this is only the list of names the director may choose from.
+export const CAPTION_STYLES = ['editorial', 'kinetic', 'panel'];
+
 // The default narrative spine when the prompt doesn't demand otherwise.
 //
 // Ad, not explainer: hook, one or two product moments, then the click. Marching
@@ -186,6 +190,24 @@ export function direct(prompt, opts = {}) {
   // Every pixel distance below was tuned on the 1440-wide landscape frame.
   const pxScale = fmt.width / 1440;
 
+  // --- graphics package -------------------------------------------------
+  // Explicit flag wins; then the prompt, which is where the brief usually says
+  // which register it wants; then the format and mood, which have real
+  // preferences — a landscape ad in centred caps looks like a meme, and a calm
+  // mood with words popping on the beat is a contradiction. Whatever is left
+  // over is a coin flip on the seed, because the style is another axis the
+  // prompt-to-video variability requirement is asking to vary.
+  const captionStyle = (() => {
+    const asked = (opts.captionStyle || '').toLowerCase();
+    if (CAPTION_STYLES.includes(asked)) return asked;
+    if (/\b(kinetic|punchy|tiktok|meme|loud|hype|caption)/i.test(prompt)) return 'kinetic';
+    if (/\b(editorial|minimal|premium|clean|understated|elegant|apple)/i.test(prompt)) return 'editorial';
+    if (/\b(broadcast|lower third|corporate|classic)/i.test(prompt)) return 'panel';
+    if (!fmt.portrait) return rng.chance(0.6) ? 'editorial' : 'panel';
+    if (moodName === 'calm' || moodName === 'premium') return 'editorial';
+    return rng.chance(0.5) ? 'kinetic' : 'editorial';
+  })();
+
   // --- pick the cast of components -------------------------------------
   const wanted = new Set();
   for (const t of TOPIC_LIST) if (t.match.test(prompt)) t.comps.forEach((c) => wanted.add(c));
@@ -231,8 +253,15 @@ export function direct(prompt, opts = {}) {
     const [ctaName] = cast.splice(ctaAt, 1);
     cast.splice(Math.max(1, cast.length - 1), 0, ctaName);
   }
-  if (!cast.includes('heroCta') && rng.chance(0.6)) {
-    // The click beat is the ad's payoff — insert it near the end most times.
+  // The click beat is the ad's payoff — insert it near the end most times.
+  //
+  // Guarded on the profile actually defining heroCta. The reels profile does
+  // not (its clickable components are the accordion rows), so on any seed where
+  // this chance landed the cast gained a name with no component behind it and
+  // the length-trim below crashed reading `.clickable` off undefined. Latent
+  // until a prompt change shifted the draw — which is the tell that this needed
+  // a guard and not just luck.
+  if (COMPS.heroCta && !cast.includes('heroCta') && rng.chance(0.6)) {
     cast.splice(cast.length - 1, 0, 'heroCta');
   }
 
@@ -440,8 +469,12 @@ export function direct(prompt, opts = {}) {
      * about stay on screen together, which is the difference between an ad and
      * a slide deck spliced into a screen recording.
      */
+    // Only the `panel` package has panels. The other two put their copy on the
+    // picture, so a card is a slow push with type over it and there is no
+    // column or band to deal a side for.
+    const panelled = captionStyle === 'panel';
     const makeCard = (copy, { full = false, over } = {}) => {
-      const side = full ? null : nextSide();
+      const side = (full || !panelled) ? null : nextSide();
       return {
         // Standing over the component it introduces means the panel slides away
         // onto the very thing it just described, instead of every card cutting
@@ -461,9 +494,18 @@ export function direct(prompt, opts = {}) {
           : { fill: 0.8, easing: 'smoother', enter: nextEntrance(), panelStyle: nextStyle() },
         caption: {
           ...copy,
-          align: side ? 'left' : 'center',
-          anchor: 'center',
-          theme: 'dark',
+          // A full-frame panel centres its copy because the panel is the whole
+          // image. Editorial has no panel and ranges left like set text; only
+          // kinetic centres, and it forces that in the runtime anyway.
+          align: (side || captionStyle === 'editorial') ? 'left' : 'center',
+          // Centred and light-on-dark are properties of sitting on a filled
+          // panel, not of being a card. With no panel behind it that combination
+          // put white type across the middle of a white page, unreadable, and
+          // skipped the scrim entirely — the runtime only ramps under captions
+          // anchored to the bottom. Copy on the picture goes in the lower third
+          // and takes its contrast from the page it is over.
+          anchor: panelled ? 'center' : 'bottom',
+          theme: panelled ? 'dark' : (COMPS[over]?.theme || 'light'),
         },
         transitionIn: 'dissolve',
         isCard: true,
@@ -529,12 +571,18 @@ export function direct(prompt, opts = {}) {
       // subject are always partly in frame and get clipped mid-sentence. Bars
       // mask that, and they double as safe zones for the Reels/TikTok UI that
       // overlays the top and bottom of the screen anyway.
+      captionStyle,
+      // Bars and a vignette are cinema-nostalgic furniture: they announce "this
+      // is a film" on a surface where the native language is full bleed. The
+      // packages that are trying to look current drop both; `panel` keeps them,
+      // because a lower third with no frame around it reads as unfinished.
+      //
       // Portrait used to force 2.4, which the runtime turns into bars of
       // H*0.062*2.4 each — 30% of a reel painted black, with the page scaled
       // into the middle. A phone frame has no width to spare; keep the bars as
       // a thin cinematic edge and let safeTop/safeBottom do the keep-out work.
-      letterbox: fmt.portrait ? 0.5 : mood.letterbox,
-      vignette: mood.vignette,
+      letterbox: captionStyle === 'panel' ? (fmt.portrait ? 0.5 : mood.letterbox) : 0,
+      vignette: captionStyle === 'kinetic' ? 0 : mood.vignette * (captionStyle === 'editorial' ? 0.5 : 1),
       brand: true,
       // Handheld imperfection strength. 0 disables it entirely.
       handheld: opts.handheld ?? 1,

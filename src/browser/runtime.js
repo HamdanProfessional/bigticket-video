@@ -97,11 +97,58 @@
   })();
   const FONT = siteFont || '"Inter","Segoe UI",-apple-system,system-ui,sans-serif';
   capKicker.style.cssText = `font:600 13px/1.2 ${FONT};letter-spacing:.18em;text-transform:uppercase;opacity:.72;overflow:hidden`;
-  capTitle.style.cssText = `font:700 46px/1.12 ${FONT};letter-spacing:-.025em`;
+  // `text-wrap: balance` evens the line lengths instead of filling the first
+  // line and orphaning whatever is left — "Buy once. Buy / well." becomes
+  // "Buy once. / Buy well." Chromium-only, which is the only engine that ever
+  // renders this. Ignored where unsupported, so it needs no guard.
+  capTitle.style.cssText = `font:700 46px/1.12 ${FONT};letter-spacing:-.025em;text-wrap:balance`;
   capSub.style.cssText = `font:400 20px/1.45 ${FONT};opacity:.78;max-width:640px`;
   const capRule = doc.createElement('div');
   capRule.style.cssText = 'height:2px;width:0;background:currentColor;opacity:.5;transform-origin:left center';
   cap.append(capKicker, capTitle, capRule, capSub);
+
+  /**
+   * Three graphics packages, because "modern" is a moving target and the one
+   * this started with is a 2016-2020 broadcast lower third: letterspaced kicker,
+   * headline, short accent rule, solid band. Recognisable, and dated.
+   *
+   * The differences are typographic, not decorative. Weight, leading and
+   * tracking are what date a title — `panel` sets 700 at 1.12 leading, which
+   * leaves daylight between lines so a two-line headline reads as two things.
+   * The newer packages set heavier and tighter so it reads as one block.
+   *
+   *  panel     — the original. Kicker, rule, band. Kept because a side panel
+   *              genuinely needs a filled column, and because landscape ads
+   *              still look right in it.
+   *  editorial — no furniture at all. Very heavy, very tight, ranged left over
+   *              the live product with a gradient scrim for contrast. What
+   *              Apple, Linear and Arc cut their product films in.
+   *  kinetic   — centred caps, words popping in on the beat with a scale
+   *              overshoot and a brand highlight behind the operative word.
+   *              Native to Reels; louder, and deliberately so.
+   */
+  const CAPTION_LOOKS = {
+    panel: {
+      weight: 700, leading: 1.12, track: -0.025, caps: false,
+      furniture: true, sizeK: 1, scrim: 0.38,
+    },
+    editorial: {
+      // 0.92 leading is below 1: ascenders and descenders nearly touch, which is
+      // the whole point — the lines lock into a single mass.
+      weight: 800, leading: 0.92, track: -0.042, caps: false,
+      furniture: false, sizeK: 1.16, scrim: 0.54,
+    },
+    kinetic: {
+      // Caps at 0.95 leading. No descenders to collide, so it can set tighter
+      // than mixed case could.
+      weight: 900, leading: 0.95, track: -0.015, caps: true,
+      furniture: false, sizeK: 1.0, scrim: 0.5, centre: true, pop: true,
+    },
+  };
+  // Painted behind one word in the kinetic package. A block of brand colour
+  // behind the operative word is the single most legible way to say "this is
+  // the point" at thumb-scroll speed.
+  const HILITE = 'rgba(124,58,237,.92)';
 
   // --- kinetic type -------------------------------------------------------
   // A caption that just fades is the clearest "screen recording with text on
@@ -110,23 +157,61 @@
   // actual motion design looks like. Rebuilt only when the string changes.
   let titleWords = [];
   let titleCacheKey = '';
-  function buildTitle(text) {
-    if (titleCacheKey === text) return;
-    titleCacheKey = text;
+  function buildTitle(text, look, hiliteAt) {
+    const key = `${text}|${look.weight}|${look.pop ? 1 : 0}|${hiliteAt}`;
+    if (titleCacheKey === key) return;
+    titleCacheKey = key;
     capTitle.textContent = '';
     titleWords = [];
-    for (const word of String(text).split(/\s+/).filter(Boolean)) {
+    const words = String(text).split(/\s+/).filter(Boolean);
+    for (let i = 0; i < words.length; i++) {
       // Outer box clips; inner span is what actually translates.
+      //
+      // The clip has to go when a word pops: a scale overshoot inside
+      // overflow:hidden is chewed off at the box edge, so the word appears to
+      // grow out of a slot rather than springing forward. Popping words get an
+      // unclipped box and rely on opacity for their entrance instead.
       const box = doc.createElement('span');
-      box.style.cssText = 'display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .06em .12em 0';
+      box.style.cssText =
+        `display:inline-block;overflow:${look.pop ? 'visible' : 'hidden'};` +
+        'vertical-align:bottom;padding:0 .06em .12em 0';
       const inner = doc.createElement('span');
       inner.style.cssText = 'display:inline-block;will-change:transform';
-      inner.textContent = word;
+      inner.textContent = words[i];
+      if (i === hiliteAt) {
+        // Padding and a negative margin so the block hugs the word without
+        // shifting the line it sits in.
+        inner.style.background = HILITE;
+        inner.style.color = '#fff';
+        inner.style.padding = '.02em .16em .08em';
+        inner.style.margin = '0 -.06em';
+        inner.style.borderRadius = '.08em';
+      }
       box.appendChild(inner);
       capTitle.appendChild(box);
       capTitle.appendChild(doc.createTextNode(' '));
       titleWords.push(inner);
     }
+  }
+
+  // The word a kinetic caption highlights: the longest word that isn't a
+  // function word, which in practice is the noun or verb carrying the claim —
+  // "deal" in "Is it actually a deal?", "review" in "Every review, in one line."
+  // Deterministic, so the same copy always highlights the same word.
+  const STOPWORDS = new Set([
+    'the', 'a', 'an', 'is', 'it', 'in', 'on', 'of', 'to', 'and', 'or', 'for',
+    'with', 'your', 'you', 'that', 'this', 'what', 'who', 'one', 'every', 'all',
+    'any', 'from', 'but', 'not', 'are', 'was', 'be', 'been', 'so', 'if', 'up',
+  ]);
+  function hiliteIndex(text) {
+    const words = String(text).split(/\s+/).filter(Boolean);
+    let best = -1, bestLen = 0;
+    for (let i = 0; i < words.length; i++) {
+      const bare = words[i].replace(/[^a-z0-9]/gi, '').toLowerCase();
+      if (bare.length < 3 || STOPWORDS.has(bare)) continue;
+      if (bare.length > bestLen) { bestLen = bare.length; best = i; }
+    }
+    return best;
   }
 
   const easeOutQuint = (t) => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 5);
@@ -483,7 +568,13 @@
       // frame — small body copy on a phone held at arm's length, not a
       // headline. Portrait roughly triples it.
       const portrait = H > W;
-      const titleSize = clamp(colW * (column ? 0.088 : portrait ? 0.085 : 0.032), 22, portrait ? 62 : 48);
+      // A side panel is a filled column and needs its furniture; the newer
+      // packages are defined by NOT having a column, so they only apply when
+      // the copy is sitting on the picture.
+      const look = (column ? null : CAPTION_LOOKS[c.look]) || CAPTION_LOOKS.panel;
+      const titleSize = clamp(
+        colW * (column ? 0.088 : portrait ? 0.085 : 0.032) * look.sizeK,
+        22, (portrait ? 62 : 48) * look.sizeK);
       const subSize = clamp(colW * (column ? 0.038 : portrait ? 0.034 : 0.0145), 13, portrait ? 27 : 21);
       const kickSize = clamp(colW * (column ? 0.024 : portrait ? 0.020 : 0.009), 10, portrait ? 18 : 13);
       const padX = column ? clamp(colW * 0.115, 22, 68) : clamp(W * (portrait ? 0.075 : 0.064), 30, 92);
@@ -503,21 +594,40 @@
       // A paper panel carries dark type; everything else is light on dark.
       const dark = panelSide ? !panelLight : c.theme !== 'light';
       const fg = dark ? '#ffffff' : '#141026';
-      capKicker.textContent = c.kicker || '';
-      buildTitle(c.title || '');
-      capSub.textContent = c.subtitle || '';
+      const title = c.title || '';
+      capTitle.style.fontWeight = String(look.weight);
+      capTitle.style.lineHeight = String(look.leading);
+      capTitle.style.letterSpacing = `${look.track}em`;
+      capTitle.style.textTransform = look.caps ? 'uppercase' : 'none';
+      capKicker.textContent = look.furniture ? (c.kicker || '') : '';
+      buildTitle(title, look, look.pop ? hiliteIndex(title) : -1);
+      capSub.textContent = look.furniture ? (c.subtitle || '') : '';
 
       // Per-element choreography off the caption's own in/out progress.
       const inP = c.inP ?? 1;
       const outP = c.outP ?? 0;
       const n = titleWords.length || 1;
-      const stagger = Math.min(0.5 / n, 0.075);
+      // Kinetic spreads its words over more of the runway — the stagger IS the
+      // effect there, where in the other packages it is a flourish under a line
+      // that should land as one.
+      const stagger = look.pop
+        ? Math.min(0.72 / n, 0.13)
+        : Math.min(0.5 / n, 0.075);
+      const run = Math.max(0.15, 1 - (n - 1) * stagger);
       for (let i = 0; i < titleWords.length; i++) {
         // Each word gets the same length of runway, offset by its index.
-        const wt = easeOutQuint((inP - i * stagger) / Math.max(0.15, 1 - (n - 1) * stagger));
+        const wt = easeOutQuint((inP - i * stagger) / run);
         // Leaving: the whole line drifts up together rather than un-staggering.
-        const off = (1 - wt) * 112 - outP * 26;
-        titleWords[i].style.transform = `translateY(${off.toFixed(2)}%)`;
+        const off = (1 - wt) * (look.pop ? 34 : 112) - outP * 26;
+        if (look.pop) {
+          // Overshoot: past 1 on the way in, settling back. A word that scales
+          // straight to 1 reads as a fade; the overshoot is what makes it a pop.
+          const s = 0.62 + wt * 0.44 - Math.max(0, wt - 0.78) * 0.27;
+          titleWords[i].style.transform =
+            `translateY(${off.toFixed(2)}%) scale(${s.toFixed(3)})`;
+        } else {
+          titleWords[i].style.transform = `translateY(${off.toFixed(2)}%)`;
+        }
         titleWords[i].style.opacity = String(Math.min(wt, 1 - outP).toFixed(3));
       }
       // Kicker wipes up under its own mask, ahead of the title.
@@ -526,19 +636,19 @@
       // Rule draws out left-to-right once the title has landed.
       const rt = easeOutQuint((inP - 0.35) / 0.5);
       capRule.style.width = `${(rt * (c.subtitle ? 54 : 88)).toFixed(1)}px`;
-      capRule.style.opacity = String((0.5 * rt * (1 - outP)).toFixed(3));
+      capRule.style.opacity = look.furniture ? String((0.5 * rt * (1 - outP)).toFixed(3)) : '0';
       // Subtitle trails the title.
       const st = easeOutQuint((inP - 0.28) / 0.6);
       capSub.style.transform = `translateY(${((1 - st) * 14).toFixed(2)}px)`;
       capSub.style.opacity = String((0.78 * st * (1 - outP)).toFixed(3));
-      capKicker.style.display = c.kicker ? 'block' : 'none';
-      capSub.style.display = c.subtitle ? 'block' : 'none';
+      capKicker.style.display = (look.furniture && c.kicker) ? 'block' : 'none';
+      capSub.style.display = (look.furniture && c.subtitle) ? 'block' : 'none';
       capKicker.style.color = capTitle.style.color = capSub.style.color = fg;
       capKicker.style.color = dark ? 'rgba(255,255,255,.8)' : 'rgba(20,16,38,.6)';
       if (c.accent) capKicker.style.color = c.accent;
       // A panel is a block of its own, so its copy always ranges left however
       // the shot asked for it to be aligned.
-      const alignCentre = !panelSide && c.align === 'center';
+      const alignCentre = !panelSide && (c.align === 'center' || look.centre);
       cap.style.alignItems = alignCentre ? 'center' : 'flex-start';
       cap.style.textAlign = alignCentre ? 'center' : 'left';
       const anchor = panelSide ? 'center' : (c.anchor ?? 'bottom');
@@ -564,7 +674,13 @@
         `translate(${panelDx.toFixed(2)}%, ${capTy}%) translateY(${(panelDy * panelH / 100).toFixed(1)}px)`;
       cap.style.clipPath = o.panel && o.panel.clip ? o.panel.clip : 'none';
       cap.style.opacity = String(Math.min(1, c.opacity * 4));
-      cap.style.textShadow = dark ? '0 2px 30px rgba(10,6,30,.45)' : 'none';
+      // Dark type on a light page got no shadow at all, on the assumption it
+      // was always over a filled panel. Sitting on the live product it needs
+      // its own halo — a wide soft white glow separates the headline from the
+      // page's body copy without a scrim heavy enough to hide the product.
+      cap.style.textShadow = dark
+        ? '0 2px 30px rgba(10,6,30,.45)'
+        : look.furniture ? 'none' : '0 1px 22px rgba(255,255,255,.92),0 0 54px rgba(255,255,255,.8)';
 
       // A panel already provides the caption's background; only a caption
       // sitting directly on the page needs the ramp.
@@ -574,10 +690,23 @@
         // caption. The ramp now reaches near-opaque across the band the type
         // actually occupies, and clears completely above it so the component
         // itself is never washed out.
-        scrim.style.height = `${Math.round(H * 0.38)}px`;
-        scrim.style.background = dark
-          ? 'linear-gradient(to top,rgba(8,6,22,.97) 0%,rgba(8,6,22,.93) 34%,rgba(8,6,22,.66) 62%,rgba(8,6,22,0) 100%)'
-          : 'linear-gradient(to top,rgba(255,255,255,.99) 0%,rgba(255,255,255,.96) 34%,rgba(255,255,255,.72) 62%,rgba(255,255,255,0) 100%)';
+        // Editorial sets bigger and needs more ramp under it; kinetic sets
+        // centred with a highlight block doing much of the contrast work, so it
+        // wants the lightest scrim of the three — the product should still read.
+        scrim.style.height = `${Math.round(H * look.scrim)}px`;
+        // Where the density sits matters more than how tall the ramp is. The
+        // panel ramp thins out by 62% of its own height, which is fine under a
+        // one-line lower third and useless under the packages that set two
+        // lines of 60px type — the top line landed on the transparent end and
+        // the page's own body copy read straight through it. The furniture-less
+        // ramp holds near-opaque to 70% and only then releases.
+        const stops = look.furniture
+          ? [[0, 0.97], [0.34, 0.93], [0.62, 0.66]]
+          : [[0, 0.99], [0.46, 0.96], [0.7, 0.8]];
+        const rgb = dark ? '8,6,22' : '255,255,255';
+        scrim.style.background = 'linear-gradient(to top,' +
+          stops.map(([at, a]) => `rgba(${rgb},${a}) ${(at * 100).toFixed(0)}%`).join(',') +
+          `,rgba(${rgb},0) 100%)`;
         scrim.style.opacity = String(Math.min(1, c.opacity * 2.2));
       } else scrim.style.opacity = '0';
     } else { cap.style.opacity = '0'; scrim.style.opacity = '0'; }

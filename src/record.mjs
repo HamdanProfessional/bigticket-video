@@ -311,7 +311,13 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth } 
     const comp = { ...COMPS[shot.component], selResolved: '@' + shot.component };
     const zBase = fitZoom(shot.rect, width, height, shot.params.fill ?? 0.78);
     const kind = KINDS[shot.kind] || KINDS.pushIn;
-    const { cam, ov } = kind(p, { rect: shot.rect, vw: width, vh: height, zBase, p: shot.params, comp });
+    const { cam, ov } = kind(p, {
+      rect: shot.rect, vw: width, vh: height, zBase, comp,
+      // Shots read the graphics package off their params so a kind does not
+      // need the whole look object; injected here rather than written into
+      // every shot by the director, so there is one source of truth.
+      p: { ...shot.params, look: look.captionStyle },
+    });
 
     /**
      * Containment: an element that fits the frame must STAY in the frame.
@@ -393,7 +399,9 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth } 
       // kicker, rule and subtitle off these rather than one shared opacity.
       const inP = clamp01((p - CAPTION_LEAD) / Math.max(0.01, inT));
       const outP = shot.params.holdOut ? 0 : clamp01((p - outT) / Math.max(0.01, 1 - outT));
-      caption = { ...shot.caption, opacity: clamp01(op), inP, outP };
+      // The graphics package is a property of the film, not of one caption, so
+      // it rides on `look` and every caption inherits it.
+      caption = { ...shot.caption, look: look.captionStyle, opacity: clamp01(op), inP, outP };
     }
 
     // Transitions live on the cut between this shot and its neighbours.

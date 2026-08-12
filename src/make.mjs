@@ -40,6 +40,8 @@ const opts = {
   duration: num(flag('duration')),
   fps: num(flag('fps')),
   mood: flag('mood') || undefined,
+  // editorial | kinetic | panel. Omitted, the director picks one.
+  captionStyle: flag('style') || undefined,
   format: flag('format') || undefined,
   url: flag('url') || undefined,
   // Pin every card to one finish. Left off, the director deals them from a

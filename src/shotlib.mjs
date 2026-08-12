@@ -285,6 +285,17 @@ export const KINDS = {
   titleCard(p, ctx) {
     const { rect, vw, vh, zBase } = ctx;
 
+    // The editorial and kinetic packages have no panel by definition — the copy
+    // sits on the picture and a gradient scrim carries the contrast. So the
+    // "card" is just a slow push on the component with type over it, which is
+    // also the only version of this beat that never cuts away from the product.
+    if (ctx.p.look && ctx.p.look !== 'panel') {
+      const z = tween(p, 0, 1, zBase * 1.02, zBase * 1.13, 'linear');
+      // Copy lives in the lower third, so the component is lifted out of it —
+      // the same correction the lower-third panel makes, without the band.
+      return { cam: frameOn(rect, vw, vh, z, 0.14 * vh), ov: { panel: { opacity: 0 } } };
+    }
+
     // Side panel: the copy takes a column and the product keeps the rest of the
     // frame, so the film never cuts away from the thing it is selling.
     const side = ctx.p.side || null;
