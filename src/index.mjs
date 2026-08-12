@@ -77,6 +77,8 @@ export async function makeVideo(o = {}) {
     captionStyle: o.captionStyle,
     hook: pick('hook'),
     signoff: pick('signoff'),
+    // A claim sequence whose order is the argument; see director.mjs.
+    narrative: pick('narrative'),
     cards: o.cards,
   });
   storyboard.url = o.url || 'https://shopbigticket.com/';
@@ -113,6 +115,8 @@ export async function makeVideo(o = {}) {
   const manifest = await record(storyboard, outDir, {
     onProgress: o.onProgress,
     components: pick('components'),
+    // Reads the page's own numbers so copy can quote them; see lib/tokens.mjs.
+    extract: pick('extract'),
     auth,
   });
 

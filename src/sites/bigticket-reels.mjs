@@ -18,6 +18,8 @@
 //    long-lived tab, and following a link would replace the page under the
 //    camera for every later shot on that route.
 
+import { extractFacts } from './bigticket-facts.mjs';
+
 const PDP = '/products/6961149f831b6dd08fd055a4';
 
 export const REELS_COMPONENTS = {
@@ -29,13 +31,15 @@ export const REELS_COMPONENTS = {
   productShot: {
     route: PDP, sel: 'img[alt="Product image 1"]', climb: 0,   // 472x236
     label: 'Product image', theme: 'light', captionable: true,
-    copy: { kicker: 'Any product', title: 'Start with what you want.', subtitle: '' },
+    // Quotes the page. See lib/tokens.mjs — a line whose numbers cannot be
+    // resolved is dropped rather than printed with a hole in it.
+    copy: { kicker: '', title: '{rating} stars. {reviewCount} reviews.', subtitle: '' },
   },
   // Accordion rows. These really open — the click is the point of the shot.
   specGeneral: {
     route: PDP, sel: 'text=GENERAL INFORMATION', climb: 1,     // 508x44 button
     label: 'General information', theme: 'light', clickable: true, interactive: true,
-    copy: { kicker: 'Every spec', title: 'Open it up.', subtitle: '' },
+    copy: { kicker: '', title: 'Every spec, in one tap.', subtitle: '' },
   },
   specPerformance: {
     route: PDP, sel: 'text=PERFORMANCE & FEATURES', climb: 1,  // 508x44
@@ -50,17 +54,24 @@ export const REELS_COMPONENTS = {
     route: PDP, sel: 'text=Compare Buying Options', climb: 1,  // 508x40
     label: 'Compare buying options', theme: 'light', clickable: true, interactive: true,
     captionable: true,
-    copy: { kicker: 'Three sellers', title: 'Compare who is cheapest.', subtitle: '' },
+    copy: { kicker: '', title: 'All {sellers} want {price}.', subtitle: '' },
   },
   priceChart: {
     route: PDP, sel: 'text=Pricing History', climb: 1,         // section with the 508x180 svg
     label: 'Price history chart', theme: 'light', captionable: true,
-    copy: { kicker: 'Price history', title: 'Is it actually a deal?', subtitle: '' },
+    copy: { kicker: '', title: 'It was {low} in {lowDate}.', subtitle: '' },
+  },
+  // The argument's punchline. Separate from priceChart so the chart can be
+  // framed twice with two different lines rather than repeating one.
+  priceDelta: {
+    route: PDP, sel: 'text=Pricing History', climb: 1,
+    label: 'Price history (delta)', theme: 'light', captionable: true,
+    copy: { kicker: '', title: "You'd pay {overLow} over its floor.", subtitle: '' },
   },
   reviewsBlock: {
     route: PDP, sel: 'text=Review Highlights', climb: 1,       // 508x37 heading block
     label: 'Review highlights', theme: 'light', captionable: true,
-    copy: { kicker: 'AI summary', title: 'Every review, in one line.', subtitle: '' },
+    copy: { kicker: '', title: 'Every review, one answer.', subtitle: '' },
   },
 
   // ---- dashboard: a real product grid ----------------------------------
@@ -126,6 +137,7 @@ export const REELS_AFFINITY = {
   specDimensions: ['tapFocus', 'pulseFocus', 'spotlight'],
   compareOptions: ['tapFocus', 'spotlight', 'pulseFocus'],
   priceChart: ['pushIn', 'pullBack', 'spotlight', 'sweepReveal', 'tiltReveal'],
+  priceDelta: ['punchIn', 'pushIn', 'spotlight', 'zoomBlurIn'],
   reviewsBlock: ['pushIn', 'pulseFocus', 'spotlight', 'tiltReveal'],
 
   matchHeading: ['pushIn', 'slideIn', 'pulseFocus'],
@@ -143,7 +155,7 @@ export const REELS_AFFINITY = {
 
 export const REELS_TOPICS = [
   { match: /\b(spec|detail|dimension|feature|information)/i, comps: ['specGeneral', 'specPerformance', 'specDimensions'] },
-  { match: /\b(price|pricing|deal|cheap|discount|track|drop|cost|histor|compar)/i, comps: ['priceChart', 'compareOptions'] },
+  { match: /\b(price|pricing|deal|cheap|discount|track|drop|cost|histor|compar)/i, comps: ['priceChart', 'priceDelta', 'compareOptions'] },
   { match: /\b(review|rating|opinion|ai|summar)/i, comps: ['reviewsBlock'] },
   { match: /\b(board|sav(e|es|ed|ing)|organi[sz]|collect)/i, comps: ['boardTile', 'matchHeading'] },
   { match: /\b(refer|friend|reward|gift|invite|earn|share)/i, comps: ['giftHeadline', 'shareVia', 'stepShare', 'stepReward'] },
@@ -151,7 +163,10 @@ export const REELS_TOPICS = [
 ];
 
 // Hook on a real product, tap something that responds, pay off on the chart.
-export const REELS_SPINE = ['productShot', 'specGeneral', 'compareOptions', 'priceChart', 'reviewsBlock'];
+// The argument, in order: here is the price, here is who sells it, here is what
+// it used to cost, here is what you are overpaying, here is the verdict.
+// A spine is a claim sequence, not a tour of the navigation.
+export const REELS_SPINE = ['productShot', 'compareOptions', 'priceChart', 'priceDelta', 'reviewsBlock'];
 
 // Product page only, ordered by how much each one sells the product — padding
 // is drawn front-weighted from this list.
@@ -169,13 +184,15 @@ export const REELS_SPINE = ['productShot', 'specGeneral', 'compareOptions', 'pri
 // angle on the price chart is a better shot than a first angle on a cupboard.
 // All of these stay castable when a prompt actually asks (see REELS_TOPICS).
 export const REELS_FILLER = [
-  'priceChart', 'reviewsBlock', 'specPerformance', 'specDimensions',
-  'compareOptions', 'productShot', 'specGeneral', 'productTitle',
+  'priceChart', 'priceDelta', 'reviewsBlock', 'compareOptions', 'productShot',
+  'specGeneral', 'specPerformance', 'productTitle', 'specDimensions',
 ];
 
+// The hook quotes the price, because a number is a stronger opening than a
+// slogan — and if the page will not give one up, the generic line still runs.
 export const REELS_HOOK = {
-  kicker: 'Big Ticket',
-  title: 'Before you spend big.',
+  kicker: '',
+  title: "You're about to spend {price}.",
   subtitle: '',
 };
 
@@ -187,6 +204,9 @@ export const REELS_SIGNOFF = {
 
 export const REELS_PROFILE = {
   components: REELS_COMPONENTS,
+  extract: extractFacts,
+  // The spine states a case in order; the director must not reshuffle it.
+  narrative: true,
   affinity: REELS_AFFINITY,
   topics: REELS_TOPICS,
   spine: REELS_SPINE,

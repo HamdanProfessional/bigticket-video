@@ -11,6 +11,7 @@ import { COMPONENTS, KINDS, fitZoom } from './shotlib.mjs';
 import { tween, ease, clamp01, handheld, ramp } from './lib/easing.mjs';
 import { CAPTION_LEAD, CAPTION_IN, CAPTION_OUT } from './lib/timing.mjs';
 import { ensureSession } from './auth.mjs';
+import { fillCopy } from './lib/tokens.mjs';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
@@ -134,10 +135,12 @@ export async function record(storyboard, outDir, opts = {}) {
   }
 }
 
-async function recordInner(storyboard, outDir, { onProgress, components, auth } = {}, setBrowser) {
+async function recordInner(storyboard, outDir, { onProgress, components, auth, extract } = {}, setBrowser) {
   // Site profile is injectable so this renderer is not tied to one site.
   const COMPS = components || COMPONENTS;
-  const { fps, width, height, shots, look } = storyboard;
+  const { fps, width, height, look } = storyboard;
+  // Reassigned when a card's copy quotes a number the page did not supply.
+  let { shots } = storyboard;
   const framesDir = path.join(outDir, 'frames');
   await rm(framesDir, { recursive: true, force: true });
   await mkdir(framesDir, { recursive: true });
@@ -237,6 +240,37 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth } 
     }
     geometry[name] = await page.evaluate((n) => window.__BT.pageRect('@' + n), name);
   }
+
+  // ---- read the page's own numbers, and fill the copy with them ----------
+  //
+  // Copy that quotes a real price is making an argument; copy that says "Open
+  // it up." is describing software. But a number written into a profile rots
+  // silently, so profiles ship `{price}`-style tokens and the values come from
+  // here, off the page being filmed, on every render.
+  //
+  // A line that cannot be filled is dropped, never printed with a hole in it —
+  // and a title card whose whole reason to exist was that line is dropped with
+  // it, because a card with no copy is three seconds of nothing.
+  let facts = {};
+  if (extract) {
+    const { page } = await pageFor(storyboard.factsRoute || routeOf(shots[0]?.component));
+    facts = (await page.evaluate(extract)) || {};
+    const filled = Object.entries(facts).filter(([, v]) => v != null && v !== '').length;
+    console.log(`  facts ${filled}/${Object.keys(facts).length} from the page`);
+  }
+  let droppedForFacts = 0;
+  for (const s of shots) {
+    if (!s.caption) continue;
+    const c = fillCopy(s.caption, facts);
+    if (c === null) {
+      s.caption = null;
+      if (s.isCard) { s.dropForFacts = true; droppedForFacts++; }
+    } else s.caption = c;
+  }
+  if (droppedForFacts) {
+    console.warn(`  ! ${droppedForFacts} card(s) dropped — the page did not supply the numbers their copy quotes`);
+  }
+  shots = shots.filter((s) => !s.dropForFacts);
 
   const live = shots.filter((s) => geometry[s.component]);
   if (!live.length) throw new Error('No components resolved on the page — nothing to record.');

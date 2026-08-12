@@ -8,6 +8,7 @@
 import { hashString, makeRng } from './lib/rng.mjs';
 import { COMPONENTS, AFFINITY } from './shotlib.mjs';
 import { minShotForHold, MIN_TEXT_HOLD } from './lib/timing.mjs';
+import { hasTokens } from './lib/tokens.mjs';
 
 // ------------------------------------------------------------------ moods
 const MOODS = {
@@ -212,24 +213,40 @@ export function direct(prompt, opts = {}) {
   const wanted = new Set();
   for (const t of TOPIC_LIST) if (t.match.test(prompt)) t.comps.forEach((c) => wanted.add(c));
 
+  // A narrative spine is a claim sequence — price, then who sells it, then what
+  // it used to cost, then the overpayment — and its ORDER is the argument. The
+  // seeded drop-and-shuffle below exists to keep a tour of features from looking
+  // stamped out, which is the right instinct for a tour and destructive for an
+  // argument: it opened one cut on "It was $199.95 in October" before the film
+  // had said what the price was. Variety for these profiles has to come from
+  // motion, timing and padding instead.
+  const narrative = !!opts.narrative;
+
   let cast;
   if (wanted.size) {
     // Prompt-led: requested components first, spine fills the gaps so the film
-    // still opens and closes properly.
-    const requested = SPINE_LIST.filter((c) => wanted.has(c)).concat([...wanted].filter((c) => !SPINE_LIST.includes(c)));
+    // still opens and closes properly. Under a narrative the spine's own order
+    // wins, so a prompt can select which claims appear but not resequence them.
+    const requested = narrative
+      ? SPINE_LIST.filter((c) => wanted.has(c)).concat(
+          [...wanted].filter((c) => !SPINE_LIST.includes(c)))
+      : SPINE_LIST.filter((c) => wanted.has(c)).concat(
+          [...wanted].filter((c) => !SPINE_LIST.includes(c)));
     cast = ['hero', ...requested.filter((c) => c !== 'hero' && c !== 'finalCta'), 'finalCta'];
   } else {
     cast = [...SPINE_LIST];
-    // Seeded variation on the default spine: drop a middle beat, maybe reorder.
-    if (rng.chance(0.5)) {
-      const droppable = cast.slice(2, -1);
-      const drop = rng.pick(droppable);
-      cast = cast.filter((c) => c !== drop);
-    }
-    if (rng.chance(0.35)) {
-      const mid = cast.slice(1, -1);
-      const swapped = rng.shuffle(mid);
-      cast = [cast[0], ...swapped, cast[cast.length - 1]];
+    if (!narrative) {
+      // Seeded variation on the default spine: drop a middle beat, maybe reorder.
+      if (rng.chance(0.5)) {
+        const droppable = cast.slice(2, -1);
+        const drop = rng.pick(droppable);
+        cast = cast.filter((c) => c !== drop);
+      }
+      if (rng.chance(0.35)) {
+        const mid = cast.slice(1, -1);
+        const swapped = rng.shuffle(mid);
+        cast = [cast[0], ...swapped, cast[cast.length - 1]];
+      }
     }
   }
   cast = cast.filter((c) => COMPS[c]);
@@ -305,6 +322,27 @@ export function direct(prompt, opts = {}) {
     if (!inserted) cast.splice(cast.length - 1, 0, padPick(pool));
   }
 
+  // Under a narrative, put the claims back in spine order.
+  //
+  // Padding splices at a random index, which preserves the relative order of
+  // what is already there — but the prompt-led branch above seeds the cast from
+  // whichever claims the prompt selected, and padding then drops the remaining
+  // spine components in wherever they land. That produced a cut opening on "It
+  // was $199.95 in October" three beats before anything had said what the price
+  // was: every claim present, none of them in sequence.
+  //
+  // Only spine members are re-sorted, and only into the positions they already
+  // occupy, so filler stays exactly where padding put it and the pacing the
+  // padding created survives.
+  if (narrative) {
+    const slots = [];
+    for (let i = 0; i < cast.length; i++) if (SPINE_LIST.includes(cast[i])) slots.push(i);
+    const ordered = slots
+      .map((i) => cast[i])
+      .sort((a, b) => SPINE_LIST.indexOf(a) - SPINE_LIST.indexOf(b));
+    slots.forEach((slot, k) => { cast[slot] = ordered[k]; });
+  }
+
   // Padding above can reintroduce names the profile does not define.
   cast = cast.filter((c) => COMPS[c]);
   if (!cast.length) throw new Error(`director: no known components for this site profile`);
@@ -347,10 +385,27 @@ export function direct(prompt, opts = {}) {
     // the camera pushes into them (the UI mockups). Everything else already
     // shows its copy on the page, and an overlay would print it twice.
     const prevHadCaption = shots.length && shots[shots.length - 1].caption;
-    // On the mobile layout the section headings sit right beside the mockups
-    // and stay in frame, so an overlay caption prints the same words twice.
-    // Desktop pushes them out of shot, which is why the caption exists at all.
-    const wantCaption = !fmt.portrait && comp.captionable && comp.copy && !prevHadCaption && rng.chance(0.85);
+    // Portrait used to refuse per-shot captions outright: on the mobile layout
+    // the section headings stay in frame, so an overlay that *labelled* the
+    // component printed the same words twice.
+    //
+    // That reasoning only holds for copy that describes the UI. Copy that makes
+    // a CLAIM — "It was $199.95 in October." — appears nowhere on the page, and
+    // suppressing it left a 9:16 cut with nothing to say but its three title
+    // cards. A reel that cannot state an argument is a screen recording.
+    //
+    // So the test is now about the copy, not the format: a line that quotes the
+    // page's own numbers earns a caption in any format. Plain descriptive copy
+    // is still suppressed in portrait, where it would duplicate the heading.
+    //
+    // A claim is not optional and not blocked by its neighbour: consecutive
+    // statements ARE the argument, and a punchline beat that lost its coin flip
+    // is a silent punchline. Descriptive copy keeps both the coin flip and the
+    // no-two-in-a-row rule, which is what stops a feature tour reading as a
+    // wall of text.
+    const claims = comp.copy && hasTokens(comp.copy.title);
+    const wantCaption = comp.captionable && comp.copy
+      && (claims || (!fmt.portrait && !prevHadCaption && rng.chance(0.85)));
 
     // A shot carrying text has to outlast its own ramps by MIN_TEXT_HOLD, or
     // the words are still arriving when they start leaving and nobody reads
@@ -544,7 +599,16 @@ export function direct(prompt, opts = {}) {
       // Cold open: lead with live motion and put the hook card SECOND. Opening
       // on a static panel spends the one second that decides whether anyone
       // keeps watching, before the product has even appeared.
-      if (i === 0) out.push(makeCard(opts.hook || HOOK, { over: shots[1]?.component }));
+      if (i === 0) {
+        // The opening shot must not speak over the hook that follows it. With
+        // claim copy enabled these are both statements about the same fact, so
+        // the reel opened "All 3 want $229.95." and then, two seconds later,
+        // "You're about to spend $229.95." — the punch of the hook spent before
+        // it arrived. The hook is the opening line; the shot under it is a look
+        // at the product.
+        if (s.caption && hasTokens(s.caption.title || '')) s.caption = null;
+        out.push(makeCard(opts.hook || HOOK, { over: shots[1]?.component }));
+      }
     }
     // The sign-off holds solid to the last frame rather than dissolving — it is
     // the call to action, and it was fading out before the video did.
