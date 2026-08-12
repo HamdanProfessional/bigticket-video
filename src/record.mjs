@@ -10,7 +10,8 @@ import path from 'node:path';
 import { COMPONENTS, KINDS, fitZoom } from './shotlib.mjs';
 import { tween, ease, clamp01, handheld, ramp } from './lib/easing.mjs';
 import { CAPTION_LEAD, CAPTION_IN, CAPTION_OUT } from './lib/timing.mjs';
-import { ensureSession } from './auth.mjs';
+import { ensureSession, SESSION_PATH } from './auth.mjs';
+import { existsSync } from 'node:fs';
 import { fillCopy } from './lib/tokens.mjs';
 
 const UA =
@@ -135,7 +136,7 @@ export async function record(storyboard, outDir, opts = {}) {
   }
 }
 
-async function recordInner(storyboard, outDir, { onProgress, components, auth, extract, facts: givenFacts } = {}, setBrowser) {
+async function recordInner(storyboard, outDir, { onProgress, components, auth, authRequired, extract, facts: givenFacts, hide } = {}, setBrowser) {
   // Site profile is injectable so this renderer is not tied to one site.
   const COMPS = components || COMPONENTS;
   const { fps, width, height, look } = storyboard;
@@ -167,8 +168,12 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
   // Signing in, if the profile needs it. The session is established in a
   // throwaway context and reused as storageState, so the filming contexts never
   // see the credentials at all.
+  // Credentials mint a session; a cached one is just as good and needs none. If
+  // this is skipped when a session exists, the whole run films logged out —
+  // which looks like a working render right up until every app shot is a
+  // marketing page.
   let storageState;
-  if (auth) {
+  if (auth || (authRequired && existsSync(SESSION_PATH))) {
     storageState = await ensureSession(browser, auth, { origin });
   }
 
@@ -240,6 +245,7 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
         } else { stableMs = 0; prev = n; }
       }
     });
+    await hideFurniture(page);
     await page.evaluate(runtimeSrc);
 
     // Priming pass: walk the page so lazy images decode and reveal blocks fire,
@@ -264,6 +270,28 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
     const entry = { page, docHeight: await page.evaluate(() => window.__BT.docHeight()) };
     pages.set(route, entry);
     return entry;
+  }
+
+  // Suppresses profile-declared page furniture. Matching is selector + optional
+  // text, because these elements are class-soup with nothing stable to grab and
+  // a selector loose enough to catch one is loose enough to catch the page.
+  // Re-applied per shot: a curtain that mounts 3s after navigation can mount
+  // again after any state change.
+  async function hideFurniture(page) {
+    const rules = storyboard.hide || hide;
+    if (!rules || !rules.length) return 0;
+    return page.evaluate((rs) => {
+      let n = 0;
+      for (const r of rs) {
+        for (const el of document.querySelectorAll(r.sel)) {
+          if (r.contains && !(el.textContent || '').toLowerCase().includes(String(r.contains).toLowerCase())) continue;
+          if (el.style.display === 'none') continue;
+          el.style.setProperty('display', 'none', 'important');
+          n++;
+        }
+      }
+      return n;
+    }, rules);
   }
 
   const routeOf = (name) => COMPS[name]?.route || storyboard.defaultRoute || '/';
@@ -430,6 +458,7 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
     // noise next to a ~185ms screenshot, and it makes the camera correct for
     // any DOM change from any cause.
     if (idx !== lastIdx) {
+      await hideFurniture(page).catch(() => {});
       const spec = COMPS[shot.component];
       if (spec) {
         await page.evaluate(

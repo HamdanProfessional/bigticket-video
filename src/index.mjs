@@ -13,7 +13,8 @@ import { fileURLToPath } from 'node:url';
 import { direct } from './director.mjs';
 import { record } from './record.mjs';
 import { renderVideo, renderPoster, run } from './render.mjs';
-import { credentialsFromEnv } from './auth.mjs';
+import { credentialsFromEnv, SESSION_PATH } from './auth.mjs';
+import { existsSync } from 'node:fs';
 import { readFile as _readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
@@ -115,11 +116,15 @@ export async function makeVideo(o = {}) {
 
   // Credentials are never stored on the storyboard or the manifest — they are
   // handed straight to the recorder and used once to mint a session.
-  const auth = (pick('requiresAuth') || o.auth) ? (o.auth || credentialsFromEnv()) : null;
-  if (pick('requiresAuth') && !auth) {
+  const authRequired = !!(pick('requiresAuth') || o.auth);
+  const auth = authRequired ? (o.auth || credentialsFromEnv()) : null;
+  // A cached session is sufficient by itself — that is what caching it is for.
+  // Credentials are only needed to *mint* one, so demand them only when there
+  // is nothing to reuse.
+  if (pick('requiresAuth') && !auth && !existsSync(SESSION_PATH)) {
     throw new Error(
-      'This profile films the signed-in app, so it needs credentials. ' +
-      'Set BT_EMAIL and BT_PASSWORD in the environment.'
+      'This profile films the signed-in app, and there is no cached session at ' +
+      `${SESSION_PATH}. Set BT_EMAIL and BT_PASSWORD in the environment to mint one.`
     );
   }
 
@@ -129,7 +134,10 @@ export async function makeVideo(o = {}) {
     // Reads the page's own numbers so copy can quote them; see lib/tokens.mjs.
     extract: pick('extract'),
     facts: libraryFacts,
+    // Page furniture the profile says must never appear on camera.
+    hide: pick('hide'),
     auth,
+    authRequired,
   });
 
   let audioPath = null;

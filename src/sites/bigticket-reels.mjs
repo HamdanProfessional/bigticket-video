@@ -76,7 +76,10 @@ export const REELS_COMPONENTS = {
   priceDelta: {
     route: PDP, sel: 'text=Pricing History', climb: 1,
     label: 'Price history (delta)', theme: 'light', captionable: true,
-    copy: { kicker: '', title: "This one's been {overLow} cheaper.", subtitle: '' },
+    // NOT "it's been $30 cheaper" — that is the same fact framed as the viewer
+    // having lost, and an ad must end on them winning. The chart's value is not
+    // the regret, it is knowing whether today is the day.
+    copy: { kicker: '', title: 'So you know when to buy.', subtitle: '' },
   },
   reviewsBlock: {
     route: PDP, sel: 'text=Review Highlights', climb: 1,       // 508x37 heading block
@@ -274,7 +277,20 @@ export const REELS_SIGNOFF = {
   subtitle: '',
 };
 
+// Page furniture to suppress before filming. Not styling preference — these are
+// elements that would misrepresent the product on camera.
+//
+// The product page mounts a full-viewport loading curtain ("Searching for the
+// best deals… Almost there!") about 3s after navigation, and it never comes
+// down: measured present, opacity 1, visible, 540x960, z-20, still there at 90s.
+// It cannot be waited out, and every shot on this route was filmed underneath
+// it — which is why a spinner reading "Nearly done." sat over the ad.
+export const REELS_HIDE = [
+  { sel: 'div[class*="fixed"][class*="h-full"]', contains: 'searching for the best deals' },
+];
+
 export const REELS_PROFILE = {
+  hide: REELS_HIDE,
   components: REELS_COMPONENTS,
   extract: extractFacts,
   // The spine states a case in order; the director must not reshuffle it.
