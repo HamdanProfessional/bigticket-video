@@ -102,15 +102,34 @@ change state in place, and that state change is the shot.
 | `spine` | the default narrative when no topic matches | the ad has no shape |
 | `filler` | padding when the cast is short of beats | weak components get 2.5s each |
 
+A profile that tells a story sets `narrative: true`. Then the spine survives
+topic matching intact rather than being replaced by whatever the prompt named,
+the director stops shuffling it, the click stays where the story puts it, and
+all its copy counts as ad lines rather than labels. Without it, a prompt saying
+"comparing prices" collapsed a seven-beat journey to the three price beats.
+
+**Span routes.** A profile confined to one page produces ads with no journey —
+they open already looking at what they end on. Give the spine the real product
+experience: browse → choose → compare → decide. The recorder keeps one tab per
+route, so crossing pages is nearly free.
+
 `filler` is drawn **front-weighted**, so order it by how well each component
 carries a shot on its own — and leave out anything that films badly rather than
 demoting it. Padding will reach the end of the list eventually: a page with
 seven strong components cannot fill a 30s cut without revisiting, and revisiting
 a good component beats visiting a bad one.
 
-Copy is part of the profile too. Avoid hardcoded counts in `copy.title`
-("Thirteen reviews, one answer") — they go stale the moment the site's data
-changes and there is nothing to catch it.
+### Copy is part of the profile
+
+Avoid hardcoded numbers in `copy.title` ("Thirteen reviews, one answer") — they
+go stale the moment the site's data changes and nothing catches it. Add an
+`extract` function instead and write `{price}`-style tokens; a line that cannot
+be filled is dropped rather than printed with a hole in it.
+
+Write the copy as an ad, not as labels for what is on screen: problem → product
+→ proof → CTA, with a beat that names the advertiser and a beat that asks for
+the click. See the `make-ad` skill, which has the full checklist and the
+failures that produced it.
 
 ## 3. Verify components resolve
 

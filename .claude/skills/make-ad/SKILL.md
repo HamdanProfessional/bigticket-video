@@ -201,15 +201,99 @@ option added to the director must be added there too, or it is silently ignored.
 | style | "kinetic/punchy/hype" → kinetic; "editorial/minimal/premium" → editorial |
 | features | "boards", "compare", "price", "specs", "reviews", "referral" |
 
-## Structure
+## Writing the ad
 
-Ad, not explainer: hook card → live beat → card → feature → feature → click →
-sign-off. The click beat is the payoff and belongs near the end; left where a
-shuffle put it the ad peaks in the middle.
+This is the part that has been got wrong most often here, and no amount of
+motion, typography or grading rescues it. Everything below came from a client
+rejecting the output.
+
+**An ad promotes the product being sold.** Film a product page and it is
+alarmingly easy to produce a beautiful video *about the page* — one cut spent
+three of twelve beats opening spec accordions ("Slot Count: 2"), which is
+advertising a product manual. Ask of every beat: what is this selling?
+
+**The page you are filming is the demo, not the subject.** Hooks like "You're
+about to spend $229.95." make the ad about a toaster. The subject is the
+problem the product solves; the toaster is how you show it.
+
+**Name the advertiser and ask for the click.** A viewer who watches the whole
+thing must be able to say who advertised and what they sell. For a long time
+these cuts ended on "Buy once. Buy well." — a sentiment, with the brand present
+only as a watermark. Every ad needs a beat that names the product and a CTA.
+
+**End on the viewer winning.** One cut closed on "So you'd overpay by $30." —
+every number true, and the arc was: you are about to be ripped off, here is how
+much, goodbye. That makes the product the bearer of bad news. The same $30 as
+money still in your pocket is the identical fact and the opposite feeling.
+
+**Structure: problem → product → proof → CTA.**
+
+```
+Buying something big?                    problem — the viewer's situation
+You don't know where the best deal is.   the pain
+Pick the one you want.                   the journey starts
+Big Ticket compares every seller.        PRODUCT NAMED + what it does
+And every price it's ever been.          second capability
+This one's been $30 cheaper.             proof, from live data
+AI reads the reviews, so you don't.      benefit, not mechanism
+Big Ticket. Free on Chrome.              CTA
+```
+
+Write benefits, not mechanisms: "AI reads the reviews, so you don't" beats "AI
+summarises reviews".
+
+## Structure and the journey
+
+**A spine is a claim sequence, and its order is the argument.** Set
+`narrative: true` on the profile and the director stops shuffling it, keeps the
+click where the story puts it rather than moving it to the end, and treats all
+its copy as ad lines rather than labels.
+
+**Cross routes.** Ads that film one region of one page have no journey — they
+open already looking at what they end on. Follow the real product experience:
+browse several products → choose one → compare prices → read reviews → CTA. The
+recorder keeps one tab per route, so this costs nothing at render time.
+
+A tile that would navigate must be `clickable` but NOT `interactive`: the cursor
+lands and the ring draws, the link is refused, and the cut to the next route
+does the rest — which is what an ad does anyway.
 
 If it "feels like a tutorial", the cause is too many feature beats and step copy
 — shorten and cut cards, don't add motion. If it's "too short", raise
 `--duration`; cards are added on top of it.
+
+## Quoting real numbers
+
+Copy can quote the page: profiles ship `{price}`-style tokens and `extract`
+reads the values off the live page on every render (`lib/tokens.mjs`,
+`sites/bigticket-facts.mjs`).
+
+**Never write a number into a profile.** A hardcoded fact rots silently — this
+repo shipped "Thirteen reviews, one answer" and the site's data moved on without
+it. A line whose tokens cannot be filled is DROPPED, and a title card that loses
+its line is dropped with it. A missing beat is invisible; "It was $undefined in
+October" is a disaster on a client's timeline.
+
+Check what the data actually supports before writing the claim. Here all three
+retailers quote the same price, so "compare retailers and save" would have been
+contradicted by the chart it was printed over. `spread` is extracted so copy can
+lead on retailer spread where one exists and fall back to price history where it
+does not.
+
+## Making the motion motivated
+
+"Some animations come out of nowhere" is a structural problem, not a taste one.
+
+- **Motion must be chosen knowing what the beat is FOR.** A sentence the viewer
+  is meant to read cannot arrive under a zoom-blur. Speaking beats weight toward
+  holds, push-ins and spotlights; the sign-off settles rather than launching.
+- **Transitions are decided on the FINAL cut**, after cards are interleaved. A
+  card is anchored to the component it introduces, so card-then-shot of the same
+  component is one subject seen twice and must dissolve. Assign transitions
+  against the cast order and a flash frame lands mid-move.
+- **Ration the loud ones.** Glitch/spin/warp/whip are accents: at most one per
+  vertical cut, never under a caption, and never twice in a row. A repeated
+  effect is a template.
 
 ## Verifying output
 

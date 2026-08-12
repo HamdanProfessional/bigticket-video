@@ -227,9 +227,17 @@ export function direct(prompt, opts = {}) {
     // Prompt-led: requested components first, spine fills the gaps so the film
     // still opens and closes properly. Under a narrative the spine's own order
     // wins, so a prompt can select which claims appear but not resequence them.
+    // Under a narrative the WHOLE spine survives and the prompt only adds to it.
+    //
+    // This branch used to keep just the components the prompt matched, on the
+    // reasoning that a prompt naming a feature wants that feature. For a tour
+    // that is right. For a journey it deletes the story: "comparing every
+    // seller" matched three price beats, so the cast became those three, the
+    // browse-and-choose opening was dropped, and padding refilled the gap with
+    // more of the same page. Every ad then opened already looking at the thing
+    // it ended on.
     const requested = narrative
-      ? SPINE_LIST.filter((c) => wanted.has(c)).concat(
-          [...wanted].filter((c) => !SPINE_LIST.includes(c)))
+      ? SPINE_LIST.concat([...wanted].filter((c) => !SPINE_LIST.includes(c)))
       : SPINE_LIST.filter((c) => wanted.has(c)).concat(
           [...wanted].filter((c) => !SPINE_LIST.includes(c)));
     cast = ['hero', ...requested.filter((c) => c !== 'hero' && c !== 'finalCta'), 'finalCta'];
@@ -262,7 +270,11 @@ export function direct(prompt, opts = {}) {
 
   // The click is the payoff, so it belongs at the end — just before the closing
   // card. Left wherever the shuffle put it, the ad peaks in the middle.
-  const ctaAt = cast.findIndex((c) => COMPS[c].clickable);
+  // Under a narrative the spine's order IS the story, and the click is a step
+  // in it — choosing a product happens near the START of the journey, not as a
+  // payoff at the end. Moving it would put "pick the one you want" after the
+  // price comparison it leads into.
+  const ctaAt = narrative ? -1 : cast.findIndex((c) => COMPS[c].clickable);
   if (ctaAt >= 0) {
     // Re-insert the component we just removed, by name. Hardcoding 'heroCta'
     // here silently dropped the CTA for any site profile that names its

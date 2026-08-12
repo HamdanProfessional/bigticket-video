@@ -33,7 +33,7 @@ export const REELS_COMPONENTS = {
     label: 'Product image', theme: 'light', captionable: true,
     // Quotes the page. See lib/tokens.mjs — a line whose numbers cannot be
     // resolved is dropped rather than printed with a hole in it.
-    copy: { kicker: '', title: 'Buying something big?', subtitle: '' },
+    copy: { kicker: '', title: "Here's what it costs.", subtitle: '' },
   },
   // Accordion rows. These really open — the click is the point of the shot.
   specGeneral: {
@@ -74,6 +74,19 @@ export const REELS_COMPONENTS = {
     copy: { kicker: '', title: "AI reads the reviews, so you don't.", subtitle: '' },
   },
 
+  // ---- dashboard: the browse-and-choose half of the journey -------------
+  //
+  // Every cut before this filmed one region of one product page, so the ads had
+  // no journey in them — they opened already looking at the thing they ended up
+  // looking at. The product experience starts earlier than that: you are
+  // browsing several things, you pick one, and only then do prices and reviews
+  // matter. These two beats are that half.
+  productRow: {
+    route: '/dashboard', sel: '.slick-track', climb: 0,   // 604x158, 4 products
+    label: 'Recommended products row', theme: 'light', captionable: true,
+    copy: { kicker: '', title: 'Buying something big?', subtitle: '' },
+  },
+
   // ---- dashboard: a real product grid ----------------------------------
   // The signed-in dashboard recommends actual products, which is the one place
   // a fresh account still has something worth filming.
@@ -85,6 +98,13 @@ export const REELS_COMPONENTS = {
   tileToaster: {
     route: '/dashboard', sel: 'img[alt="SMEG Toaster"]', climb: 0,       // 142x151
     label: 'SMEG toaster tile', theme: 'light',
+    // `clickable` weights the cursor-click motion onto this beat; `interactive`
+    // is deliberately absent, because opening the product would navigate the
+    // tab every later shot on this route depends on. The cursor lands, the ring
+    // draws, and the cut to the product page does the rest — which is what an
+    // ad does anyway.
+    clickable: true, captionable: true,
+    copy: { kicker: '', title: 'Pick the one you want.', subtitle: '' },
   },
   tileCoffee: {
     route: '/dashboard', sel: 'img[alt="Breville Coffee Maker"]', climb: 0,
@@ -130,6 +150,9 @@ export const REELS_COMPONENTS = {
 // Vertical favours shots that hold still and let the UI move: tapFocus,
 // pulseFocus, spotlight. Wide lateral moves have nowhere to go in 9:16.
 export const REELS_AFFINITY = {
+  // A row of products wants a move that shows it is a ROW: travel across it, or
+  // pull back to reveal how many there are.
+  productRow: ['panAcross', 'pullBack', 'pushIn', 'slideIn'],
   productTitle: ['pushIn', 'pulseFocus', 'slideIn'],
   productShot: ['pushIn', 'rackFocus', 'pulseFocus', 'zoomBlurIn', 'hold'],
   specGeneral: ['tapFocus', 'pulseFocus', 'spotlight'],
@@ -141,7 +164,7 @@ export const REELS_AFFINITY = {
   reviewsBlock: ['pushIn', 'pulseFocus', 'spotlight', 'tiltReveal'],
 
   matchHeading: ['pushIn', 'slideIn', 'pulseFocus'],
-  tileToaster: ['pushIn', 'pulseFocus', 'zoomBlurIn', 'rackFocus'],
+  tileToaster: ['cursorClick', 'pushIn', 'pulseFocus', 'spotlight'],
   tileCoffee: ['pushIn', 'pulseFocus', 'slideIn', 'rackFocus'],
   tileTv: ['pushIn', 'pulseFocus', 'slideIn', 'zoomBlurIn'],
   boardTile: ['pushIn', 'pulseFocus', 'spotlight', 'rackFocus'],
@@ -166,7 +189,12 @@ export const REELS_TOPICS = [
 // The argument, in order: here is the price, here is who sells it, here is what
 // it used to cost, here is what you are overpaying, here is the verdict.
 // A spine is a claim sequence, not a tour of the navigation.
-export const REELS_SPINE = ['productShot', 'compareOptions', 'priceChart', 'priceDelta', 'reviewsBlock'];
+// The journey, in the order a person actually lives it: you are browsing
+// several things, you pick one, THEN price and reviews matter.
+export const REELS_SPINE = [
+  'productRow', 'tileToaster', 'productShot',
+  'compareOptions', 'priceChart', 'priceDelta', 'reviewsBlock',
+];
 
 // Spec accordions are deliberately absent from the spine AND the filler below.
 // They film well — a row opening on camera is the best interaction on the site
@@ -192,7 +220,7 @@ export const REELS_SPINE = ['productShot', 'compareOptions', 'priceChart', 'pric
 // All of these stay castable when a prompt actually asks (see REELS_TOPICS).
 export const REELS_FILLER = [
   'priceChart', 'priceDelta', 'compareOptions', 'reviewsBlock', 'productShot',
-  'productTitle',
+  'productRow', 'tileToaster', 'productTitle',
 ];
 
 // The hook quotes the price, because a number is a stronger opening than a

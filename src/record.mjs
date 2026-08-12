@@ -231,7 +231,27 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
   const routeOf = (name) => COMPS[name]?.route || storyboard.defaultRoute || '/';
 
   // ---- bind components and measure them once, in page space --------------
+  //
+  // Retried once if NOTHING resolves. A single slow page load makes every
+  // component measure empty and the run aborts — which cost a slot in a
+  // five-video batch, and is indistinguishable at this point from a genuinely
+  // broken profile. One reload separates the two: a transient failure passes on
+  // the second attempt, a broken profile fails identically twice and still
+  // raises. Only the all-or-nothing case retries; individual components that do
+  // not resolve are a profile problem and still just drop their shots.
   const used = [...new Set(shots.map((s) => s.component))];
+  let geometry = {};
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) {
+      console.warn('  ! nothing resolved — reloading and retrying once');
+      for (const { page } of pages.values()) await page.close().catch(() => {});
+      pages.clear();
+    }
+    geometry = await bindAll();
+    if (Object.keys(geometry).length) break;
+  }
+
+  async function bindAll() {
   const geometry = {};
   for (const name of used) {
     const spec = COMPS[name];
@@ -246,6 +266,8 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
       continue;
     }
     geometry[name] = await page.evaluate((n) => window.__BT.pageRect('@' + n), name);
+  }
+  return geometry;
   }
 
   // ---- read the page's own numbers, and fill the copy with them ----------

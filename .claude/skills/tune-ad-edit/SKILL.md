@@ -33,6 +33,16 @@ knob, change it, and confirm with `--storyboard-only` (instant) or `--fast`
 | copy sits on nothing / unreadable | scrim only ramps under **bottom-anchored** captions | anchor bottom; `look.scrim` height and the ramp's density stops |
 | a beat is visually dead | filler padding reached a weak component | reorder or remove from `FILLER`; padding is front-weighted, not uniform |
 | a shot won't zoom in | containment guard capped it to fit the element | expected for anything wider than ~80% of the frame |
+| **isn't advertising** | no problem stated, product never named, no CTA — it is proof dressed as a story | rewrite to problem → product → proof → CTA; the sign-off must name the brand and ask for the click |
+| **isn't related to the business** | beats chosen for how well they film, not for what the company sells | audit every beat against "what is this selling?"; cut the ones that film well and say nothing |
+| ad is about the demo product | hook quotes this product's price, so the ad is about a toaster | the page is the demo; the subject is the problem the product solves |
+| depressing / embarrassing | arc ends on the viewer's loss ("you'd overpay by $30") | same fact as a saving; end where the viewer wins |
+| **no journey — same page throughout** | spine confined to one route, or topics replaced the spine | cross routes: browse → choose → compare → reviews; set `narrative: true` so topics shade the spine instead of replacing it |
+| animations come out of nowhere | motion picked before anything knew if the shot carried a line; transitions drawn at random and assigned pre-card-interleave | motion weighted by the beat's job; transitions decided on the final cut; loud effects rationed |
+| effect lands mid-continuous-move | transition assigned against cast order, not final shot order | a card is anchored to its component — card-then-same-component must dissolve |
+| brand name cut in half | kinetic highlights the longest non-stopword; on a logo lockup that splits the name | `hilite: false` on the sign-off |
+| copy quotes a stale number | a fact hardcoded into a profile | tokens + `extract`; a line that cannot fill is dropped, never printed with a hole |
+| a claim repeats two beats later | padding revisited the component and repeated its caption | claims are spoken once; the revisit keeps the motion, loses the words |
 
 ## Where each knob lives
 
