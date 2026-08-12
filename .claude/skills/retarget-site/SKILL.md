@@ -158,6 +158,14 @@ node src/make.mjs "..." --url https://example.com/ --fast              # ~4x qui
   mobile version and hide one. Resolution prefers a visible match, but verify.
 - **Carousels.** Every slide can report the same rect, so a shot aimed at one
   may frame another. Exclude them from the cast.
+- **Late hydration.** A section can be plain markup when you measure it and a
+  carousel when you film it. On this site `.slick-track` count went 0 → 5 and
+  the dashboard was still restructuring at **10.7s**, while the PDP's
+  `scrollHeight` swung 3460 → 2890 → 3270 → 4027 as offers arrived. Never wait a
+  fixed number of seconds; wait until text length, element count *and*
+  scrollHeight all stop moving. Text alone will not catch it — hydration keeps
+  the same words and rebuilds the nodes. Re-measure every component per shot,
+  not once at bind time; stale rects framed a close-up of one retailer logo.
 - **Reveal-on-scroll.** A priming pass scrolls the whole page first so lazy
   images decode and reveal blocks fire. Don't force `opacity:1` globally to
   "fix" hidden content — that unhides full-bleed overlays and paints the frame

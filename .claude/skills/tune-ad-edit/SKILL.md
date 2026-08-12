@@ -43,6 +43,8 @@ knob, change it, and confirm with `--storyboard-only` (instant) or `--fast`
 | brand name cut in half | kinetic highlights the longest non-stopword; on a logo lockup that splits the name | `hilite: false` on the sign-off |
 | copy quotes a stale number | a fact hardcoded into a profile | tokens + `extract`; a line that cannot fill is dropped, never printed with a hole |
 | a claim repeats two beats later | padding revisited the component and repeated its caption | claims are spoken once; the revisit keeps the motion, loses the words |
+| **a section flickers / rebuilds on camera** | the page hydrated after we measured and froze it — plain markup became a carousel | settle until *structure* stops changing, not just text; a fixed wait is a guess about a network |
+| one frame tears — a band of it is a different moment | `page.evaluate` resolves before the compositor paints | wait two `requestAnimationFrame`s before the screenshot (~22% slower, not 2×) |
 
 ## Where each knob lives
 
