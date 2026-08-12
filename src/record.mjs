@@ -27,6 +27,11 @@ const TRANSITION = 0.42; // seconds, centred on each cut
 // Pause after a cut jumps the camera, so reveal-on-view content can mount.
 const SETTLE_MS = 200;
 
+// A frame smaller than this fraction of the previous one is treated as
+// half-rastered rather than as a real picture. Measured separation was ~2x
+// (72KB against 141-156KB), so this sits well clear of both.
+const PARTIAL_RATIO = 0.72;
+
 /**
  * Camera-side transitions.
  *
@@ -151,7 +156,10 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
   const browser = await chromium.launch({
     // AutomationControlled is what the site's bot check keys off; without this
     // the login modal accepts the credentials and then silently fails.
-    args: ['--force-color-profile=srgb', '--disable-lcd-text', '--disable-blink-features=AutomationControlled'],
+    args: [
+      '--force-color-profile=srgb', '--disable-lcd-text',
+      '--disable-blink-features=AutomationControlled',
+    ],
   });
   // Hand it to the wrapper immediately, so a throw anywhere below still closes.
   setBrowser(browser);
@@ -421,6 +429,9 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
   // ---- render ------------------------------------------------------------
   let lastCamY = Infinity;
   let lastIdx = -1;
+  // Frame-integrity tracking; see the capture block below.
+  let prevFrameBytes = 0;
+  let repairedFrames = 0;
   let lastRoute = null;
   for (let f = 0; f < frameCount; f++) {
     const time = f / fps;
@@ -694,12 +705,41 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // with a near-static camera, and 0.1% faster on the real camera path — once
     // the camera moves, rasterising the page dominates and both paths pay it
     // equally. Not worth a second code path.
-    await page.screenshot({
-      path: path.join(framesDir, `f${String(f).padStart(5, '0')}.jpg`),
-      type: 'jpeg',
-      quality: 92,
-      animations: 'disabled',
-    });
+    // Capture, then check the frame actually finished rasterising.
+    //
+    // The camera rescales the page every frame, so every frame asks Chromium to
+    // re-rasterise the photographs at a new scale. Two rAFs prove the layer
+    // COMMIT landed; they say nothing about whether the tiles were filled. A
+    // capture in between yields a photo with its bottom two-thirds flat white —
+    // the "square effect", and the flicker at 0:08-0:11.
+    //
+    // Detected on compressed size, because a large flat region is exactly what
+    // JPEG encodes almost for free. Measured over one shot, intact neighbours
+    // ran 141-156KB while the bad frames ran 72-74KB: not a threshold that needs
+    // tuning, a factor of two. It also caught a frame the brightness metric
+    // missed, because two consecutive bad frames look stable to a delta.
+    //
+    // Re-shooting is sound rather than a gamble: frames are stepped
+    // deterministically, so the page state was pushed BEFORE the capture and
+    // does not advance between attempts. Shooting the same state twice must
+    // produce the same image unless raster was incomplete — so keep the larger.
+    // Tried and rejected first: --disable-checker-imaging and four sibling
+    // compositor flags (made it worse, 16 -> 48 spikes), and a 45ms raster
+    // delay (no effect, 16 -> 18). Neither addressed it because the wait is
+    // unbounded, not merely long.
+    const framePath = path.join(framesDir, `f${String(f).padStart(5, '0')}.jpg`);
+    const shoot = () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });
+    let buf = await shoot();
+    if (prevFrameBytes > 0) {
+      for (let attempt = 0; attempt < 2 && buf.length < prevFrameBytes * PARTIAL_RATIO; attempt++) {
+        await page.waitForTimeout(90);
+        const retry = await shoot();
+        if (retry.length > buf.length) buf = retry;
+        repairedFrames++;
+      }
+    }
+    prevFrameBytes = buf.length;
+    await writeFile(framePath, buf);
 
     if (onProgress && f % 15 === 0) onProgress(f, frameCount);
   }
