@@ -14,3 +14,8 @@ done.flag
 .auth/
 *session.json
 .env
+
+# Exported component libraries and the stages built from them: regenerable
+# build artefacts (node src/library-cli.mjs), and binary PNGs that would churn
+# on every re-export.
+library/
