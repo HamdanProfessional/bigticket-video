@@ -213,11 +213,22 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
     // retailer, and nothing anywhere reported a problem — the shot resolved,
     // measured and rendered perfectly. It was simply of half a list.
     //
-    // Text length is the signal because that is what late content adds. Stable
-    // for 1.5s is enough on this site; the ceiling stops a page that polls
-    // forever from hanging the render.
+    // The signal is text length AND structure AND height, because late work
+    // comes in three flavours and text alone catches only one.
+    //
+    // A section here hydrates from plain markup into a carousel: same items,
+    // same words, completely different DOM. Measured across loads it is
+    // sometimes a `.slick-track` with four slides and sometimes no track at
+    // all — so a shot could be measured and frozen against the pre-hydration
+    // layout and then watch the section rearrange itself on camera. Text
+    // length does not move a byte through that, which is why it went unnoticed
+    // while a fixed wait was hiding it.
     await page.evaluate(async () => {
-      const read = () => (document.body.innerText || '').length;
+      const read = () => [
+        (document.body.innerText || '').length,
+        document.getElementsByTagName('*').length,
+        Math.round(document.documentElement.scrollHeight),
+      ].join(':');
       let prev = -1, stableMs = 0;
       const deadline = Date.now() + 20000;
       while (Date.now() < deadline) {
