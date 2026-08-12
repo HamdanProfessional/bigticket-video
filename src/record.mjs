@@ -201,7 +201,34 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
     // The product page fetches offers and price history after load and shows a
     // "Searching for the best deals..." placeholder until they arrive. Filming
     // that placeholder is worse than not filming the page at all.
-    await page.waitForTimeout(route === '/' ? 3000 : 6000);
+    await page.waitForTimeout(route === '/' ? 2000 : 3000);
+
+    // Then wait for the page to STOP CHANGING, rather than for a fixed number
+    // of seconds.
+    //
+    // The fixed 6s wait this replaces was a guess, and it was wrong in the way
+    // guesses about networks are wrong: retailer offers arrive one at a time,
+    // so the ad filmed whichever had landed by the deadline. A reel whose
+    // central claim is "compares every seller" went out showing a single
+    // retailer, and nothing anywhere reported a problem — the shot resolved,
+    // measured and rendered perfectly. It was simply of half a list.
+    //
+    // Text length is the signal because that is what late content adds. Stable
+    // for 1.5s is enough on this site; the ceiling stops a page that polls
+    // forever from hanging the render.
+    await page.evaluate(async () => {
+      const read = () => (document.body.innerText || '').length;
+      let prev = -1, stableMs = 0;
+      const deadline = Date.now() + 20000;
+      while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 250));
+        const n = read();
+        if (n === prev) {
+          stableMs += 250;
+          if (stableMs >= 1500) return;
+        } else { stableMs = 0; prev = n; }
+      }
+    });
     await page.evaluate(runtimeSrc);
 
     // Priming pass: walk the page so lazy images decode and reveal blocks fire,
@@ -377,6 +404,32 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
     }
 
     const comp = { ...COMPS[shot.component], selResolved: '@' + shot.component };
+
+    // Re-measure at the top of every shot, not once at bind time.
+    //
+    // Geometry was captured up front, before a single interaction had happened.
+    // Anything a click changed elsewhere on the page went unnoticed: the seller
+    // dropdown expands the retailer list from one row to three, so the shot
+    // that frames that list — the one carrying "Big Ticket compares every
+    // seller" — aimed at a 508x90 rect that had since become 508x204, and
+    // filmed a close-up of a retailer's logo instead of the comparison.
+    //
+    // Only the clicked component was refreshed before, which covers an
+    // accordion expanding itself and nothing else. One evaluate per shot is
+    // noise next to a ~185ms screenshot, and it makes the camera correct for
+    // any DOM change from any cause.
+    if (idx !== lastIdx) {
+      const spec = COMPS[shot.component];
+      if (spec) {
+        await page.evaluate(
+          ([n, s]) => window.__BT.register(n, s),
+          [shot.component, { sel: spec.sel, fallback: spec.fallback, climb: spec.climb || 0, minArea: spec.minArea || 0 }]
+        ).catch(() => {});
+        const fresh = await page.evaluate((n) => window.__BT.pageRect(n), comp.selResolved).catch(() => null);
+        if (fresh && fresh.w > 0 && fresh.h > 0) shot.rect = fresh;
+      }
+    }
+
     const zBase = fitZoom(shot.rect, width, height, shot.params.fill ?? 0.78);
     const kind = KINDS[shot.kind] || KINDS.pushIn;
     const { cam, ov } = kind(p, {

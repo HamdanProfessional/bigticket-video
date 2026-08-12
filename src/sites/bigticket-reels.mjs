@@ -54,6 +54,16 @@ export const REELS_COMPONENTS = {
     route: PDP, sel: 'text=Compare Buying Options', climb: 1,  // 508x40
     label: 'Compare buying options', theme: 'light', clickable: true, interactive: true,
     captionable: true,
+    copy: { kicker: '', title: 'One tap, every seller.', subtitle: '' },
+  },
+  // All three retailers and their prices in one 508x204 block — the single most
+  // on-message element on the site, and the one the ad's central claim is
+  // about. Found late: the browse-and-choose beats were being filmed from the
+  // dashboard, whose tiles are lifestyle photography, so "pick the one you
+  // want" showed a cursor landing on a photo of a kitchen worktop.
+  retailerList: {
+    route: PDP, sel: 'text=Best Buy', climb: 3,   // 508x204, three rows + prices
+    label: 'Retailer prices', theme: 'light', captionable: true,
     copy: { kicker: '', title: 'Big Ticket compares every seller.', subtitle: '' },
   },
   priceChart: {
@@ -159,6 +169,7 @@ export const REELS_AFFINITY = {
   specPerformance: ['tapFocus', 'pulseFocus', 'spotlight'],
   specDimensions: ['tapFocus', 'pulseFocus', 'spotlight'],
   compareOptions: ['tapFocus', 'spotlight', 'pulseFocus'],
+  retailerList: ['sweepReveal', 'pushIn', 'spotlight', 'tiltReveal', 'pullBack'],
   priceChart: ['pushIn', 'pullBack', 'spotlight', 'sweepReveal', 'tiltReveal'],
   priceDelta: ['punchIn', 'pushIn', 'spotlight', 'zoomBlurIn'],
   reviewsBlock: ['pushIn', 'pulseFocus', 'spotlight', 'tiltReveal'],
@@ -192,8 +203,8 @@ export const REELS_TOPICS = [
 // The journey, in the order a person actually lives it: you are browsing
 // several things, you pick one, THEN price and reviews matter.
 export const REELS_SPINE = [
-  'productRow', 'tileToaster', 'productShot',
-  'compareOptions', 'priceChart', 'priceDelta', 'reviewsBlock',
+  'productShot', 'compareOptions', 'retailerList',
+  'priceChart', 'priceDelta', 'reviewsBlock',
 ];
 
 // Spec accordions are deliberately absent from the spine AND the filler below.
@@ -219,8 +230,8 @@ export const REELS_SPINE = [
 // angle on the price chart is a better shot than a first angle on a cupboard.
 // All of these stay castable when a prompt actually asks (see REELS_TOPICS).
 export const REELS_FILLER = [
-  'priceChart', 'priceDelta', 'compareOptions', 'reviewsBlock', 'productShot',
-  'productRow', 'tileToaster', 'productTitle',
+  'retailerList', 'priceChart', 'priceDelta', 'compareOptions', 'reviewsBlock', 'productShot',
+  'productTitle',
 ];
 
 // The hook quotes the price, because a number is a stronger opening than a

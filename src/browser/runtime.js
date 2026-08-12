@@ -704,9 +704,17 @@
         // lines of 60px type — the top line landed on the transparent end and
         // the page's own body copy read straight through it. The furniture-less
         // ramp holds near-opaque to 70% and only then releases.
+        // The furniture-less ramp used to release from 0.7 of its own height.
+        // A page heading landing in that band — "Recent Blog Posts." sitting
+        // directly behind a caption — read straight through it at roughly a
+        // fifth strength, so the frame carried two competing headlines and the
+        // beat looked broken. It now holds near-opaque to 0.84 and releases
+        // over the last sixth. That hides more of the page behind the copy,
+        // which is the correct trade: the copy is the message, and a caption
+        // competing with body text underneath is not a caption.
         const stops = look.furniture
           ? [[0, 0.97], [0.34, 0.93], [0.62, 0.66]]
-          : [[0, 0.99], [0.46, 0.96], [0.7, 0.8]];
+          : [[0, 0.995], [0.6, 0.985], [0.84, 0.9]];
         const rgb = dark ? '8,6,22' : '255,255,255';
         scrim.style.background = 'linear-gradient(to top,' +
           stops.map(([at, a]) => `rgba(${rgb},${a}) ${(at * 100).toFixed(0)}%`).join(',') +
@@ -835,6 +843,22 @@
     }
     html{scroll-behavior:auto !important;}`;
     doc.head.appendChild(s);
+
+    // A carousel can also advance from a JavaScript timer, which no CSS rule
+    // stops. Slick exposes a pause method, so use it where it exists.
+    //
+    // Deliberately NOT followed by a blanket clearInterval sweep. That was
+    // tried, and it is dangerous here: the product page polls for offers and
+    // price history on an interval, and freezing runs early enough that killing
+    // every timer can strand the page mid-load — trading a rare judder for a
+    // reliably empty frame. Measured on this site the carousel does not
+    // autoplay at all; its track transform is identical before and after.
+    try {
+      const w = window;
+      if (w.jQuery && w.jQuery.fn && w.jQuery.fn.slick) {
+        w.jQuery('.slick-slider').slick('slickPause');
+      }
+    } catch { /* not every site ships jQuery, and that is fine */ }
   }
 
   /**
