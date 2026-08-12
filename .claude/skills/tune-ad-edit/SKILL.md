@@ -23,20 +23,57 @@ knob, change it, and confirm with `--storyboard-only` (instant) or `--fast`
 | is blurry | `will-change: transform` caches one rasterisation and scales the bitmap | that's `--fast`; drop it for delivery |
 | cuts feel arbitrary | shots not aligned to the score | durations are quantised to even beats at `mood.music.tempo` |
 | shadow/highlight looks dirty | an ellipse over a rectangular component darkens corners unevenly | rounded-rect cutout via `box-shadow` spread |
-| text is clipped mid-word | neighbouring sections intruding, or zoom overruns the frame | deeper letterbox bars; lower `fill` (zoom multiplies on top of it) |
+| text is clipped mid-word | neighbouring sections intruding, or zoom overruns the frame | lower `fill` (zoom multiplies on top of it); check the containment guard |
 | copy appears twice | overlay caption duplicating the page's own visible heading | `captionable: false`, or suppress in portrait |
+| looks dated / 2019 | kicker + accent rule + filled band + bars + vignette is broadcast furniture | `--style editorial` or `--style kinetic`; both drop the furniture |
+| type is small on a phone | caption sized against a landscape frame | portrait type factors in `CAPTION_LOOKS`; target ~5% of frame height |
+| headline orphans its last word | default line filling | `text-wrap: balance` on `capTitle` |
+| elements sit outside the frame | a pixel constant not scaled by `pxScale` | every distance in the director scales by `fmt.width / 1440` |
+| a third of the frame is black | letterbox bars are `H * 0.062 * letterbox` **each** | `letterbox: 0` for non-panel styles; portrait panel caps at 0.5 |
+| copy sits on nothing / unreadable | scrim only ramps under **bottom-anchored** captions | anchor bottom; `look.scrim` height and the ramp's density stops |
+| a beat is visually dead | filler padding reached a weak component | reorder or remove from `FILLER`; padding is front-weighted, not uniform |
+| a shot won't zoom in | containment guard capped it to fit the element | expected for anything wider than ~80% of the frame |
 
 ## Where each knob lives
 
-- **`src/director.mjs`** — everything creative. Moods (shot length, easing pool,
-  motion weights, letterbox, vignette, music), `TOPICS`, `SPINE`, card
-  interleaving, beat quantisation, per-shot params.
-- **`src/shotlib.mjs`** — `COMPONENTS` (what is filmable) and `KINDS` (motion
-  archetypes); `AFFINITY` restricts which kinds suit which component.
-- **`src/browser/runtime.js`** — camera, cursor, captions, spotlight, panel,
-  letterbox. Anything about how an overlay *looks*.
+Match the symptom to the **layer** — a fact asserted at the wrong layer is the
+most common root cause here. See the `make-ad` skill for the full stack.
+
+- **`src/sites/*.mjs`** — the component profile. What is filmable at all:
+  selectors, `climb`, `route`, `clickable`/`interactive`, `copy`, plus
+  `AFFINITY` (which motion kinds suit which component), `TOPICS`, `SPINE`,
+  `FILLER`. Fix "the wrong things are on screen" here.
+- **`src/shotlib.mjs`** — `KINDS`, the motion archetypes. Each is a pure
+  `(p, ctx) → { cam, ov }` over the component's *measured* rect. Fix "the move
+  is wrong" here.
+- **`src/director.mjs`** — the edit. Moods (shot length, easing pool, motion
+  weights, ramps, vignette, music), casting, card interleaving and `cardCap`,
+  beat quantisation, graphics-package selection, the `look` block, per-shot
+  params. Fix pacing, order, and how much is card vs live here.
+- **`src/record.mjs`** — anything needing *real geometry*: panel step-down, the
+  zoom containment guard, clicks and post-click re-registration, transitions.
+- **`src/browser/runtime.js`** — how an overlay *looks*. `CAPTION_LOOKS` (the
+  three graphics packages), cursor, focus ring, spotlight, scrim, letterbox,
+  panel styles, glitch/flare.
+- **`src/index.mjs`** — option forwarding. A director option missing from the
+  whitelist here is silently ignored end to end.
 - **`src/render.mjs`** — grade, grain, vignette, sharpening, fades.
 - **`src/music.py`** — key, tempo, voicing, reverb, bell accents on cut points.
+
+## Graphics packages
+
+Reach for these before hand-tuning caption CSS — most "it looks like a template"
+complaints are the package, not the copy.
+
+| `--style` | register | use when |
+| --- | --- | --- |
+| `editorial` | 800 weight, 0.92 leading, ranged left on the picture, no furniture | premium, considered purchase, landscape |
+| `kinetic` | 900 caps, centred, word-pop with a highlight block | Reels/TikTok, punchy, thumb-stopping |
+| `panel` | kicker + rule + filled band + bars | broadcast/classic, or when a side column genuinely helps |
+
+Omit `--style` and the director picks from prompt keywords, then format and mood
+(landscape never gets centred caps; calm and premium always get editorial), then
+a seeded coin flip.
 
 ## Method
 
@@ -58,7 +95,13 @@ console.log(counts);
 
 ## Verify by looking
 
-Never report a visual fix as working without seeing a frame:
+Never report a visual fix as working without seeing a frame. **This is the
+single most important rule in this repo.** Every defect worth fixing here looked
+correct in the storyboard and the manifest and was only visible in a frame:
+30% of the frame painted black, white type on a white page, a containment guard
+silently cancelling every punch-in, 2.5s of a cupboard corner, a graphics-package
+flag that was never forwarded. Three consecutive attempts at one closing frame
+produced the same symptom by three different mechanisms.
 
 ```bash
 ffmpeg -y -ss 11.5 -i out/<dir>/<name>.mp4 -frames:v 1 -vf scale=520:-1 /tmp/f.png

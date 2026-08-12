@@ -9,6 +9,31 @@ Nothing site-specific lives in the camera, motion kinds, scoring or encoder.
 Retargeting means writing one **site profile**: which parts of the page are
 worth filming, what copy describes them, and which motions suit each.
 
+The profile is layer 1 of the stack (see the `make-ad` skill). It supplies the
+nouns; layers 2–8 — shot library, director, recorder, runtime, grade, score —
+are shared and should need no edits. **If retargeting makes you want to change
+`shotlib.mjs` or `record.mjs`, that is a signal the fact belongs in the profile
+instead.**
+
+A profile bundles all of this, and `--app`/`--reels`-style flags select one:
+
+```js
+export const MY_PROFILE = {
+  components, affinity, topics, spine, filler, hook, signoff,
+  defaultRoute: '/', defaultFormat: 'vertical', requiresAuth: false,
+};
+```
+
+## 0. One profile per layout, not per site
+
+Components are **measured, not discovered**, and almost nothing survives being
+copied between layouts. This repo ships three profiles for one site: the
+marketing page, the signed-in desktop app, and the signed-in mobile DOM at
+540×960. The mobile layout swaps whole blocks out, so every selector and size in
+the reels profile was re-read on the real page at the real capture width.
+
+Decide the capture width first, then measure at it.
+
 ## 1. Recon the page
 
 ```bash
@@ -53,11 +78,39 @@ await makeVideo({
 | `fallback` | `text=Some words` — matches the *smallest* element starting with it |
 | `climb` / `minArea` | walk up to the enclosing card when the selector hits a heading |
 | `clickable` | the CTA. Gets the cursor-click payoff beat, forced near the end |
+| `interactive` | the recorder **really clicks it** on camera — accordions, dropdowns |
+| `route` | which page it lives on; the recorder keeps one primed tab per route |
 | `captionable` | overlay a caption — only when the component's own heading is off-frame |
 | `copy` | `{ kicker, title, subtitle }`, used for captions and title cards |
 | `theme` | `dark` for light text (component sits on a dark/brand background) |
 
 At least one component **must** have `clickable: true`, or the ad has no payoff.
+
+**Never mark something `interactive` if it navigates.** A route is a long-lived
+tab; following a link replaces the page under the camera for every later shot on
+that route. Accordions, dropdowns and toggles are the right candidates — they
+change state in place, and that state change is the shot.
+
+### The other four lists
+
+`components` is only half a profile. The rest decides the edit:
+
+| list | job | failure mode if wrong |
+| --- | --- | --- |
+| `affinity` | which motion kinds suit each component | 44px rows get wide lateral moves that have nowhere to go |
+| `topics` | prompt keywords → components | prompts about "price" don't reach the price chart |
+| `spine` | the default narrative when no topic matches | the ad has no shape |
+| `filler` | padding when the cast is short of beats | weak components get 2.5s each |
+
+`filler` is drawn **front-weighted**, so order it by how well each component
+carries a shot on its own — and leave out anything that films badly rather than
+demoting it. Padding will reach the end of the list eventually: a page with
+seven strong components cannot fill a 30s cut without revisiting, and revisiting
+a good component beats visiting a bad one.
+
+Copy is part of the profile too. Avoid hardcoded counts in `copy.title`
+("Thirteen reviews, one answer") — they go stale the moment the site's data
+changes and there is nothing to catch it.
 
 ## 3. Verify components resolve
 
@@ -92,3 +145,31 @@ node src/make.mjs "..." --url https://example.com/ --fast              # ~4x qui
   blank.
 - **Full-page screenshots don't render reveal-on-scroll content.** Scroll the
   element into view and clip in viewport space instead.
+- **`innerText` keeps line breaks.** A heading that wraps as "Earn a $10 Gift\n
+  Card." will not match a `text=` prefix spanning the break. Keep selectors
+  inside one visual line.
+- **`text=` matches the *smallest* element**, often an inner span. That is what
+  `climb` is for — and any minimum-size check must run *after* the climb, or it
+  rejects valid element-level selectors.
+- **React replaces DOM nodes on state change.** After an `interactive` click the
+  original node is detached and measures 0×0. Re-register the component, then
+  re-measure, and guard on both dimensions.
+- **A fresh account has empty states.** Dashboards, boards and progress widgets
+  film as blank grey. Either populate the test account or exclude those
+  components from `spine` and `filler`.
+- **Lifestyle photography does not crop.** A product tile that is a photo of a
+  kitchen becomes, at 9:16 fill, a shot of a cupboard. Prefer UI, charts and
+  text blocks.
+
+## Authenticated sites
+
+Set `requiresAuth: true` and drive the login in `src/auth.mjs`. Credentials come
+from `BT_EMAIL` / `BT_PASSWORD` in the environment **only** — never a file,
+storyboard, log or commit. `.auth/`, `*session.json` and `.env` are gitignored
+because a storageState file is a bearer credential granting account access
+without the password. `git grep` for the literals before any push.
+
+Login forms are full of near-miss selectors: on this site the modal's email
+field is `input[name=email][type=text]` while the footer newsletter field is
+`type=email`, so the obvious selector fills the wrong form and the login
+silently does nothing.
