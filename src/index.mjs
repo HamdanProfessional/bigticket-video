@@ -14,6 +14,8 @@ import { direct } from './director.mjs';
 import { record } from './record.mjs';
 import { renderVideo, renderPoster, run } from './render.mjs';
 import { credentialsFromEnv } from './auth.mjs';
+import { readFile as _readFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 
 export { direct } from './director.mjs';
 export { record } from './record.mjs';
@@ -81,6 +83,15 @@ export async function makeVideo(o = {}) {
     narrative: pick('narrative'),
     cards: o.cards,
   });
+  // A stage profile films a locally built page rather than the site, and takes
+  // its facts from the library index that page was assembled from.
+  let libraryFacts = null;
+  if (pick('factsFromLibrary')) {
+    const libDir = o.libraryDir || 'library/reels';
+    const lib = JSON.parse(await _readFile(path.join(libDir, 'index.json'), 'utf8'));
+    libraryFacts = lib.facts || {};
+    o = { ...o, url: o.url || pathToFileURL(path.resolve(libDir, 'stage.html')).href };
+  }
   storyboard.url = o.url || 'https://shopbigticket.com/';
   storyboard.fast = !!o.fast;
   // Where a component with no route of its own is filmed.
@@ -117,6 +128,7 @@ export async function makeVideo(o = {}) {
     components: pick('components'),
     // Reads the page's own numbers so copy can quote them; see lib/tokens.mjs.
     extract: pick('extract'),
+    facts: libraryFacts,
     auth,
   });
 

@@ -13,9 +13,10 @@ import path from 'node:path';
 import { makeVideo } from './index.mjs';
 import { APP_PROFILE } from './sites/bigticket-app.mjs';
 import { REELS_PROFILE } from './sites/bigticket-reels.mjs';
+import { STAGE_PROFILE } from './sites/bigticket-stage.mjs';
 
 const argv = process.argv.slice(2);
-const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast', 'app', 'reels']);
+const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast', 'app', 'reels', 'stage']);
 
 const flag = (name, def = null) => {
   const i = argv.indexOf(`--${name}`);
@@ -55,7 +56,9 @@ const opts = {
   // Needs BT_EMAIL / BT_PASSWORD in the environment.
   // --reels is the element-level Instagram profile: tight vertical shots on
   // single elements, with real clicks.
-  profile: flag('reels') ? REELS_PROFILE : flag('app') ? APP_PROFILE : undefined,
+  // --stage films the locally-built stage assembled from an exported
+  // component library, rather than the live site. See library.mjs / stage.mjs.
+  profile: flag('stage') ? STAGE_PROFILE : flag('reels') ? REELS_PROFILE : flag('app') ? APP_PROFILE : undefined,
 };
 // A profile can insist on a format — the reels components are 44px-tall
 // elements, which have no business being framed across a 1440px landscape.

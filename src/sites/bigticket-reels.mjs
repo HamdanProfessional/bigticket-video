@@ -33,13 +33,13 @@ export const REELS_COMPONENTS = {
     label: 'Product image', theme: 'light', captionable: true,
     // Quotes the page. See lib/tokens.mjs — a line whose numbers cannot be
     // resolved is dropped rather than printed with a hole in it.
-    copy: { kicker: '', title: '{rating} stars. {reviewCount} reviews.', subtitle: '' },
+    copy: { kicker: '', title: 'One product. Every retailer.', subtitle: '' },
   },
   // Accordion rows. These really open — the click is the point of the shot.
   specGeneral: {
     route: PDP, sel: 'text=GENERAL INFORMATION', climb: 1,     // 508x44 button
     label: 'General information', theme: 'light', clickable: true, interactive: true,
-    copy: { kicker: '', title: 'Every spec, in one tap.', subtitle: '' },
+    copy: { kicker: '', title: 'Every detail, checked.', subtitle: '' },
   },
   specPerformance: {
     route: PDP, sel: 'text=PERFORMANCE & FEATURES', climb: 1,  // 508x44
@@ -54,24 +54,24 @@ export const REELS_COMPONENTS = {
     route: PDP, sel: 'text=Compare Buying Options', climb: 1,  // 508x40
     label: 'Compare buying options', theme: 'light', clickable: true, interactive: true,
     captionable: true,
-    copy: { kicker: '', title: 'All {sellers} want {price}.', subtitle: '' },
+    copy: { kicker: '', title: '{sellers} retailers. Same price.', subtitle: '' },
   },
   priceChart: {
     route: PDP, sel: 'text=Pricing History', climb: 1,         // section with the 508x180 svg
     label: 'Price history chart', theme: 'light', captionable: true,
-    copy: { kicker: '', title: 'It was {low} in {lowDate}.', subtitle: '' },
+    copy: { kicker: '', title: 'But it was {low} in {lowDate}.', subtitle: '' },
   },
   // The argument's punchline. Separate from priceChart so the chart can be
   // framed twice with two different lines rather than repeating one.
   priceDelta: {
     route: PDP, sel: 'text=Pricing History', climb: 1,
     label: 'Price history (delta)', theme: 'light', captionable: true,
-    copy: { kicker: '', title: "You'd pay {overLow} over its floor.", subtitle: '' },
+    copy: { kicker: '', title: "So you'd overpay by {overLow}.", subtitle: '' },
   },
   reviewsBlock: {
     route: PDP, sel: 'text=Review Highlights', climb: 1,       // 508x37 heading block
     label: 'Review highlights', theme: 'light', captionable: true,
-    copy: { kicker: '', title: 'Every review, one answer.', subtitle: '' },
+    copy: { kicker: '', title: '{reviewCount} reviews, one answer.', subtitle: '' },
   },
 
   // ---- dashboard: a real product grid ----------------------------------
@@ -168,6 +168,13 @@ export const REELS_TOPICS = [
 // A spine is a claim sequence, not a tour of the navigation.
 export const REELS_SPINE = ['productShot', 'compareOptions', 'priceChart', 'priceDelta', 'reviewsBlock'];
 
+// Spec accordions are deliberately absent from the spine AND the filler below.
+// They film well — a row opening on camera is the best interaction on the site
+// — but this company compares what a product costs at every retailer and what
+// it has cost over time. An ad that spends three of twelve beats on "Slot
+// Count: 2" is advertising a product manual. They stay castable for a prompt
+// that asks about specs (see REELS_TOPICS) and never volunteer.
+
 // Product page only, ordered by how much each one sells the product — padding
 // is drawn front-weighted from this list.
 //
@@ -184,8 +191,8 @@ export const REELS_SPINE = ['productShot', 'compareOptions', 'priceChart', 'pric
 // angle on the price chart is a better shot than a first angle on a cupboard.
 // All of these stay castable when a prompt actually asks (see REELS_TOPICS).
 export const REELS_FILLER = [
-  'priceChart', 'priceDelta', 'reviewsBlock', 'compareOptions', 'productShot',
-  'specGeneral', 'specPerformance', 'productTitle', 'specDimensions',
+  'priceChart', 'priceDelta', 'compareOptions', 'reviewsBlock', 'productShot',
+  'productTitle',
 ];
 
 // The hook quotes the price, because a number is a stronger opening than a
@@ -196,9 +203,15 @@ export const REELS_HOOK = {
   subtitle: '',
 };
 
+// Two beats of the argument have no component of their own on the page, so
+// they are not in this file — they are the hook and the sign-off.
+
+// "Buy once. Buy well." is the site's own footer line — a nice sentiment and
+// not a product claim. This company compares what the same product costs at
+// every retailer, and what it has cost over time, so the sign-off says that.
 export const REELS_SIGNOFF = {
-  kicker: 'Free on Chrome',
-  title: 'Buy once. Buy well.',
+  kicker: '',
+  title: 'Know the real price.',
   subtitle: '',
 };
 

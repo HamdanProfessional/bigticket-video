@@ -88,8 +88,28 @@ export function extractFacts() {
     .map((h) => (h.innerText || '').replace(/\s+/g, ' ').trim())
     .find((t) => t.length > 12 && /[-–—]|\d/.test(t)) || null;
 
+  // Retailer spread. On this product all three quote the same number, so an ad
+  // claiming "compare retailers and save" would be contradicted by the frame it
+  // is printed over. Exposed so copy can lead on the spread where one exists
+  // and fall back to the price history where it does not.
+  const spread = prices.length > 1 ? Math.max(...prices) - Math.min(...prices) : 0;
+
+  // The full series, oldest first, so a stage can REDRAW the chart rather than
+  // screenshot it. A screenshot is the site's own pale rendering at a different
+  // size; the numbers can be drawn in any palette, at any scale, and animated.
+  const series = valued
+    .map((h) => ({ v: h.value, when: h.when, at: stamp(h.when) }))
+    .filter((h) => h.at > 0)
+    .sort((a, b) => a.at - b.at)
+    .filter((h, i, a) => i === 0 || h.at !== a[i - 1].at || h.v !== a[i - 1].v);
+
   return {
     product: heading,
+    series: series.length ? series : null,
+    retailers: sellers.length
+      ? sellers.map((name) => ({ name, price: fmt(seen.get(name)) }))
+      : null,
+    spread: spread > 0 ? `$${Math.round(spread)}` : null,
     // The site's titles carry the retailer's full SKU string; a short brand
     // name reads better in 900-weight caps across a phone.
     brand: heading ? heading.split(/[\s-]+/)[0] : null,

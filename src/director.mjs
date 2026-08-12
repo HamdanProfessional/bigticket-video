@@ -350,6 +350,8 @@ export function direct(prompt, opts = {}) {
   // --- assign a motion kind to each beat --------------------------------
   const shots = [];
   let lastKind = null;
+  // Claims already spoken, so a revisited component does not repeat itself.
+  const spokenTitles = new Set();
   for (let i = 0; i < cast.length; i++) {
     const compName = cast[i];
     const allowed = AFF[compName] || ['pushIn', 'hold'];
@@ -404,8 +406,14 @@ export function direct(prompt, opts = {}) {
     // no-two-in-a-row rule, which is what stops a feature tour reading as a
     // wall of text.
     const claims = comp.copy && hasTokens(comp.copy.title);
-    const wantCaption = comp.captionable && comp.copy
+    // Say it once. Padding revisits a strong component on purpose — a second
+    // angle on the price chart is a good shot — but the caption is the claim,
+    // and repeating it verbatim two beats later reads as a stutter rather than
+    // emphasis. The revisit keeps the motion and loses the words.
+    const alreadySaid = comp.copy && spokenTitles.has(comp.copy.title);
+    const wantCaption = comp.captionable && comp.copy && !alreadySaid
       && (claims || (!fmt.portrait && !prevHadCaption && rng.chance(0.85)));
+    if (wantCaption) spokenTitles.add(comp.copy.title);
 
     // A shot carrying text has to outlast its own ramps by MIN_TEXT_HOLD, or
     // the words are still arriving when they start leaving and nobody reads

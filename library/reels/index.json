@@ -1,0 +1,113 @@
+{
+  "origin": "https://shopbigticket.com",
+  "width": 540,
+  "height": 960,
+  "scale": 3,
+  "facts": {
+    "product": null,
+    "brand": null,
+    "price": null,
+    "sellers": null,
+    "sellerNames": null,
+    "low": null,
+    "lowDate": null,
+    "high": null,
+    "overLow": null,
+    "reviewCount": null,
+    "rating": null
+  },
+  "components": {
+    "matchHeading": {
+      "file": "matchHeading.png",
+      "label": "Find your perfect match",
+      "w": 247,
+      "h": 34,
+      "theme": "light",
+      "copy": {
+        "kicker": "For you",
+        "title": "Picked for what you buy.",
+        "subtitle": ""
+      }
+    },
+    "tileToaster": {
+      "file": "tileToaster.png",
+      "label": "SMEG toaster tile",
+      "w": 142,
+      "h": 151,
+      "theme": "light",
+      "copy": null
+    },
+    "tileCoffee": {
+      "file": "tileCoffee.png",
+      "label": "Coffee maker tile",
+      "w": 142,
+      "h": 151,
+      "theme": "light",
+      "copy": null
+    },
+    "tileTv": {
+      "file": "tileTv.png",
+      "label": "TV tile",
+      "w": 142,
+      "h": 151,
+      "theme": "light",
+      "copy": null
+    },
+    "boardTile": {
+      "file": "boardTile.png",
+      "label": "Board tile",
+      "w": 142,
+      "h": 150,
+      "theme": "light",
+      "copy": {
+        "kicker": "Boards",
+        "title": "One board per decision.",
+        "subtitle": ""
+      }
+    },
+    "giftHeadline": {
+      "file": "giftHeadline.png",
+      "label": "Gift card headline",
+      "w": 349,
+      "h": 90,
+      "theme": "light",
+      "copy": {
+        "kicker": "Refer a friend",
+        "title": "Earn a $10 gift card.",
+        "subtitle": ""
+      }
+    },
+    "shareVia": {
+      "file": "shareVia.png",
+      "label": "Share options",
+      "w": 492,
+      "h": 399,
+      "theme": "light",
+      "copy": null
+    },
+    "stepShare": {
+      "file": "stepShare.png",
+      "label": "Step: share your link",
+      "w": 333,
+      "h": 310,
+      "theme": "light",
+      "copy": null
+    },
+    "stepSave": {
+      "file": "stepSave.png",
+      "label": "Step: they save",
+      "w": 333,
+      "h": 310,
+      "theme": "light",
+      "copy": null
+    },
+    "stepReward": {
+      "file": "stepReward.png",
+      "label": "Step: get rewarded",
+      "w": 333,
+      "h": 310,
+      "theme": "light",
+      "copy": null
+    }
+  }
+}

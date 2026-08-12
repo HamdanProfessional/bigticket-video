@@ -135,7 +135,7 @@ export async function record(storyboard, outDir, opts = {}) {
   }
 }
 
-async function recordInner(storyboard, outDir, { onProgress, components, auth, extract } = {}, setBrowser) {
+async function recordInner(storyboard, outDir, { onProgress, components, auth, extract, facts: givenFacts } = {}, setBrowser) {
   // Site profile is injectable so this renderer is not tied to one site.
   const COMPS = components || COMPONENTS;
   const { fps, width, height, look } = storyboard;
@@ -155,7 +155,14 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
   // Hand it to the wrapper immediately, so a throw anywhere below still closes.
   setBrowser(browser);
 
-  const origin = new URL(storyboard.url || 'https://shopbigticket.com/').origin;
+  // A stage is a local file, not a site. `new URL('file:///…').origin` is the
+  // string "null", so origin+route would navigate to "null/" — the stage is
+  // addressed as a whole document instead, and its routes are ignored because
+  // every scene lives in the one page.
+  const isLocal = /^file:/i.test(storyboard.url || '');
+  const origin = isLocal
+    ? storyboard.url
+    : new URL(storyboard.url || 'https://shopbigticket.com/').origin;
 
   // Signing in, if the profile needs it. The session is established in a
   // throwaway context and reused as storageState, so the filming contexts never
@@ -190,7 +197,7 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
   async function pageFor(route) {
     if (pages.has(route)) return pages.get(route);
     const page = await ctx.newPage();
-    await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(isLocal ? origin : origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
     // The product page fetches offers and price history after load and shows a
     // "Searching for the best deals..." placeholder until they arrive. Filming
     // that placeholder is worse than not filming the page at all.
@@ -251,12 +258,17 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
   // A line that cannot be filled is dropped, never printed with a hole in it —
   // and a title card whose whole reason to exist was that line is dropped with
   // it, because a card with no copy is three seconds of nothing.
-  let facts = {};
-  if (extract) {
+  // A stage already had its numbers baked into its type by the library export,
+  // so re-extracting them from the rendered stage would be reading our own
+  // output back. They are handed in instead.
+  let facts = givenFacts || {};
+  if (!Object.keys(facts).length && extract) {
     const { page } = await pageFor(storyboard.factsRoute || routeOf(shots[0]?.component));
     facts = (await page.evaluate(extract)) || {};
+  }
+  {
     const filled = Object.entries(facts).filter(([, v]) => v != null && v !== '').length;
-    console.log(`  facts ${filled}/${Object.keys(facts).length} from the page`);
+    if (filled) console.log(`  facts ${filled}/${Object.keys(facts).length}`);
   }
   let droppedForFacts = 0;
   for (const s of shots) {
