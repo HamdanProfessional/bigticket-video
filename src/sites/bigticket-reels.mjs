@@ -95,7 +95,12 @@ export const REELS_COMPONENTS = {
   // browsing several things, you pick one, and only then do prices and reviews
   // matter. These two beats are that half.
   productRow: {
-    route: '/dashboard', sel: '.slick-track', climb: 0,   // 604x158, 4 products
+    // A bare `.slick-track` resolved to the FIRST visible track, which is the
+    // 151x157 saved-board tile — one thumbnail, not a row of products. The
+    // dashboard carries five tracks; this picks the one holding the product the
+    // ad goes on to compare, so browse and pick are the same object and the cut
+    // to the product page is continuous. Measured: 1 match, 604x158, 4 products.
+    route: '/dashboard', sel: '.slick-track:has(img[alt="SMEG Toaster"])', climb: 0,
     label: 'Recommended products row', theme: 'light', captionable: true,
     copy: { kicker: '', title: 'Buying something big?', subtitle: '' },
   },
@@ -205,9 +210,14 @@ export const REELS_TOPICS = [
 // A spine is a claim sequence, not a tour of the navigation.
 // The journey, in the order a person actually lives it: you are browsing
 // several things, you pick one, THEN price and reviews matter.
+// The comment above described this journey for several revisions while the
+// array below still opened on the product page — so every ad began already
+// looking at the single product it ended on, with nothing to choose between.
+// Browse -> pick -> compare -> decide, on the two routes that hold them.
 export const REELS_SPINE = [
-  'productShot', 'compareOptions', 'retailerList',
-  'priceChart', 'priceDelta', 'reviewsBlock',
+  'productRow', 'tileToaster',                          // several things, then one
+  'productShot', 'compareOptions', 'retailerList',      // what it costs, and who sells it
+  'priceChart', 'priceDelta', 'reviewsBlock',           // what it has cost, and the verdict
 ];
 
 // Spec accordions are deliberately absent from the spine AND the filler below.
