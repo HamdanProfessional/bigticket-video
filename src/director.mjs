@@ -347,6 +347,21 @@ export function direct(prompt, opts = {}) {
   cast = cast.filter((c) => COMPS[c]);
   if (!cast.length) throw new Error(`director: no known components for this site profile`);
 
+  // --- transitions, motivated by the cut they sit on ---------------------
+  //
+  // Transitions were drawn at random from the mood's pool, so a glitch or a
+  // spin could land on any cut regardless of what was on either side of it.
+  // That is what makes an effect feel like it came out of nowhere: nothing
+  // about the two shots asked for it.
+  //
+  // A cut between two angles on the SAME component is a continuity cut — the
+  // camera is already there, and a whip pan across it says the subject changed
+  // when it did not. A cut into a beat that speaks should not fight the words
+  // arriving underneath it. Everything else can take the mood's pool, and the
+  // loud effects are rationed so they read as accents rather than as the house
+  // style.
+  const LOUD = new Set(['glitch', 'spin', 'warp', 'whip']);
+
   // --- assign a motion kind to each beat --------------------------------
   const shots = [];
   let lastKind = null;
@@ -355,19 +370,6 @@ export function direct(prompt, opts = {}) {
   for (let i = 0; i < cast.length; i++) {
     const compName = cast[i];
     const allowed = AFF[compName] || ['pushIn', 'hold'];
-    // Weight by mood, and never repeat the previous kind back-to-back.
-    const pairs = allowed
-      .filter((k) => k !== lastKind || allowed.length === 1)
-      .map((k) => {
-        let w = mood.kindBias[k] ?? 1;
-        // The cursor landing on a real button is the ad's payoff beat, so on a
-        // clickable component it should be the strong default rather than one
-        // option among equals.
-        if (k === 'cursorClick' && COMPS[compName].clickable) w *= 6;
-        return [k, w];
-      });
-    const kind = rng.weighted(pairs);
-    lastKind = kind;
 
     // Quantise every shot to an even number of beats at the score's tempo, so
     // cuts land ON the music instead of near it. This is the cheapest thing in
@@ -423,6 +425,34 @@ export function direct(prompt, opts = {}) {
     const wantCaption = comp.captionable && comp.copy && !alreadySaid
       && (claims || (!fmt.portrait && !prevHadCaption && rng.chance(0.85)));
     if (wantCaption) spokenTitles.add(comp.copy.title);
+
+    // --- pick the motion, knowing what the beat is FOR --------------------
+    //
+    // Motion used to be chosen from affinity and mood alone, before anything
+    // knew whether the shot carried a line. So a sentence the viewer is meant
+    // to read could arrive under a zoom-blur or a punch-in, and the move read
+    // as arbitrary — it was. A move is motivated by its job: a beat that
+    // speaks holds still enough to be read, a silent beat between two spoken
+    // ones can carry the energy, and the closing beat settles rather than
+    // launching into something new.
+    const SPEAKING = { pushIn: 2.4, hold: 1.8, spotlight: 2.2, pulseFocus: 2, rackFocus: 1.4,
+                       pullBack: 1.4, tiltReveal: 1, sweepReveal: 1, slideIn: 0.8 };
+    const RESTLESS = { zoomBlurIn: 0.06, punchIn: 0.1, whipTo: 0.05, driftDiagonal: 0.5 };
+    const pairs = allowed
+      .filter((k) => k !== lastKind || allowed.length === 1)
+      .map((k) => {
+        let w = mood.kindBias[k] ?? 1;
+        // The cursor landing on a real button is the ad's payoff beat, so on a
+        // clickable component it should be the strong default rather than one
+        // option among equals.
+        if (k === 'cursorClick' && COMPS[compName].clickable) w *= 6;
+        if (wantCaption) w *= (SPEAKING[k] ?? 1) * (RESTLESS[k] ?? 1);
+        // The sign-off is the frame people screenshot. It does not need a move.
+        if (isLast) w *= (k === 'pushIn' || k === 'hold' || k === 'pulseFocus') ? 3 : 0.2;
+        return [k, w];
+      });
+    const kind = rng.weighted(pairs);
+    lastKind = kind;
 
     // A shot carrying text has to outlast its own ramps by MIN_TEXT_HOLD, or
     // the words are still arriving when they start leaving and nobody reads
@@ -483,7 +513,8 @@ export function direct(prompt, opts = {}) {
       caption: wantCaption
         ? { ...comp.copy, align: 'left', anchor: 'bottom', theme: comp.theme, accent: '#7c3aed' }
         : null,
-      transitionIn: isFirst ? 'fadeFromWhite' : rng.pick(mood.transition),
+      // Overwritten on the final cut once cards are in place; see below.
+      transitionIn: 'dissolve',
     });
   }
 
@@ -576,6 +607,9 @@ export function direct(prompt, opts = {}) {
           // skipped the scrim entirely — the runtime only ramps under captions
           // anchored to the bottom. Copy on the picture goes in the lower third
           // and takes its contrast from the page it is over.
+          // The sign-off is a brand lockup, not a claim: no word in it should
+          // be picked out, because the words are a name.
+          hilite: !full,
           anchor: panelled ? 'center' : 'bottom',
           theme: panelled ? 'dark' : (COMPS[over]?.theme || 'light'),
         },
@@ -633,6 +667,40 @@ export function direct(prompt, opts = {}) {
     signoffCard.params.holdOut = true;
     out.push(signoffCard);
     finalShots = out;
+  }
+
+  // --- transitions, decided on the FINAL cut ----------------------------
+  //
+  // This has to run after the cards are interleaved, not while the cast is
+  // being built. A card is anchored to the component it introduces, so a card
+  // over `compareOptions` followed by a shot of `compareOptions` is one subject
+  // seen twice — but at cast time those two were not neighbours, and the shot
+  // inherited a transition chosen against whatever preceded the card. That is
+  // how a flash frame landed in the middle of a continuous move.
+  //
+  // The rules, in order: open on white; a continuity cut between two looks at
+  // the same subject dissolves; a beat carrying a line does not fight the words
+  // arriving under it; loud effects are rationed so they read as accents; and
+  // no transition repeats itself, because a repeated effect is a template.
+  {
+    let loudLeft = fmt.portrait ? 1 : 2;
+    let prevT = null;
+    for (let i = 0; i < finalShots.length; i++) {
+      const sh = finalShots[i];
+      const prev = finalShots[i - 1];
+      let t;
+      if (i === 0) t = 'fadeFromWhite';
+      else if (sh.isCard || prev.component === sh.component) t = 'dissolve';
+      else {
+        const speaks = !!sh.caption;
+        let pool = mood.transition.filter((x) => !LOUD.has(x) || (loudLeft > 0 && !speaks));
+        pool = pool.filter((x) => x !== prevT);
+        t = rng.pick(pool.length ? pool : ['dissolve']);
+        if (LOUD.has(t)) loudLeft--;
+      }
+      sh.transitionIn = t;
+      prevT = t;
+    }
   }
 
   const shotsOut = finalShots;

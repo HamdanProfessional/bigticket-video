@@ -600,7 +600,11 @@
       capTitle.style.letterSpacing = `${look.track}em`;
       capTitle.style.textTransform = look.caps ? 'uppercase' : 'none';
       capKicker.textContent = look.furniture ? (c.kicker || '') : '';
-      buildTitle(title, look, look.pop ? hiliteIndex(title) : -1);
+      // `hilite: false` on the sign-off. The highlight picks the longest
+      // non-stopword, which is right for "62 REVIEWS" and wrong for a logo
+      // lockup: on "BIG TICKET. FREE ON CHROME." it landed on TICKET alone and
+      // cut the brand name in half, in the one frame people screenshot.
+      buildTitle(title, look, (look.pop && c.hilite !== false) ? hiliteIndex(title) : -1);
       capSub.textContent = look.furniture ? (c.subtitle || '') : '';
 
       // Per-element choreography off the caption's own in/out progress.

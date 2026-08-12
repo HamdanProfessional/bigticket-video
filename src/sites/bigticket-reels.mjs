@@ -71,7 +71,7 @@ export const REELS_COMPONENTS = {
   reviewsBlock: {
     route: PDP, sel: 'text=Review Highlights', climb: 1,       // 508x37 heading block
     label: 'Review highlights', theme: 'light', captionable: true,
-    copy: { kicker: '', title: 'AI reads the reviews for you.', subtitle: '' },
+    copy: { kicker: '', title: "AI reads the reviews, so you don't.", subtitle: '' },
   },
 
   // ---- dashboard: a real product grid ----------------------------------
