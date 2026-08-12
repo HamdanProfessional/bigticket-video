@@ -586,6 +586,25 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, e
 
     await page.evaluate((st) => window.__BT.frame(st), state);
 
+    // Wait for the browser to actually COMMIT the frame before capturing it.
+    //
+    // `page.evaluate` resolves when the JavaScript returns, which is before
+    // style, layout, paint and composite have run. The screenshot was therefore
+    // racing the compositor. Chromium rasterises in tiles and uploads them
+    // asynchronously, so a capture landing mid-commit gets some tiles carrying
+    // the new camera transform and some still carrying the old one: a
+    // rectangular slab of the picture visibly offset from the rest, with a hard
+    // edge down the seam. It looks like a corrupt video rather than a bug in a
+    // camera, which is why it took a screenshot from someone else to spot.
+    //
+    // Two rAFs, not one: the first fires before that commit, the second after
+    // it. Worse under --fast, where `will-change: transform` promotes the page
+    // to its own composited layer and makes tile uploads asynchronous, but not
+    // exclusive to it — the race exists at any raster setting.
+    await page.evaluate(() => new Promise((r) => (
+      requestAnimationFrame(() => requestAnimationFrame(() => r()))
+    )));
+
     // Real interaction. When the cursor reaches the target, actually click it,
     // so the accordion opens or the dropdown drops on camera. Fires once per
     // shot, at the same progress point the cursor's press lands, and the page
