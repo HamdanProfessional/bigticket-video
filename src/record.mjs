@@ -162,13 +162,32 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
   // shots: jumps>2 33 -> 20, half-painted frames 2/77 -> 1/77, 276s -> 163s.
   // Set BT_HEADLESS=1 for machines without a display (CI).
   const headless = process.env.BT_HEADLESS === '1';
+  // Begin-frame mode: the purpose-built API for this, and the only thing that
+  // makes a half-painted frame impossible rather than unlikely.
+  //
+  // HeadlessExperimental.beginFrame runs ONE layout/paint/composite and returns
+  // the image from the same call, with the browser frozen in between. No
+  // screenshot racing a compositor, so no torn frames and no white slabs.
+  //
+  // It was removed in Chromium 147 and Playwright 1.62 ships 151 — but the
+  // Chromium 140 headless shell is still on disk from an older Playwright, and
+  // it has the command once --enable-begin-frame-control and --deterministic-mode
+  // are passed. Verified: beginFrame returns screenshotData on shell-1187.
+  //
+  // Headless-shell only; there is no headed equivalent.
+  const beginFrameExe = process.env.BT_BEGINFRAME_EXE
+    || path.join(process.env.LOCALAPPDATA || '', 'ms-playwright',
+      'chromium_headless_shell-1187', 'chrome-win', 'headless_shell.exe');
+  const useBeginFrame = process.env.BT_BEGINFRAME === '1' && existsSync(beginFrameExe);
   const browser = await chromium.launch({
-    headless,
+    ...(useBeginFrame ? { executablePath: beginFrameExe, headless: true } : {}),
+    ...(useBeginFrame ? {} : { headless }),
     // AutomationControlled is what the site's bot check keys off; without this
     // the login modal accepts the credentials and then silently fails.
     args: [
       '--force-color-profile=srgb', '--disable-lcd-text',
       '--disable-blink-features=AutomationControlled',
+      ...(useBeginFrame ? ['--enable-begin-frame-control', '--deterministic-mode'] : []),
     ],
   });
   // Hand it to the wrapper immediately, so a throw anywhere below still closes.
@@ -283,6 +302,9 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
         } else { stableMs = 0; prev = n; }
       }
     });
+    if (process.env.BT_NOSCROLL === '1') {
+      await page.evaluate(() => { window.__BT_NOSCROLL = true; scrollTo(0, 0); });
+    }
     await hideFurniture(page);
     await page.evaluate(runtimeSrc);
 
@@ -349,7 +371,7 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     }
 
     if (process.env.BT_DEBUG === '1') console.error(`  [dbg] route ${route} ready, virtualTime=${virtualTime}`);
-    const entry = { page, cdp, virtualTime, docHeight: await page.evaluate(() => window.__BT.docHeight()) };
+    const entry = { page, cdp, virtualTime, ticks: 1e6, docHeight: await page.evaluate(() => window.__BT.docHeight()) };
     pages.set(route, entry);
     return entry;
   }
@@ -875,7 +897,19 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // Under a controlled clock the capture MUST go through CDP: Playwright's
     // screenshot waits for fonts and disables animations on every call, and on
     // a held clock that wait never resolves (30s timeout, every render).
-    const shoot = virtualTime
+    const shoot = useBeginFrame
+      ? async () => {
+        entry.ticks += 1000 / fps;
+        const r = await cdp.send('HeadlessExperimental.beginFrame', {
+          frameTimeTicks: entry.ticks,
+          interval: 1000 / fps,
+          noDisplayUpdates: false,
+          screenshot: { format: 'jpeg', quality: 92 },
+        });
+        if (!r || !r.screenshotData) throw new Error('beginFrame returned no image');
+        return Buffer.from(r.screenshotData, 'base64');
+      }
+      : virtualTime
       ? () => cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92 })
         .then((r) => Buffer.from(r.data, 'base64'))
       : () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });

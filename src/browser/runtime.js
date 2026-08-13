@@ -412,9 +412,17 @@
   function applyCamera(c) {
     const zoom = c.zoom ?? 1;
     const wantY = c.y ?? 0;
-    const clamped = Math.max(0, Math.min(wantY, maxScroll()));
+    // Vertical movement via TRANSFORM rather than scroll, when asked.
+    //
+    // Chromium is documented to produce white/blank regions in screenshots
+    // taken after scrolling a long page in a short viewport — which is this
+    // pipeline exactly, once per frame for 1455 frames. The reported workaround
+    // is to stop scrolling. The residual path below already expresses vertical
+    // position as a transform, so not scrolling simply routes all of it there.
+    const noScroll = !!window.__BT_NOSCROLL;
+    const clamped = noScroll ? 0 : Math.max(0, Math.min(wantY, maxScroll()));
     const whole = Math.round(clamped);
-    window.scrollTo(0, whole);
+    if (!noScroll) window.scrollTo(0, whole);
     // Whatever scroll couldn't express (clamping + sub-pixel) becomes transform.
     const residual = wantY - whole;
 
