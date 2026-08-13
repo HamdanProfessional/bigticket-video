@@ -15,6 +15,7 @@ import { record } from './record.mjs';
 import { renderVideo, renderPoster, run } from './render.mjs';
 import { credentialsFromEnv, SESSION_PATH } from './auth.mjs';
 import { buildStage } from './stage.mjs';
+import { repairFrames } from './repair.mjs';
 import { existsSync } from 'node:fs';
 import { readFile as _readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
@@ -143,6 +144,25 @@ export async function makeVideo(o = {}) {
     auth,
     authRequired,
   });
+
+  // Chromium hands back the odd half-painted frame and there is no way to stop
+  // it from this side of the browser — see repair.mjs. Catch them now, while
+  // the whole sequence is on disk and every frame has both its neighbours.
+  if (o.repair !== false) {
+    const fix = await repairFrames(manifest.framesDir, manifest.frameCount, {
+      width: manifest.outWidth,
+      height: manifest.outHeight,
+    });
+    if (fix.repaired) {
+      const where = fix.clusters
+        .map((c) => `${(c.start / manifest.fps).toFixed(1)}s${c.end > c.start ? `-${(c.end / manifest.fps).toFixed(1)}s` : ''}`)
+        .join(', ');
+      console.error(
+        `  repaired ${fix.repaired}/${fix.checked} half-painted frames (${(100 * fix.repaired / fix.checked).toFixed(1)}%) at ${where}`
+      );
+    }
+    manifest.repairedFrames = fix.repaired;
+  }
 
   let audioPath = null;
   if (o.music !== false) {
