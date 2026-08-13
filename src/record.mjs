@@ -153,7 +153,17 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
 
   const runtimeSrc = await readFile(new URL('./browser/runtime.js', import.meta.url), 'utf8');
 
+  // Headed by default, and not for debugging: measured over one shot it is both
+  // CLEANER and FASTER than headless. Headless drives a different raster path,
+  // and it leaves frames half-painted — a white rectangle across part of a
+  // photograph — deterministically, at the same frame, byte-identical whether
+  // the capture waits 45ms or 220ms. So it is not a timing race that a longer
+  // wait can close; it is the headless compositor. Measured on the same three
+  // shots: jumps>2 33 -> 20, half-painted frames 2/77 -> 1/77, 276s -> 163s.
+  // Set BT_HEADLESS=1 for machines without a display (CI).
+  const headless = process.env.BT_HEADLESS === '1';
   const browser = await chromium.launch({
+    headless,
     // AutomationControlled is what the site's bot check keys off; without this
     // the login modal accepts the credentials and then silently fails.
     args: [
@@ -185,6 +195,17 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     storageState = await ensureSession(browser, auth, { origin });
   }
 
+  // Headed browsers paint scrollbars and headless ones do not, so without this
+  // the frame carries a scrollbar down its right edge and along the bottom.
+  //
+  // Injected as an INIT script rather than a style tag after load. Adding the
+  // stylesheet once the page had already settled relayed out the whole document
+  // mid-record, and cost more half-painted frames than the scrollbars were
+  // worth: 1/77 -> 6/77 on the same shot. From first paint it costs nothing.
+  const SCROLLBAR_CSS =
+    '*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}' +
+    'html{scrollbar-width:none!important;-ms-overflow-style:none!important}';
+
   const ctx = await browser.newContext({
     userAgent: storyboard.mobile ? UA_MOBILE : UA,
     viewport: { width, height },
@@ -197,6 +218,15 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     locale: 'en-US',
     ...(storageState ? { storageState } : {}),
   });
+  await ctx.addInitScript((css) => {
+    const add = () => {
+      const st = document.createElement('style');
+      st.textContent = css;
+      (document.head || document.documentElement).appendChild(st);
+    };
+    if (document.head) add();
+    else document.addEventListener('DOMContentLoaded', add, { once: true });
+  }, SCROLLBAR_CSS);
 
   /**
    * One primed tab per route.

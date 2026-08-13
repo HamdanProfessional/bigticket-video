@@ -170,7 +170,11 @@ export const REELS_COMPONENTS = {
 export const REELS_AFFINITY = {
   // A row of products wants a move that shows it is a ROW: travel across it, or
   // pull back to reveal how many there are.
-  productRow: ['panAcross', 'pullBack', 'pushIn', 'slideIn'],
+  // Zooms only. The row is 604px wide in a 540px frame, so a lateral move has
+  // to travel past the edge of the row to go anywhere, and what is past the
+  // edge is empty page. A push-in stays inside the products, which is the
+  // subject. panAcross and slideIn are deliberately absent, not merely last.
+  productRow: ['pushIn', 'pullBack', 'spotlight'],
   productTitle: ['pushIn', 'pulseFocus', 'slideIn'],
   productShot: ['pushIn', 'rackFocus', 'pulseFocus', 'zoomBlurIn', 'hold'],
   specGeneral: ['tapFocus', 'pulseFocus', 'spotlight'],
