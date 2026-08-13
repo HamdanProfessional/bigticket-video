@@ -19,3 +19,4 @@ done.flag
 # build artefacts (node src/library-cli.mjs), and binary PNGs that would churn
 # on every re-export.
 library/
+*.tmp.mjs
