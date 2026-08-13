@@ -132,6 +132,13 @@ export const REELS_COMPONENTS = {
     route: '/dashboard', sel: 'img[alt="LG StanbyME 2"]', climb: 0,
     label: 'TV tile', theme: 'light',
   },
+  // A fourth REAL product, so the stage's browse grid is four things you might
+  // actually buy. It previously filled the fourth cell with boardTile, which on
+  // this account is a saved board literally named "test".
+  tileFilter: {
+    route: '/dashboard', sel: 'img[alt="Philips Water Filter"]', climb: 0,
+    label: 'Water filter tile', theme: 'light',
+  },
   boardTile: {
     route: '/dashboard', sel: 'img[alt="test"]', climb: 1,               // 142x150
     label: 'Board tile', theme: 'light', captionable: true,

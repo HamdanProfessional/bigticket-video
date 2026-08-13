@@ -28,13 +28,20 @@
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
+// Sampled from the site, not invented. The first stage build used an ink and
+// violet palette of its own, which made every frame look like a different
+// product to the one being advertised — the library is supposed to MATCH the
+// site, not reinterpret it. The site is a light surface: near-white ground,
+// near-black type, violet for action and cyan for data.
 const BRAND = {
-  ink: '#0b0820',
-  ink2: '#160f3d',
+  ink: '#141223',
+  ink2: '#4a4660',
   violet: '#7c3aed',
   violetLo: '#5b46e5',
   cyan: '#1cc8ee',
-  paper: '#f7f5ff',
+  paper: '#ffffff',
+  paper2: '#f4f1fb',
+  line: 'rgba(20,18,35,.12)',
 };
 
 const FONT =
@@ -58,14 +65,14 @@ function chartSvg(series, w, h) {
 <svg class="chart" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" fill="none">
   <defs>
     <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${BRAND.cyan}" stop-opacity=".34"/>
-      <stop offset="100%" stop-color="${BRAND.cyan}" stop-opacity="0"/>
+      <stop offset="0%" stop-color="${BRAND.violet}" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="${BRAND.violet}" stop-opacity="0"/>
     </linearGradient>
   </defs>
   <path d="${area}" fill="url(#fill)"/>
-  <path d="${line}" stroke="${BRAND.cyan}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
-  <circle cx="${x(loI).toFixed(1)}" cy="${y(lo).toFixed(1)}" r="7" fill="${BRAND.cyan}"/>
-  <circle cx="${x(hiI).toFixed(1)}" cy="${y(hi).toFixed(1)}" r="7" fill="#fff"/>
+  <path d="${line}" stroke="${BRAND.violet}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="${x(loI).toFixed(1)}" cy="${y(lo).toFixed(1)}" r="7" fill="${BRAND.violet}"/>
+  <circle cx="${x(hiI).toFixed(1)}" cy="${y(hi).toFixed(1)}" r="7" fill="${BRAND.ink}"/>
 </svg>`;
 }
 
@@ -91,40 +98,50 @@ export async function buildStage(lib, o = {}) {
   const scene = (id, cls, inner) =>
     `<section class="scene ${cls}" id="${id}"><div class="inner">${inner}</div></section>`;
 
+  // Tiles for the browse beat. The ad has to open on a CHOICE — several things
+  // you might be buying — or it starts already looking at the one product it
+  // ends on, which is where the live-site cut kept going wrong.
+  // Real products only. boardTile is a saved board, and on the test account it
+  // is named "test" — which is what shipped in the first stage build.
+  const tiles = ['tileToaster', 'tileCoffee', 'tileTv', 'tileFilter']
+    .map((n) => img(n)).filter(Boolean);
+
   const scenes = [
-    // Product, full bleed on ink. The one frame the live page can never give:
-    // no chrome, no margins, no white.
+    scene('sceneBrowse', 'dark', `
+      <div class="label">Buying something big?</div>
+      <div class="grid" id="stageBrowse">
+        ${tiles.map((t) => `<div class="tile"><img src="${t}" alt=""></div>`).join('')}
+      </div>`),
+
     scene('sceneProduct', 'dark', `
       ${product ? `<img class="hero" id="stageProduct" src="${product}" alt="">` : ''}
       <div class="eyebrow">${f.product ? esc(f.product.split(' - ')[0]) : 'This product'}</div>`),
 
-    // The price, as the image rather than as a caption over one.
     scene('scenePrice', 'violet', `
-      <div class="label">Every retailer wants</div>
+      <div class="label">Here&rsquo;s what it costs</div>
       <div class="mega" id="stagePrice">${esc(f.price || '')}</div>`),
 
-    // Retailers re-typeset: the site's rows are 14px grey; these are the point
-    // of the ad, so they are set like it.
     scene('sceneRetailers', 'dark', `
-      <div class="label">${retailers.length} retailers</div>
+      <div class="label">${retailers.length} sellers, one screen</div>
       <ul class="rows" id="stageRetailers">
         ${retailers.map((r) => `<li><span>${esc(r.name)}</span><b>${esc(r.price || '')}</b></li>`).join('')}
       </ul>`),
 
-    // Chart redrawn in the ad's palette, with the low called out.
     scene('sceneChart', 'dark', `
-      <div class="label">Price history</div>
+      <div class="label">Every price it has ever been</div>
       <div class="chartwrap" id="stageChart">${chartSvg(f.series, W - 72, 300)}</div>
       ${f.low ? `<div class="callout"><b>${esc(f.low)}</b><span>${esc(f.lowDate || '')}</span></div>` : ''}`),
 
-    // The number the whole ad exists to show.
-    scene('sceneDelta', 'violet', `
-      <div class="label">You'd overpay by</div>
-      <div class="mega" id="stageDelta">${esc(f.overLow || '')}</div>`),
+    // Not "here is a review widget" — the benefit is that somebody else already
+    // read them.
+    scene('sceneReviews', 'violet', `
+      <div class="label">Reviews, summarised</div>
+      <div class="mega" id="stageReviews">${esc(f.rating || '')}<span class="of">/5</span></div>
+      ${f.reviewCount ? `<div class="sub">from ${esc(f.reviewCount)} reviews, read by AI</div>` : ''}`),
 
     scene('sceneSignoff', 'ink', `
       <div class="wordmark">big ticket.</div>
-      <div class="signoff" id="stageSignoff">Know the real price.</div>`),
+      <div class="signoff" id="stageSignoff">Free on Chrome.</div>`),
   ].join('\n');
 
   const html = `<!doctype html>
@@ -132,7 +149,7 @@ export async function buildStage(lib, o = {}) {
 <title>stage</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: ${BRAND.ink}; }
+  html, body { margin: 0; padding: 0; background: ${BRAND.paper}; color: ${BRAND.ink}; }
   body { font-family: ${FONT}; -webkit-font-smoothing: antialiased; }
   .scene {
     width: ${W}px; height: ${H}px; position: relative; overflow: hidden;
@@ -141,35 +158,48 @@ export async function buildStage(lib, o = {}) {
   .inner { width: 100%; height: 100%; position: relative;
            display: flex; flex-direction: column; align-items: flex-start;
            justify-content: center; gap: 18px; padding: 0 46px; }
-  .dark   { background: radial-gradient(120% 90% at 50% 0%, ${BRAND.ink2} 0%, ${BRAND.ink} 70%); }
-  .ink    { background: ${BRAND.ink}; }
-  .violet { background: linear-gradient(150deg, ${BRAND.violetLo} 0%, ${BRAND.violet} 58%, ${BRAND.cyan} 165%); }
+  /* All light, because the site is light. Kept as three tones so consecutive
+     scenes are not the identical flat white. */
+  .dark   { background: radial-gradient(120% 90% at 50% 0%, ${BRAND.paper} 0%, ${BRAND.paper2} 78%); }
+  .ink    { background: ${BRAND.paper}; }
+  .violet { background: linear-gradient(160deg, ${BRAND.paper} 0%, ${BRAND.paper2} 70%); }
 
   .label    { font: 600 20px/1.2 ${FONT}; letter-spacing: .14em; text-transform: uppercase;
-              color: rgba(255,255,255,.62); }
+              color: ${BRAND.violet}; }
   .eyebrow  { position: absolute; left: 46px; bottom: 96px;
-              font: 800 34px/1 ${FONT}; letter-spacing: -.03em; color: #fff; }
+              font: 800 34px/1 ${FONT}; letter-spacing: -.03em; color: ${BRAND.ink}; }
   /* Tabular figures: a price that changes on screen must not reflow. */
-  .mega     { font: 900 132px/0.88 ${FONT}; letter-spacing: -.05em; color: #fff;
+  .mega     { font: 900 132px/0.88 ${FONT}; letter-spacing: -.05em; color: ${BRAND.ink};
               font-variant-numeric: tabular-nums; }
   .hero     { position: absolute; inset: 0; width: 100%; height: 100%;
               object-fit: contain; padding: 12% 8% 22%;
               /* The product photo is shot on white. Screen blending would grey
                  it out on ink; a soft shadow and a slight lift keep it reading
                  as an object on a dark ground rather than a pasted rectangle. */
-              filter: drop-shadow(0 40px 70px rgba(0,0,0,.55)) saturate(1.05); }
+              /* The product photo is shot on white and now sits on white, so it
+                 needs a soft ground shadow rather than a heavy one to read as an
+                 object rather than a cut-out. */
+              filter: drop-shadow(0 26px 46px rgba(20,18,35,.20)) saturate(1.03); }
   .rows     { list-style: none; margin: 0; padding: 0; width: 100%; }
   .rows li  { display: flex; align-items: center; justify-content: space-between;
-              padding: 22px 0; border-bottom: 1px solid rgba(255,255,255,.14);
-              font: 700 30px/1 ${FONT}; color: #fff; letter-spacing: -.02em; }
-  .rows b   { font-variant-numeric: tabular-nums; color: ${BRAND.cyan}; }
+              padding: 22px 0; border-bottom: 1px solid ${BRAND.line};
+              font: 700 30px/1 ${FONT}; color: ${BRAND.ink}; letter-spacing: -.02em; }
+  .rows b   { font-variant-numeric: tabular-nums; color: ${BRAND.violet}; }
   .chartwrap{ width: 100%; }
   .callout  { display: flex; align-items: baseline; gap: 14px; }
-  .callout b{ font: 900 76px/1 ${FONT}; letter-spacing: -.04em; color: ${BRAND.cyan};
+  .callout b{ font: 900 76px/1 ${FONT}; letter-spacing: -.04em; color: ${BRAND.violet};
               font-variant-numeric: tabular-nums; }
-  .callout span { font: 600 22px/1 ${FONT}; color: rgba(255,255,255,.66); }
-  .wordmark { font: 800 30px/1 ${FONT}; letter-spacing: -.02em; color: rgba(255,255,255,.72); }
-  .signoff  { font: 900 68px/0.94 ${FONT}; letter-spacing: -.045em; color: #fff; }
+  .callout span { font: 600 22px/1 ${FONT}; color: ${BRAND.ink2}; }
+  .grid     { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; }
+  .tile     { aspect-ratio: 1/1; border-radius: 18px; overflow: hidden;
+              background: ${BRAND.paper2}; border: 1px solid ${BRAND.line};
+              box-shadow: 0 10px 30px rgba(20,18,35,.06);
+              display: flex; align-items: center; justify-content: center; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; }
+  .of       { font: 900 54px/1 ${FONT}; opacity: .55; letter-spacing: -.03em; }
+  .sub      { font: 600 24px/1.3 ${FONT}; color: ${BRAND.ink2}; }
+  .wordmark { font: 800 30px/1 ${FONT}; letter-spacing: -.02em; color: ${BRAND.violet}; }
+  .signoff  { font: 900 68px/0.94 ${FONT}; letter-spacing: -.045em; color: ${BRAND.ink}; }
 </style>
 ${scenes}
 `;

@@ -14,6 +14,7 @@ import { direct } from './director.mjs';
 import { record } from './record.mjs';
 import { renderVideo, renderPoster, run } from './render.mjs';
 import { credentialsFromEnv, SESSION_PATH } from './auth.mjs';
+import { buildStage } from './stage.mjs';
 import { existsSync } from 'node:fs';
 import { readFile as _readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
@@ -91,6 +92,9 @@ export async function makeVideo(o = {}) {
     const libDir = o.libraryDir || 'library/reels';
     const lib = JSON.parse(await _readFile(path.join(libDir, 'index.json'), 'utf8'));
     libraryFacts = lib.facts || {};
+    // Assemble the stage from the library every time rather than trusting a
+    // stale stage.html: the library is the source, the stage is a build output.
+    await buildStage(lib, { dir: libDir, width: lib.width, height: lib.height });
     o = { ...o, url: o.url || pathToFileURL(path.resolve(libDir, 'stage.html')).href };
   }
   storyboard.url = o.url || 'https://shopbigticket.com/';

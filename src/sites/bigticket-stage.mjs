@@ -17,33 +17,42 @@
 //    argument for cutting the two together rather than choosing between them.
 
 export const STAGE_COMPONENTS = {
-  productHero: {
-    sel: '#sceneProduct', label: 'Product, full bleed', theme: 'dark',
+  // The ad opens on a CHOICE. Every earlier cut opened on the single product it
+  // closed on, so there was nothing being compared and nothing being decided.
+  browseGrid: {
+    sel: '#sceneBrowse', label: 'Several products', theme: 'light',
     captionable: true,
-    copy: { kicker: '', title: 'One product. Every retailer.', subtitle: '' },
+    copy: { kicker: '', title: 'Buying something big?', subtitle: '' },
+  },
+  productHero: {
+    sel: '#sceneProduct', label: 'Product, full bleed', theme: 'light',
+    captionable: true,
+    copy: { kicker: '', title: "You don't know where the best deal is.", subtitle: '' },
   },
   priceMega: {
-    sel: '#scenePrice', label: 'The price', theme: 'dark',
+    sel: '#scenePrice', label: 'The price', theme: 'light',
     captionable: true,
-    copy: { kicker: '', title: "You're about to spend {price}.", subtitle: '' },
+    copy: { kicker: '', title: "Here's what it costs.", subtitle: '' },
   },
   retailerRows: {
-    sel: '#sceneRetailers', label: 'Retailer list', theme: 'dark',
+    sel: '#sceneRetailers', label: 'Retailer list', theme: 'light',
     captionable: true,
-    copy: { kicker: '', title: '{sellers} retailers. Same price.', subtitle: '' },
+    copy: { kicker: '', title: 'Big Ticket compares every seller.', subtitle: '' },
   },
   historyChart: {
-    sel: '#sceneChart', label: 'Price history, redrawn', theme: 'dark',
+    sel: '#sceneChart', label: 'Price history, redrawn', theme: 'light',
     captionable: true,
-    copy: { kicker: '', title: 'But it was {low} in {lowDate}.', subtitle: '' },
+    copy: { kicker: '', title: "And every price it's ever been.", subtitle: '' },
   },
-  deltaMega: {
-    sel: '#sceneDelta', label: 'The overpayment', theme: 'dark',
+  // NOT "you would have overpaid by {overLow}". Same chart, and the difference
+  // between an advertisement and an accusation is which way it is pointed.
+  reviewsCard: {
+    sel: '#sceneReviews', label: 'Reviews, summarised', theme: 'light',
     captionable: true,
-    copy: { kicker: '', title: "So you'd overpay by {overLow}.", subtitle: '' },
+    copy: { kicker: '', title: "AI reads the reviews, so you don't.", subtitle: '' },
   },
   signoff: {
-    sel: '#sceneSignoff', label: 'Sign-off', theme: 'dark',
+    sel: '#sceneSignoff', label: 'Sign-off', theme: 'light',
   },
 };
 
@@ -51,34 +60,40 @@ export const STAGE_COMPONENTS = {
 // no lateral room to pan into. The moves that suit a full-frame graphic are
 // scale and reveal, not travel.
 export const STAGE_AFFINITY = {
+  browseGrid: ['pushIn', 'pullBack', 'sweepReveal', 'tiltReveal'],
   productHero: ['pushIn', 'pullBack', 'rackFocus', 'zoomBlurIn', 'hold'],
   priceMega: ['punchIn', 'pushIn', 'zoomBlurIn', 'pulseFocus'],
   retailerRows: ['pushIn', 'sweepReveal', 'slideIn', 'tiltReveal'],
   historyChart: ['sweepReveal', 'pushIn', 'pullBack', 'tiltReveal'],
-  deltaMega: ['punchIn', 'zoomBlurIn', 'pushIn', 'pulseFocus'],
+  reviewsCard: ['pushIn', 'pulseFocus', 'zoomBlurIn'],
   signoff: ['pushIn', 'hold', 'pulseFocus'],
 };
 
 export const STAGE_TOPICS = [
-  { match: /\b(price|pricing|cost|deal|cheap|overpay|spend)/i, comps: ['priceMega', 'deltaMega'] },
+  { match: /\b(price|pricing|cost|deal|cheap|spend)/i, comps: ['priceMega', 'historyChart'] },
   { match: /\b(retail|seller|store|compar|shop|merchant)/i, comps: ['retailerRows'] },
   { match: /\b(histor|track|drop|was|before|time)/i, comps: ['historyChart'] },
+  { match: /\b(review|rating|opinion|ai|summar)/i, comps: ['reviewsCard'] },
+  { match: /\b(browse|choose|pick|discover|recommend)/i, comps: ['browseGrid'] },
 ];
 
+// Browse -> the problem -> what it costs -> who sells it -> what it has cost ->
+// the verdict -> the ask.
 export const STAGE_SPINE = [
-  'productHero', 'priceMega', 'retailerRows', 'historyChart', 'deltaMega', 'signoff',
+  'browseGrid', 'productHero', 'priceMega',
+  'retailerRows', 'historyChart', 'reviewsCard', 'signoff',
 ];
 
 export const STAGE_FILLER = [
-  'historyChart', 'deltaMega', 'priceMega', 'retailerRows', 'productHero',
+  'retailerRows', 'historyChart', 'priceMega', 'productHero', 'reviewsCard',
 ];
 
 export const STAGE_HOOK = {
-  kicker: '', title: "You're about to spend {price}.", subtitle: '',
+  kicker: '', title: "You don't know where the best deal is.", subtitle: '',
 };
 
 export const STAGE_SIGNOFF = {
-  kicker: '', title: 'Know the real price.', subtitle: '',
+  kicker: '', title: 'Big Ticket. Free on Chrome.', subtitle: '',
 };
 
 export const STAGE_PROFILE = {

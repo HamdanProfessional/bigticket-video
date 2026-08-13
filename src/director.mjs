@@ -696,6 +696,49 @@ export function direct(prompt, opts = {}) {
     finalShots = out;
   }
 
+  // --- break up runs on one component, on the FINAL cut ------------------
+  //
+  // Capping revisits while the cast is built is not enough, and this is the
+  // third place the same defect has surfaced. Cards are interleaved AFTER the
+  // cast is capped, and a card is anchored to the component it introduces — so
+  // two legal pairs, card+live and card+live, arrive as four consecutive shots
+  // of one component. On a short spine, padding then revisits and makes it
+  // worse.
+  //
+  // Every shot starts its camera from wide, so a run of four plays as zoom in,
+  // cut, zoom in, cut, four times on one subject. Filmed against the local
+  // stage — no network, no hydration, no carousel — it still happened, which is
+  // what proved it was the edit and not the site.
+  //
+  // A card plus its own component is the one pair worth keeping: that is a
+  // title introducing the thing it names. Beyond two, the shot is moved to the
+  // nearest position that does not extend another run.
+  {
+    const MAX_RUN = 2;
+    const ordered = [];
+    const held = [];
+    let run = 0;
+    for (const sh of finalShots) {
+      const last = ordered[ordered.length - 1];
+      run = last && last.component === sh.component ? run + 1 : 1;
+      if (run > MAX_RUN) { held.push(sh); run -= 1; } else ordered.push(sh);
+    }
+    // Re-place what was pulled out, latest first so earlier beats stay put.
+    for (const sh of held) {
+      let at = -1;
+      for (let i = 1; i < ordered.length; i++) {
+        if (ordered[i - 1].component === sh.component) continue;
+        if (ordered[i] && ordered[i].component === sh.component) continue;
+        // Never between a card and the component it introduces.
+        if (ordered[i - 1].isCard && ordered[i - 1].component === ordered[i]?.component) continue;
+        at = i;
+        break;
+      }
+      if (at < 0) ordered.push(sh); else ordered.splice(at, 0, sh);
+    }
+    finalShots = ordered;
+  }
+
   // --- transitions, decided on the FINAL cut ----------------------------
   //
   // This has to run after the cards are interleaved, not while the cast is

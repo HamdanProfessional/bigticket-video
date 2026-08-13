@@ -21,7 +21,8 @@
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { ensureSession, credentialsFromEnv } from './auth.mjs';
+import { ensureSession, credentialsFromEnv, SESSION_PATH } from './auth.mjs';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
 const UA_MOBILE =
@@ -60,11 +61,12 @@ export async function exportLibrary(profile, o = {}) {
   try {
     let storageState;
     if (profile.requiresAuth) {
+      // A cached session is sufficient; credentials only MINT one.
       const creds = o.auth || credentialsFromEnv();
-      if (!creds) {
+      if (!creds && !existsSync(SESSION_PATH)) {
         throw new Error(
-          'This profile films the signed-in app, so exporting it needs credentials. ' +
-          'Set BT_EMAIL and BT_PASSWORD in the environment.'
+          'This profile films the signed-in app, and there is no cached session ' +
+          `at ${SESSION_PATH}. Set BT_EMAIL and BT_PASSWORD to mint one.`
         );
       }
       storageState = await ensureSession(browser, creds, { origin });
@@ -99,7 +101,36 @@ export async function exportLibrary(profile, o = {}) {
       // the selectors were wrong.
       await page.goto(origin + route, { waitUntil: 'networkidle', timeout: 60000 })
         .catch(() => page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 }));
-      await page.waitForTimeout(3500);
+      // Settle on STRUCTURE, not a fixed wait: this site hydrates plain markup
+      // into carousels for up to ~10s, and an export taken before that captures
+      // a component that no longer exists in that shape.
+      await page.evaluate(async () => {
+        const read = () => [
+          (document.body.innerText || '').length,
+          document.getElementsByTagName('*').length,
+          Math.round(document.documentElement.scrollHeight),
+        ].join(':');
+        let prev = -1, stable = 0;
+        const deadline = Date.now() + 20000;
+        while (Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 250));
+          const n = read();
+          if (n === prev) { stable += 250; if (stable >= 1500) return; }
+          else { stable = 0; prev = n; }
+        }
+      });
+      // The product page leaves a full-viewport loading curtain up forever;
+      // exported through it, every asset carries a grey wash and a spinner.
+      for (const rule of (profile.hide || [])) {
+        await page.evaluate((r) => {
+          for (const el of document.querySelectorAll(r.sel)) {
+            if (r.contains && !(el.textContent || '').toLowerCase().includes(String(r.contains).toLowerCase())) continue;
+            // Removed rather than hidden: hidden text still reaches textContent,
+            // and the extractor reads text.
+            el.remove();
+          }
+        }, rule).catch(() => {});
+      }
       await page.evaluate(runtimeSrc);
       await page.evaluate(async () => {
         for (let y = 0; y < document.documentElement.scrollHeight; y += 320) {
@@ -109,6 +140,26 @@ export async function exportLibrary(profile, o = {}) {
       });
       await page.waitForTimeout(1000);
       await page.evaluate(() => window.__BT.freezeSiteMotion());
+
+      // Open anything the recorder would have opened on camera.
+      //
+      // Without this the export captures COLLAPSED state: the seller dropdown
+      // on this site expands the retailer list from one row to three, so the
+      // library came back with retailerList at 508x90 and facts reporting
+      // `sellers: 1`. An ad whose premise is "every seller, one screen" was
+      // being built from a one-seller export, and nothing failed — the numbers
+      // were simply wrong, which is the worst way for this to go wrong.
+      for (const [n, spec] of Object.entries(COMPS)) {
+        if (!spec.interactive || (spec.route || profile.defaultRoute || '/') !== route) continue;
+        await page.evaluate(
+          ([nm, sp]) => window.__BT.register(nm, sp),
+          [n, { sel: spec.sel, fallback: spec.fallback, climb: spec.climb || 0, minArea: spec.minArea || 0 }]
+        ).catch(() => {});
+        const r = await page.evaluate((nm) => window.__BT.click('@' + nm), n).catch(() => null);
+        console.log(`  · opened ${n}: ${r && r.ok ? 'ok' : (r && r.reason) || 'failed'}`);
+        await page.waitForTimeout(1400);
+      }
+
       pages.set(route, page);
       return page;
     };

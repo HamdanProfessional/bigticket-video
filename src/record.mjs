@@ -323,8 +323,10 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
       for (const r of rs) {
         for (const el of document.querySelectorAll(r.sel)) {
           if (r.contains && !(el.textContent || '').toLowerCase().includes(String(r.contains).toLowerCase())) continue;
-          if (el.style.display === 'none') continue;
-          el.style.setProperty('display', 'none', 'important');
+          // REMOVED, not display:none. Hiding it leaves its text in the DOM,
+          // and the fact extractor reads text — which is how three retailers
+          // came back named "Nearly done. Best Buy". Hidden is not gone.
+          el.remove();
           n++;
         }
       }
