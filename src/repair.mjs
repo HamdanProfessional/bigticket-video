@@ -12,20 +12,21 @@
 // a frame over a dissolve replaces a smooth transition with a hard stutter, so
 // a detector that cannot tell them apart does more damage than it repairs.
 //
-// Two things separate them, and both are needed:
+// What separates them is that damage collapses against BOTH neighbours at once.
+// A block that carries texture in the frame before AND the frame after, but not
+// in this one, has lost content that existed on either side of it — no camera
+// move and no transition can produce that. A dissolve cannot: it is monotonic,
+// so each of its frames sits between its neighbours, darker than one and
+// brighter than the other. The rule excludes transitions by construction rather
+// than by a threshold, which is what the earlier versions of this got wrong.
 //
-//   Damage is LOCAL. A region goes flat while the rest of the frame stays
-//   pixel-identical to its neighbour. A dissolve is global — every block
-//   changes together. So work in blocks: damage shows most blocks identical
-//   and a minority that have lost their texture.
+// It also survives camera motion, which matters because the camera is moving in
+// almost every shot. Tests that ask whether the rest of the frame is unchanged
+// go blind the moment anything pans or zooms.
 //
-//   Damage OSCILLATES. The detail curve reverses direction again and again
-//   across a strobe. A dissolve moves one way and stays there.
-//
-// Measured on the cut this was built against, the two conditions together
-// flagged 18 frames of 1455, every one of them inside the two bursts that were
-// actually reported, with no dissolve touched. Detail alone flagged 111, of
-// which the majority were the film's own transitions.
+// Measured against the cut this was built for: 42 damaged frames of 1455 in the
+// original render, 13 in the render after the focus ring was given its own
+// layer, no dissolve touched in either.
 
 import { readFile, copyFile, rm } from 'node:fs/promises';
 import path from 'node:path';
@@ -35,20 +36,20 @@ import { run } from './render.mjs';
 // region, so it survives the downscale, and 120px keeps a 1500-frame sequence
 // to about 35MB of pixels rather than several gigabytes.
 const W = 120;
-const BLOCK = 15;
+// Ten rather than fifteen: the artefact is often a single raster tile, and on a
+// coarser grid its loss was diluted across blocks that were mostly fine. The
+// worst surviving frames in the last cut collapsed 24 blocks of 252, which a
+// "tenth of the frame" threshold on a coarse grid walked straight past while
+// the heading blinked in and out on camera.
+const BLOCK = 10;
 
-// A frame is only a candidate if it carries less detail than its reference.
-const DETAIL_RATIO = 0.93;
-// Most of the frame must be untouched — that is what makes the loss local.
-const MIN_SAME = 0.45;
-// …and enough of it must have gone flat to be worth holding a frame over.
-const MIN_LOST = 0.10;
-// Below this the block is flat anyway and its texture cannot meaningfully drop.
-const MIN_REF_TEXTURE = 1.5;
-// Reversals in the detail curve that mark a strobe rather than a transition.
-const MIN_REVERSALS = 2;
-// Ignore detail wobble smaller than this when counting reversals.
-const REVERSAL_FLOOR = 0.5;
+// A neighbouring block must carry real texture before its loss means anything.
+const TEXTURE_FLOOR = 2;
+// How far texture has to fall to count as collapsed rather than merely softer.
+const COLLAPSE = 0.45;
+// Blocks that must collapse before a frame is worth holding another over. Two
+// can happen where a highlight crosses an edge; three does not.
+const MIN_LOST_BLOCKS = 3;
 
 const frameFile = (dir, i) => path.join(dir, `f${String(i).padStart(5, '0')}.jpg`);
 
@@ -87,85 +88,55 @@ export async function repairFrames(framesDir, frameCount, o = {}) {
   const BX = Math.floor(W / BLOCK);
   const BY = Math.floor(H / BLOCK);
 
-  // Mean absolute horizontal gradient: how much texture a frame carries.
-  const detail = (i) => {
+  // Texture per block per frame, computed once. Every test below is a
+  // comparison between three frames' worth of these numbers.
+  const blocks = BX * BY;
+  const T = new Float32Array(n * blocks);
+  for (let i = 0; i < n; i++) {
     const a = frame(i);
-    let s = 0;
-    for (let y = 0; y < H; y++) {
-      const row = y * W;
-      for (let x = 0; x < W - 1; x++) s += Math.abs(a[row + x + 1] - a[row + x]);
-    }
-    return s / (H * (W - 1));
-  };
-  const E = Array.from({ length: n }, (_, i) => detail(i));
-
-  const blockTexture = (i, bx, by) => {
-    const a = frame(i);
-    let g = 0, c = 0;
-    for (let y = by * BLOCK; y < (by + 1) * BLOCK; y++) {
-      for (let x = bx * BLOCK; x < (bx + 1) * BLOCK - 1; x++, c++) {
-        g += Math.abs(a[y * W + x + 1] - a[y * W + x]);
+    for (let by = 0; by < BY; by++) {
+      for (let bx = 0; bx < BX; bx++) {
+        let g = 0, c = 0;
+        for (let y = by * BLOCK; y < (by + 1) * BLOCK; y++) {
+          for (let x = bx * BLOCK; x < (bx + 1) * BLOCK - 1; x++, c++) {
+            g += Math.abs(a[y * W + x + 1] - a[y * W + x]);
+          }
+        }
+        T[i * blocks + by * BX + bx] = g / c;
       }
     }
-    return g / c;
-  };
-  const blockDiff = (i, j, bx, by) => {
-    const a = frame(i), b = frame(j);
-    let s = 0, c = 0;
-    for (let y = by * BLOCK; y < (by + 1) * BLOCK; y++) {
-      for (let x = bx * BLOCK; x < (bx + 1) * BLOCK; x++, c++) {
-        s += Math.abs(a[y * W + x] - b[y * W + x]);
-      }
-    }
-    return s / c;
-  };
+  }
 
-  // A strobe reverses direction again and again; a dissolve never does.
-  const reversals = (i) => {
-    let r = 0, dir = 0;
-    for (let j = Math.max(1, i - 3); j <= Math.min(n - 1, i + 3); j++) {
-      const d = E[j] - E[j - 1];
-      if (Math.abs(d) < REVERSAL_FLOOR) continue;
-      const s = Math.sign(d);
-      if (dir && s !== dir) r++;
-      dir = s;
+  // Blocks that carry texture in both the frame before and the frame after, but
+  // not in this one. Content that exists on either side and not in the middle
+  // was not removed by the camera or by a transition.
+  const collapsed = (i, before, after) => {
+    let lost = 0;
+    for (let b = 0; b < blocks; b++) {
+      const h = T[i * blocks + b], p = T[before * blocks + b], q = T[after * blocks + b];
+      if (p > TEXTURE_FLOOR && q > TEXTURE_FLOOR && h < p * COLLAPSE && h < q * COLLAPSE) lost++;
     }
-    return r;
+    return lost;
   };
 
   const flagged = new Set();
-  // The nearest frame not already condemned, preferring the most detailed —
-  // needed because damage arrives in adjacent pairs, and an immediate
-  // neighbour that is itself damaged makes the pair excuse each other.
-  const nearestClean = (i) => {
-    let best = -1;
-    for (let d = 1; d <= 4; d++) {
-      for (const j of [i - d, i + d]) {
-        if (j < 0 || j >= n || flagged.has(j)) continue;
-        if (best < 0 || E[j] > E[best]) best = j;
-      }
-    }
-    return best;
-  };
-
+  // Two passes. Damage arrives in short runs, and a run of two hides itself:
+  // each frame's neighbour is the other damaged frame, which carries no texture
+  // to lose against. The second pass reaches past anything already condemned.
   for (let pass = 0; pass < 2; pass++) {
+    const reach = (i, dir) => {
+      for (let d = 1; d <= 4; d++) {
+        const j = i + dir * d;
+        if (j < 0 || j >= n) return -1;
+        if (pass === 0 || !flagged.has(j)) return j;
+      }
+      return -1;
+    };
     for (let i = 1; i < n - 1; i++) {
       if (flagged.has(i)) continue;
-      const ref = pass === 0 ? (E[i - 1] >= E[i + 1] ? i - 1 : i + 1) : nearestClean(i);
-      if (ref < 0 || E[i] >= E[ref] * DETAIL_RATIO) continue;
-      if (reversals(i) < MIN_REVERSALS) continue;
-
-      let same = 0, lost = 0, total = 0;
-      for (let by = 0; by < BY; by++) {
-        for (let bx = 0; bx < BX; bx++) {
-          total++;
-          if (blockDiff(i, ref, bx, by) < 2) { same++; continue; }
-          const here = blockTexture(i, bx, by);
-          const there = blockTexture(ref, bx, by);
-          if (there > MIN_REF_TEXTURE && here < there * 0.5) lost++;
-        }
-      }
-      if (same / total > MIN_SAME && lost / total > MIN_LOST) flagged.add(i);
+      const before = reach(i, -1), after = reach(i, 1);
+      if (before < 0 || after < 0) continue;
+      if (collapsed(i, before, after) >= MIN_LOST_BLOCKS) flagged.add(i);
     }
   }
 
