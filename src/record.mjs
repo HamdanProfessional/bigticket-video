@@ -327,12 +327,21 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     const cdp = await ctx.newCDPSession(page);
     let virtualTime = false;
     try {
+      // OPT-IN, and off by default. On a single-route probe this was a clear
+      // win: mid-shot half-painted frames 13 -> 0 and 163s -> 49s. On the real
+      // two-route render it hangs on the very first capture, with BOTH raw CDP
+      // and Playwright's screenshot — the clock is held and the frame the
+      // capture waits for never arrives. Left in, behind BT_VT=1, because the
+      // measurement is real and the remaining problem is scoped to more than
+      // one page; shipped off, because a hang is worse than an artifact.
+      if (process.env.BT_VT !== '1') throw new Error('virtual time is opt-in');
       await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pause' });
       virtualTime = true;
     } catch {
       // Older or newer Chromium without the domain: fall back to the rAF wait.
     }
 
+    if (process.env.BT_DEBUG === '1') console.error(`  [dbg] route ${route} ready, virtualTime=${virtualTime}`);
     const entry = { page, cdp, virtualTime, docHeight: await page.evaluate(() => window.__BT.docHeight()) };
     pages.set(route, entry);
     return entry;
@@ -713,7 +722,10 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
       },
     };
 
+    const DBG = process.env.BT_DEBUG === '1' && f < 2;
+    if (DBG) console.error(`  [dbg] f${f} pushing state`);
     await page.evaluate((st) => window.__BT.frame(st), state);
+    if (DBG) console.error(`  [dbg] f${f} state pushed`);
 
     // Wait for the browser to actually COMMIT the frame before capturing it.
     //
@@ -754,6 +766,7 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
         budget: 1000 / fps,
       }).catch(() => {});
       await expired;
+      if (DBG) console.error(`  [dbg] f${f} clock advanced`);
     } else {
       await page.evaluate(() => new Promise((r) => (
         requestAnimationFrame(() => requestAnimationFrame(() => r()))
@@ -835,11 +848,18 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // Captured through CDP rather than page.screenshot(). Playwright's helper
     // disables CSS animations and waits for fonts on every call, which is
     // wasted work 1400 times over and deadlocks against a controlled clock.
-    const shoot = virtualTime
-      ? () => cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92 })
-        .then((r) => Buffer.from(r.data, 'base64'))
-      : () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });
+    // Playwright's screenshot, not raw CDP Page.captureScreenshot.
+    //
+    // CDP capture is leaner — it skips the font wait and animation disabling
+    // Playwright does on every call — and it worked for a single-route probe.
+    // On the real two-route render it hangs forever on the first frame: the
+    // second page's compositor is suspended in the background, and a surface
+    // capture waits for a frame the paused clock will not produce. Playwright's
+    // helper drives the frame it needs, so it returns.
+    const shoot = () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });
+    if (DBG) console.error(`  [dbg] f${f} capturing`);
     let buf = await shoot();
+    if (DBG) console.error(`  [dbg] f${f} captured ${buf.length}b`);
     if (prevFrameBytes > 0) {
       for (let attempt = 0; attempt < 2 && buf.length < prevFrameBytes * PARTIAL_RATIO; attempt++) {
         await advance(entry, 90);
