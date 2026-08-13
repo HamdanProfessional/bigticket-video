@@ -574,6 +574,8 @@ export function direct(prompt, opts = {}) {
     // component that resolves. A side panel does not: half the frame is live,
     // so each card is anchored to the component it is about to introduce.
     const anchor = COMPS.hero ? 'hero' : Object.keys(COMPS)[0];
+    // Components that already carry a title card, so none gets a second.
+    const carded = new Set();
 
     // Deal out entrances without repeating one twice in a row — identical
     // cross-fades on every card are what makes a reel look like a template.
@@ -667,9 +669,19 @@ export function direct(prompt, opts = {}) {
       // three cards; at the ~3.3s floor the text hold imposes, any more and the
       // reel is mostly caption. The product beats have to carry it.
       const cardCap = fmt.portrait ? 1 : 3;
+      // One card per component, ever.
+      //
+      // `anchor` only ever guarded the FIRST component in the profile, so it
+      // did nothing for the component the hook card is anchored over. With a
+      // padding revisit, that component collected a hook card AND a feature
+      // card, giving card, live, card, live — four consecutive shots of one
+      // subject, each restarting its camera. The cards also sat between the two
+      // live shots, so the merge below could not absorb them.
       if (i > 0 && !prevWasCard && copy && used < cardCap && !isClosing
-          && s.component !== anchor && !COMPS[s.component].clickable) {
+          && s.component !== anchor && !carded.has(s.component)
+          && !COMPS[s.component].clickable) {
         out.push(makeCard(copy, { over: s.component }));
+        carded.add(s.component);
         s.caption = null; // the card already said it; don't print it twice
         used++;
       }
@@ -685,7 +697,9 @@ export function direct(prompt, opts = {}) {
         // it arrived. The hook is the opening line; the shot under it is a look
         // at the product.
         if (s.caption && hasTokens(s.caption.title || '')) s.caption = null;
-        out.push(makeCard(opts.hook || HOOK, { over: shots[1]?.component }));
+        const hookOver = shots[1]?.component;
+        out.push(makeCard(opts.hook || HOOK, { over: hookOver }));
+        if (hookOver) carded.add(hookOver);
       }
     }
     // The sign-off holds solid to the last frame rather than dissolving — it is
@@ -696,47 +710,44 @@ export function direct(prompt, opts = {}) {
     finalShots = out;
   }
 
-  // --- break up runs on one component, on the FINAL cut ------------------
+  // --- absorb repeats into longer shots, on the FINAL cut ----------------
   //
-  // Capping revisits while the cast is built is not enough, and this is the
-  // third place the same defect has surfaced. Cards are interleaved AFTER the
-  // cast is capped, and a card is anchored to the component it introduces — so
-  // two legal pairs, card+live and card+live, arrive as four consecutive shots
-  // of one component. On a short spine, padding then revisits and makes it
-  // worse.
+  // Fourth attempt at one defect, and the first three all treated the symptom.
   //
-  // Every shot starts its camera from wide, so a run of four plays as zoom in,
-  // cut, zoom in, cut, four times on one subject. Filmed against the local
-  // stage — no network, no hydration, no carousel — it still happened, which is
-  // what proved it was the edit and not the site.
+  // Cards are interleaved AFTER the cast is capped, and a card is anchored to
+  // the component it introduces, so two legal card+live pairs arrive as four
+  // consecutive shots of one component. Every shot starts its camera from wide,
+  // so that plays as zoom in, cut, zoom in, cut, on one subject. Reproduced
+  // against the LOCAL stage — static file, no network, no hydration — which is
+  // what proved it was the edit rather than the site.
   //
-  // A card plus its own component is the one pair worth keeping: that is a
-  // title introducing the thing it names. Beyond two, the shot is moved to the
-  // nearest position that does not extend another run.
+  // Moving the extra shot elsewhere was tried and is worse: it turns a run of
+  // A A A A into A B A B, and a cut that ping-pongs between two scenes reads as
+  // the same restless zooming to anyone watching rather than reading a list.
+  //
+  // So repeats are ABSORBED, not relocated. Two adjacent looks at one component
+  // become one shot of their combined length: same screen time, same running
+  // order, one continuous camera move instead of two that each start over. The
+  // reset is what the eye objects to, and a merged shot has no reset in it.
+  //
+  // A card keeps its own beat — a title introducing the thing it names is a cut
+  // worth having, and it is a different picture, not the same one again.
   {
-    const MAX_RUN = 2;
-    const ordered = [];
-    const held = [];
-    let run = 0;
+    const merged = [];
     for (const sh of finalShots) {
-      const last = ordered[ordered.length - 1];
-      run = last && last.component === sh.component ? run + 1 : 1;
-      if (run > MAX_RUN) { held.push(sh); run -= 1; } else ordered.push(sh);
-    }
-    // Re-place what was pulled out, latest first so earlier beats stay put.
-    for (const sh of held) {
-      let at = -1;
-      for (let i = 1; i < ordered.length; i++) {
-        if (ordered[i - 1].component === sh.component) continue;
-        if (ordered[i] && ordered[i].component === sh.component) continue;
-        // Never between a card and the component it introduces.
-        if (ordered[i - 1].isCard && ordered[i - 1].component === ordered[i]?.component) continue;
-        at = i;
-        break;
+      const last = merged[merged.length - 1];
+      const sameSubject = last && last.component === sh.component && !last.isCard && !sh.isCard;
+      if (sameSubject) {
+        last.duration = +(last.duration + sh.duration).toFixed(3);
+        // The longer move wants the more patient easing of the two.
+        if (sh.params && last.params && sh.params.fill < last.params.fill) {
+          last.params.fill = sh.params.fill;
+        }
+        continue;
       }
-      if (at < 0) ordered.push(sh); else ordered.splice(at, 0, sh);
+      merged.push(sh);
     }
-    finalShots = ordered;
+    finalShots = merged;
   }
 
   // --- transitions, decided on the FINAL cut ----------------------------
