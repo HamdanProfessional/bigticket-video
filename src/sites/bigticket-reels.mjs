@@ -181,7 +181,10 @@ export const REELS_AFFINITY = {
   // to travel past the edge of the row to go anywhere, and what is past the
   // edge is empty page. A push-in stays inside the products, which is the
   // subject. panAcross and slideIn are deliberately absent, not merely last.
-  productRow: ['pushIn', 'pullBack', 'spotlight'],
+  // productSweep first: the opening beat should travel the row so the products
+  // arrive one at a time and the shot lands on one, rather than presenting all
+  // four at once and zooming at them.
+  productRow: ['productSweep', 'pushIn', 'pullBack'],
   productTitle: ['pushIn', 'pulseFocus', 'slideIn'],
   productShot: ['pushIn', 'rackFocus', 'pulseFocus', 'zoomBlurIn', 'hold'],
   specGeneral: ['tapFocus', 'pulseFocus', 'spotlight'],

@@ -305,7 +305,35 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     } catch { /* the site keeps a socket open; not fatal */ }
     await page.waitForTimeout(800);
 
-    const entry = { page, docHeight: await page.evaluate(() => window.__BT.docHeight()) };
+    // Virtual time: the page's clock only advances when we advance it.
+    //
+    // Researched rather than guessed at, after `page.screenshot()` turned out
+    // to be the wrong instrument entirely. Chrome once shipped exactly the
+    // right one — HeadlessExperimental.beginFrame runs ONE layout/paint/
+    // composite per call and freezes the browser in between — but it was
+    // removed in Chromium 147 and Playwright 1.62 ships 151, so it is gone.
+    // Verified against this browser: beginFrame is not a recognised command,
+    // setVirtualTimePolicy is.
+    //
+    // What this buys is determinism. Recording the same three shots twice
+    // produced 135 differing frames out of 315, because the site's own timers,
+    // hydration and carousels advance on wall-clock time and a render is not
+    // reproducible while they do. Under virtual time the page believes exactly
+    // 1000/fps ms passes per frame regardless of how long the capture actually
+    // took, so every run sees the same page.
+    //
+    // Enabled only AFTER priming and freezing: the page needs real time to
+    // load, settle and hydrate first.
+    const cdp = await ctx.newCDPSession(page);
+    let virtualTime = false;
+    try {
+      await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pause' });
+      virtualTime = true;
+    } catch {
+      // Older or newer Chromium without the domain: fall back to the rAF wait.
+    }
+
+    const entry = { page, cdp, virtualTime, docHeight: await page.evaluate(() => window.__BT.docHeight()) };
     pages.set(route, entry);
     return entry;
   }
@@ -465,6 +493,23 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
   let prevFrameBytes = 0;
   let repairedFrames = 0;
   let lastRoute = null;
+  // Advances the page's own clock by `ms`. Under virtual time a
+  // `waitForTimeout` stops the RECORDER without moving the PAGE, so a click
+  // would fire and the accordion it opens would never animate — the wait has to
+  // go through the clock the page is actually on.
+  const advance = async (entry, ms) => {
+    if (!entry.virtualTime) { await entry.page.waitForTimeout(ms); return; }
+    const expired = new Promise((res) => {
+      const done = () => { entry.cdp.off('Emulation.virtualTimeBudgetExpired', done); res(); };
+      entry.cdp.on('Emulation.virtualTimeBudgetExpired', done);
+      setTimeout(() => { entry.cdp.off('Emulation.virtualTimeBudgetExpired', done); res(); }, ms + 2000);
+    });
+    await entry.cdp.send('Emulation.setVirtualTimePolicy', {
+      policy: 'advance', budget: ms,
+    }).catch(() => {});
+    await expired;
+  };
+
   for (let f = 0; f < frameCount; f++) {
     const time = f / fps;
     let idx = timeline.findIndex((s) => time >= s.start && time < s.end);
@@ -477,7 +522,8 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
 
     // The tab this shot lives on. Cutting between routes is just cutting
     // between tabs; both are already loaded, primed and frozen.
-    const { page, docHeight } = await pageFor(shot.route);
+    const entry = await pageFor(shot.route);
+    const { page, cdp, virtualTime, docHeight } = entry;
     if (shot.route !== lastRoute) {
       // A background tab's rendering is throttled, so it has to be foremost
       // before its frames are captured.
@@ -684,9 +730,35 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // it. Worse under --fast, where `will-change: transform` promotes the page
     // to its own composited layer and makes tile uploads asynchronous, but not
     // exclusive to it — the race exists at any raster setting.
-    await page.evaluate(() => new Promise((r) => (
-      requestAnimationFrame(() => requestAnimationFrame(() => r()))
-    )));
+    // Let the page run exactly one frame's worth of its own time, then stop.
+    //
+    // This replaces the two-rAF wait, and has to: under a paused virtual clock
+    // requestAnimationFrame never fires, so waiting on it would hang forever.
+    // Advancing the budget runs the timers and rAF callbacks scheduled for this
+    // slice and then pauses again; `virtualTimeBudgetExpired` is the browser
+    // telling us that everything due for this frame has run — a real readiness
+    // signal rather than the guess two rAFs amounted to.
+    if (virtualTime) {
+      const expired = new Promise((res) => {
+        const done = () => { cdp.off('Emulation.virtualTimeBudgetExpired', done); res(); };
+        cdp.on('Emulation.virtualTimeBudgetExpired', done);
+        // Never let a stuck budget stall a whole render.
+        setTimeout(() => { cdp.off('Emulation.virtualTimeBudgetExpired', done); res(); }, 2000);
+      });
+      // 'advance', NOT 'pauseIfNetworkFetchesPending'. This site polls for
+      // offers on an interval and never goes quiet, so pausing on pending
+      // fetches holds the clock while the screenshot waits for a frame that the
+      // held clock will not produce — a deadlock that timed out every render.
+      await cdp.send('Emulation.setVirtualTimePolicy', {
+        policy: 'advance',
+        budget: 1000 / fps,
+      }).catch(() => {});
+      await expired;
+    } else {
+      await page.evaluate(() => new Promise((r) => (
+        requestAnimationFrame(() => requestAnimationFrame(() => r()))
+      )));
+    }
 
     // Real interaction. When the cursor reaches the target, actually click it,
     // so the accordion opens or the dropdown drops on camera. Fires once per
@@ -703,7 +775,7 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
       if (!res || !res.ok) {
         console.warn(`  ! click on "${shot.component}" skipped — ${res ? res.reason : 'no runtime'}`);
       } else {
-        await page.waitForTimeout(shot.action.settle ?? 240);
+        await advance(entry, shot.action.settle ?? 240);
         // The click can resize the component (an accordion expands), which
         // moves everything below it. Re-measure so the camera stays on target.
         //
@@ -729,7 +801,7 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // of a shot catch a half-built section. Only worth paying at a cut: a jump
     // that large mid-shot is a whipTo, where the page is already mounted and
     // the frame is motion-blurred anyway.
-    if (idx !== lastIdx && Math.abs(cam.y - lastCamY) > 320) await page.waitForTimeout(SETTLE_MS);
+    if (idx !== lastIdx && Math.abs(cam.y - lastCamY) > 320) await advance(entry, SETTLE_MS);
     lastCamY = cam.y;
     lastIdx = idx;
 
@@ -760,11 +832,17 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // delay (no effect, 16 -> 18). Neither addressed it because the wait is
     // unbounded, not merely long.
     const framePath = path.join(framesDir, `f${String(f).padStart(5, '0')}.jpg`);
-    const shoot = () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });
+    // Captured through CDP rather than page.screenshot(). Playwright's helper
+    // disables CSS animations and waits for fonts on every call, which is
+    // wasted work 1400 times over and deadlocks against a controlled clock.
+    const shoot = virtualTime
+      ? () => cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92 })
+        .then((r) => Buffer.from(r.data, 'base64'))
+      : () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });
     let buf = await shoot();
     if (prevFrameBytes > 0) {
       for (let attempt = 0; attempt < 2 && buf.length < prevFrameBytes * PARTIAL_RATIO; attempt++) {
-        await page.waitForTimeout(90);
+        await advance(entry, 90);
         const retry = await shoot();
         if (retry.length > buf.length) buf = retry;
         repairedFrames++;

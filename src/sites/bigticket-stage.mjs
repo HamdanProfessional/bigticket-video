@@ -60,7 +60,7 @@ export const STAGE_COMPONENTS = {
 // no lateral room to pan into. The moves that suit a full-frame graphic are
 // scale and reveal, not travel.
 export const STAGE_AFFINITY = {
-  browseGrid: ['pushIn', 'pullBack', 'sweepReveal', 'tiltReveal'],
+  browseGrid: ['productSweep', 'pushIn', 'tiltReveal'],
   productHero: ['pushIn', 'pullBack', 'rackFocus', 'zoomBlurIn', 'hold'],
   priceMega: ['punchIn', 'pushIn', 'zoomBlurIn', 'pulseFocus'],
   retailerRows: ['pushIn', 'sweepReveal', 'slideIn', 'tiltReveal'],

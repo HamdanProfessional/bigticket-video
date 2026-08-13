@@ -169,6 +169,41 @@ export const KINDS = {
     return { cam, ov: {} };
   },
 
+  /**
+   * Travels a ROW of products left to right, so they arrive one at a time, and
+   * settles on one at the end.
+   *
+   * panAcross cannot do this. It drifts by a fixed distance at ~1.08 zoom, and
+   * the containment guard fits the whole element in frame — a 496px row in a
+   * 540px frame is already fully visible, so there is nothing to travel across
+   * and nothing arrives. This zooms IN far enough to hold about two tiles, which
+   * is what creates the travel in the first place: at `tiles` across a row of
+   * `count`, the picture is wider than the frame by exactly the distance worth
+   * moving.
+   *
+   * The last fifth is a hold, so the move lands on a product rather than
+   * stopping mid-slide — that hold is the "pick this one" beat.
+   */
+  productSweep(p, ctx) {
+    const { rect, vw, vh } = ctx;
+    const count = Math.max(2, ctx.p.count ?? 4);
+    const tiles = ctx.p.tiles ?? 2;           // how many are in frame at once
+    const tileW = rect.w / count;
+    // Zoom so `tiles` tiles fill the frame width, bounded so a short row cannot
+    // demand an absurd punch-in.
+    const z = Math.max(1, Math.min(2.6, (vw * 0.92) / (tileW * tiles)));
+    const cam = frameOn(rect, vw, vh, z);
+    // Total horizontal overhang: how far the row extends past the frame at this
+    // zoom. Half each side, because frameOn centres the row.
+    const overhang = Math.max(0, rect.w * z - vw);
+    // Hold on the final product for the last 20%.
+    const travel = Math.min(1, p / 0.8);
+    const dir = ctx.p.dir === 'left' ? -1 : 1;
+    cam.panX += tween(travel, 0, 1, dir * overhang / 2, -dir * overhang / 2,
+      ctx.p.easing || 'smoother');
+    return { cam, ov: {} };
+  },
+
   // Vertical travel — the scroll shot, but eased instead of linear.
   tiltReveal(p, ctx) {
     const { rect, vw, vh, zBase } = ctx;
