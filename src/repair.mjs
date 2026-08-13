@@ -35,13 +35,15 @@ import { run } from './render.mjs';
 // Detail is measured on a small greyscale copy. The artefact is a large flat
 // region, so it survives the downscale, and 120px keeps a 1500-frame sequence
 // to about 35MB of pixels rather than several gigabytes.
-const W = 120;
-// Ten rather than fifteen: the artefact is often a single raster tile, and on a
-// coarser grid its loss was diluted across blocks that were mostly fine. The
-// worst surviving frames in the last cut collapsed 24 blocks of 252, which a
-// "tenth of the frame" threshold on a coarse grid walked straight past while
-// the heading blinked in and out on camera.
-const BLOCK = 10;
+// 240, not 120. At 120 each pixel averages nine of the original, which is
+// enough to hide a small tile completely — a pass that reported the film clean
+// still had visible damage at cuts. 240 finds it; 360 finds exactly the same
+// frames for four times the memory, so there is nothing above this worth
+// paying for.
+const W = 240;
+// Fourteen: the artefact is often a single raster tile, and on a coarser grid
+// its loss was diluted across blocks that were mostly fine.
+const BLOCK = 14;
 
 // A neighbouring block must carry real texture before its loss means anything.
 const TEXTURE_FLOOR = 2;
@@ -140,10 +142,33 @@ export async function repairFrames(framesDir, frameCount, o = {}) {
     }
   }
 
-  let lastGood = 0;
+  // Which neighbour to hold. Reaching backwards is the obvious choice and the
+  // wrong one: most of what survives lands in the first frames AFTER a cut,
+  // where the camera has jumped and the tiles have not caught up, and the
+  // previous good frame belongs to the outgoing shot. Holding it would splice a
+  // frame of the old shot into the new one, which is worse than the artefact.
+  //
+  // Rather than thread shot boundaries through, pick whichever clean neighbour
+  // looks more like the frame being replaced. Within a shot both are close and
+  // either will do; across a cut the outgoing shot is wildly different and this
+  // reaches forward on its own.
+  const distance = (i, j) => {
+    const a = frame(i), b = frame(j);
+    let s = 0;
+    for (let k = 0; k < stride; k += 7) s += Math.abs(a[k] - b[k]);
+    return s;
+  };
+  const clean = (i, dir) => {
+    for (let j = i + dir; j >= 0 && j < n; j += dir) if (!flagged.has(j)) return j;
+    return -1;
+  };
   for (let i = 0; i < n; i++) {
-    if (flagged.has(i)) await copyFile(frameFile(framesDir, lastGood), frameFile(framesDir, i));
-    else lastGood = i;
+    if (!flagged.has(i)) continue;
+    const back = clean(i, -1), fwd = clean(i, 1);
+    let donor = back;
+    if (back < 0) donor = fwd;
+    else if (fwd >= 0 && distance(i, fwd) < distance(i, back)) donor = fwd;
+    if (donor >= 0) await copyFile(frameFile(framesDir, donor), frameFile(framesDir, i));
   }
 
   // Grouped for the log — one line per burst is readable, twenty is not.

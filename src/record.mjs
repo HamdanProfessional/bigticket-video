@@ -525,7 +525,6 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
   const frameCount = Math.round(total * fps);
 
   // ---- render ------------------------------------------------------------
-  let lastCamY = Infinity;
   let lastIdx = -1;
   // Frame-integrity tracking; see the capture block below.
   let prevFrameBytes = 0;
@@ -852,8 +851,14 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // of a shot catch a half-built section. Only worth paying at a cut: a jump
     // that large mid-shot is a whipTo, where the page is already mounted and
     // the frame is motion-blurred anyway.
-    if (idx !== lastIdx && Math.abs(cam.y - lastCamY) > 320) await advance(entry, SETTLE_MS);
-    lastCamY = cam.y;
+    // Every cut, not only the ones that travel. The 320px test assumed a cut
+    // only costs raster work when the camera moves a long way vertically, but a
+    // cut that stays in the same place and changes ZOOM asks for every tile to
+    // be rasterised again at a new scale, which costs exactly as much. Damage
+    // was landing in the first frames after cuts that this test waved through —
+    // 17.50s and 23.00s among them. Thirteen shots at 200ms is under three
+    // seconds added to a render that takes thirteen minutes.
+    if (idx !== lastIdx) await advance(entry, SETTLE_MS);
     lastIdx = idx;
 
     // Capturing via raw CDP was tried and reverted. It is 22% faster in a loop
