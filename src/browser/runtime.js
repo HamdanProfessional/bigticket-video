@@ -41,9 +41,25 @@
   // *drawn* around the element with dash-offset instead of just fading in —
   // the line travelling around the component is what reads as "look here".
   const SVGNS = 'http://www.w3.org/2000/svg';
+  // Setting an SVG geometry attribute invalidates the element whether or not
+  // the value actually changed, so remember what was last written and skip the
+  // write when it would be a no-op.
+  const lastAttr = new Map();
+  const setAttr = (el, key, name, val) => {
+    if (lastAttr.get(key) === val) return;
+    lastAttr.set(key, val);
+    el.setAttribute(name, val);
+  };
+
   const ringSvg = doc.createElementNS(SVGNS, 'svg');
   ringSvg.setAttribute('fill', 'none');
-  ringSvg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;opacity:0';
+  // Promoted to its own compositor layer, and moved with a transform rather
+  // than left/top. The ring sits over the page with overflow visible, so
+  // shifting it by layout properties dirtied the region beneath it every frame
+  // — and the one shot in a cut that draws a ring was the one shot that came
+  // back with half-painted frames.
+  ringSvg.style.cssText =
+    'position:absolute;left:0;top:0;overflow:visible;opacity:0;will-change:transform,opacity';
   const ringRect = doc.createElementNS(SVGNS, 'rect');
   ringRect.setAttribute('fill', 'none');
   ringRect.setAttribute('stroke-linecap', 'round');
@@ -541,22 +557,26 @@
         const p = o.highlight.pad ?? 10;
         const w = r.w + p * 2, h = r.h + p * 2;
         const rad = o.highlight.radius ?? 16;
-        ringSvg.style.left = `${(r.x - p).toFixed(1)}px`;
-        ringSvg.style.top = `${(r.y - p).toFixed(1)}px`;
-        ringSvg.setAttribute('width', Math.max(0, w).toFixed(1));
-        ringSvg.setAttribute('height', Math.max(0, h).toFixed(1));
-        ringRect.setAttribute('x', '1.25');
-        ringRect.setAttribute('y', '1.25');
-        ringRect.setAttribute('width', Math.max(0, w - 2.5).toFixed(1));
-        ringRect.setAttribute('height', Math.max(0, h - 2.5).toFixed(1));
-        ringRect.setAttribute('rx', String(rad));
-        ringRect.setAttribute('stroke', o.highlight.color || '#7c3aed');
-        ringRect.setAttribute('stroke-width', String(o.highlight.width ?? 2.5));
+        // Every one of these is identical from frame to frame for the whole of
+        // a shot — the ring is drawn around a component that is not moving, and
+        // only the dash offset and the opacity actually animate. Writing them
+        // anyway invalidated the SVG's geometry on every frame. Write only what
+        // changed; see setAttr.
+        ringSvg.style.transform = `translate(${(r.x - p).toFixed(1)}px,${(r.y - p).toFixed(1)}px)`;
+        setAttr(ringSvg, 'svg:width', 'width', Math.max(0, w).toFixed(1));
+        setAttr(ringSvg, 'svg:height', 'height', Math.max(0, h).toFixed(1));
+        setAttr(ringRect, 'rect:x', 'x', '1.25');
+        setAttr(ringRect, 'rect:y', 'y', '1.25');
+        setAttr(ringRect, 'rect:width', 'width', Math.max(0, w - 2.5).toFixed(1));
+        setAttr(ringRect, 'rect:height', 'height', Math.max(0, h - 2.5).toFixed(1));
+        setAttr(ringRect, 'rect:rx', 'rx', String(rad));
+        setAttr(ringRect, 'rect:stroke', 'stroke', o.highlight.color || '#7c3aed');
+        setAttr(ringRect, 'rect:sw', 'stroke-width', String(o.highlight.width ?? 2.5));
         // Perimeter of a rounded rect, near enough for a dash pattern.
         const perim = 2 * (w + h) - 8 * rad + 2 * Math.PI * rad;
         const draw = o.highlight.draw ?? 1;
-        ringRect.setAttribute('stroke-dasharray', perim.toFixed(1));
-        ringRect.setAttribute('stroke-dashoffset', (perim * (1 - draw)).toFixed(1));
+        setAttr(ringRect, 'rect:dash', 'stroke-dasharray', perim.toFixed(1));
+        setAttr(ringRect, 'rect:off', 'stroke-dashoffset', (perim * (1 - draw)).toFixed(1));
         ringSvg.style.opacity = String(o.highlight.opacity);
       } else ringSvg.style.opacity = '0';
     } else ringSvg.style.opacity = '0';

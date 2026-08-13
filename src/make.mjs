@@ -16,7 +16,7 @@ import { REELS_PROFILE } from './sites/bigticket-reels.mjs';
 import { STAGE_PROFILE } from './sites/bigticket-stage.mjs';
 
 const argv = process.argv.slice(2);
-const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast', 'app', 'reels', 'stage']);
+const BOOL = new Set(['storyboard-only', 'no-music', 'keep-frames', 'fast', 'app', 'reels', 'stage', 'no-repair']);
 
 const flag = (name, def = null) => {
   const i = argv.indexOf(`--${name}`);
@@ -51,6 +51,11 @@ const opts = {
   storyboardOnly: !!flag('storyboard-only'),
   music: !flag('no-music'),
   keepFrames: !!flag('keep-frames'),
+  // Off, the half-painted-frame pass is skipped — which is how you measure
+  // whether a change to the renderer actually reduced the artefact, rather
+  // than measuring the repair that hides it.
+  repair: !flag('no-repair'),
+  outDir: typeof flag('out') === 'string' ? flag('out') : undefined,
   fast: !!flag('fast'),
   // Film the signed-in app across its routes instead of the marketing page.
   // Needs BT_EMAIL / BT_PASSWORD in the environment.
