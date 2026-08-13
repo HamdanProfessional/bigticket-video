@@ -425,8 +425,18 @@ export const KINDS = {
     return {
       cam,
       ov: {
+        // Capped, and in the brand violet rather than the deeper #5b46e5 this
+        // shipped with. At full cover this painted the entire frame a solid
+        // slab for most of a second — on the beat that says "Big Ticket
+        // compares every seller", over the seller list, which is the one thing
+        // the line is about. A reveal that hides its subject is not a reveal.
         wipe: k > 0.001
-          ? { opacity: 1, color: ctx.p.color || '#5b46e5', cover: k, dir: ctx.p.dir === 'left' ? 'right' : 'left' }
+          ? {
+            opacity: 1,
+            color: ctx.p.color || '#7c3aed',
+            cover: Math.min(0.62, k),
+            dir: ctx.p.dir === 'left' ? 'right' : 'left',
+          }
           : null,
       },
     };
