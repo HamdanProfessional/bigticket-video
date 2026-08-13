@@ -327,12 +327,21 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     const cdp = await ctx.newCDPSession(page);
     let virtualTime = false;
     try {
-      // On by default now that the two-route hang is understood. It was never
-      // the clock: a BACKGROUND tab was being held too, and the capture waited
-      // on a suspended compositor that would never produce a frame. Background
-      // tabs run free (see the route switch below); only the tab on camera is
-      // stepped. BT_NO_VT=1 disables it.
-      if (process.env.BT_NO_VT === '1') throw new Error('virtual time disabled');
+      // OPT-IN (BT_VT=1), because it is not reliable yet.
+      //
+      // Freeing the background tabs' clocks fixed the hang for a five-shot cut,
+      // which is what I verified before turning it on by default. The full
+      // thirteen-shot render still hangs: eleven minutes, zero frames. So the
+      // suspended-background-tab theory was PART of it and not all of it, and
+      // the remaining trigger scales with the number of shots or route
+      // switches, which I have not isolated.
+      //
+      // Kept, because the win it produced on a single route is real and
+      // measured — mid-shot half-painted frames 13 -> 0, 163s -> 49s — and that
+      // is exactly the artefact still visible at the end of the dashboard beat.
+      // Off, because a video that renders with a flaw beats one that never
+      // renders.
+      if (process.env.BT_VT !== '1') throw new Error('virtual time is opt-in');
       await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pause' });
       virtualTime = true;
     } catch {
