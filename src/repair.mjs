@@ -2,48 +2,53 @@
 //
 // Chromium's rasteriser sometimes hands back a surface it has only partly
 // drawn: a heading missing, a photograph sliced off at a hard vertical edge,
-// the neighbouring card simply absent. The recorder tries to catch these as it
-// goes by comparing each JPEG against the previous one's size, but that test is
-// weak in the case that actually hurts. The failure is usually not one bad
-// frame among good ones — it is a sustained alternation, good/bad/good/bad, a
-// strobe at half the frame rate. When every other frame is damaged, "compare to
-// the previous frame" is comparing two damaged frames as often as not.
+// the neighbouring card simply absent. Pulled apart frame by frame, it is
+// rarely one bad frame among good ones — it is good/bad/good/bad, a strobe at
+// half the frame rate, which is why it reads as flicker rather than a glitch.
 //
-// This pass runs once the sequence is complete, which buys the one thing the
-// recorder cannot have: both neighbours. A damaged frame is darker in detail
-// than the frames on either side of it, because flat fill has replaced texture.
-// Measure that directly and the strobe separates cleanly — on the cut this was
-// built against, damaged frames sat at ~2.7 and intact ones at ~6.2.
+// Detecting it is the whole problem, and the trap is that a half-painted frame
+// and a cross-dissolve look identical to any measure of "how much detail is in
+// this frame": both are frames with less in them than their neighbours. Holding
+// a frame over a dissolve replaces a smooth transition with a hard stutter, so
+// a detector that cannot tell them apart does more damage than it repairs.
 //
-// The repair is to hold the last intact frame. A frame held for an extra 33ms
-// is not visible; a photograph flashing in and out at 15Hz is the thing being
-// complained about.
+// Two things separate them, and both are needed:
+//
+//   Damage is LOCAL. A region goes flat while the rest of the frame stays
+//   pixel-identical to its neighbour. A dissolve is global — every block
+//   changes together. So work in blocks: damage shows most blocks identical
+//   and a minority that have lost their texture.
+//
+//   Damage OSCILLATES. The detail curve reverses direction again and again
+//   across a strobe. A dissolve moves one way and stays there.
+//
+// Measured on the cut this was built against, the two conditions together
+// flagged 18 frames of 1455, every one of them inside the two bursts that were
+// actually reported, with no dissolve touched. Detail alone flagged 111, of
+// which the majority were the film's own transitions.
 
 import { readFile, copyFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { run } from './render.mjs';
 
 // Detail is measured on a small greyscale copy. The artefact is a large flat
-// region, so it survives the downscale intact, and 120px keeps a 1500-frame
-// sequence to about 35MB of pixels rather than several gigabytes.
+// region, so it survives the downscale, and 120px keeps a 1500-frame sequence
+// to about 35MB of pixels rather than several gigabytes.
 const W = 120;
+const BLOCK = 15;
 
-// A frame is damaged when it carries clearly less detail than the better of its
-// two neighbours. The ratio catches the drop; the absolute floor stops a
-// genuinely flat frame — a fade, a plain card — from being called damaged
-// because its neighbours are a shade less flat.
+// A frame is only a candidate if it carries less detail than its reference.
 const DETAIL_RATIO = 0.93;
-const DETAIL_FLOOR = 0.35;
-// Two, and no more. A repaired frame donates its donor's detail forward, so a
-// third pass starts flagging the honest frame *after* each repair, then a
-// fourth flags the one after that — measured on the cut this was built
-// against, passes three and four added eleven frames each, every one of them
-// exactly one frame past the previous pass's addition. That is a cascade
-// walking through the film, not detection. Pass two only ever picks up frames
-// adjacent to a pass-one cluster, which is the run of three the neighbour test
-// genuinely cannot see.
-const MAX_PASSES = 2;
-const MAX_REPAIR_FRACTION = 0.15;
+// Most of the frame must be untouched — that is what makes the loss local.
+const MIN_SAME = 0.45;
+// …and enough of it must have gone flat to be worth holding a frame over.
+const MIN_LOST = 0.10;
+// Below this the block is flat anyway and its texture cannot meaningfully drop.
+const MIN_REF_TEXTURE = 1.5;
+// Reversals in the detail curve that mark a strobe rather than a transition.
+const MIN_REVERSALS = 2;
+// Ignore detail wobble smaller than this when counting reversals.
+const REVERSAL_FLOOR = 0.5;
 
 const frameFile = (dir, i) => path.join(dir, `f${String(i).padStart(5, '0')}.jpg`);
 
@@ -54,7 +59,8 @@ const frameFile = (dir, i) => path.join(dir, `f${String(i).padStart(5, '0')}.jpg
  * @param {string} framesDir  Directory of f00000.jpg…
  * @param {number} frameCount
  * @param {object} [o]
- * @param {number} [o.height]  Frame height, to size the greyscale copy.
+ * @param {number} [o.width]
+ * @param {number} [o.height]
  * @returns {Promise<{checked:number, repaired:number, clusters:Array}>}
  */
 export async function repairFrames(framesDir, frameCount, o = {}) {
@@ -62,8 +68,9 @@ export async function repairFrames(framesDir, frameCount, o = {}) {
 
   // Even height keeps ffmpeg's scaler happy on the odd aspect ratios.
   const aspect = (o.height || 1920) / (o.width || 1080);
-  const H = Math.max(2, Math.round(W * aspect / 2) * 2);
+  const H = Math.max(BLOCK * 2, Math.round((W * aspect) / 2) * 2);
   const rawPath = path.join(framesDir, '_detail.gray');
+
   await run('ffmpeg', [
     '-v', 'error',
     '-start_number', '0',
@@ -76,10 +83,13 @@ export async function repairFrames(framesDir, frameCount, o = {}) {
   const buf = await readFile(rawPath);
   const stride = W * H;
   const n = Math.min(frameCount, Math.floor(buf.length / stride));
+  const frame = (i) => buf.subarray(i * stride, (i + 1) * stride);
+  const BX = Math.floor(W / BLOCK);
+  const BY = Math.floor(H / BLOCK);
 
-  // Mean absolute horizontal gradient: how much texture the frame carries.
+  // Mean absolute horizontal gradient: how much texture a frame carries.
   const detail = (i) => {
-    const a = buf.subarray(i * stride, (i + 1) * stride);
+    const a = frame(i);
     let s = 0;
     for (let y = 0; y < H; y++) {
       const row = y * W;
@@ -89,46 +99,90 @@ export async function repairFrames(framesDir, frameCount, o = {}) {
   };
   const E = Array.from({ length: n }, (_, i) => detail(i));
 
-  // Comparing against immediate neighbours misses a run of three or more, where
-  // both neighbours are damaged too and the pair excuse each other. Rather than
-  // widen the window — which would start flagging honest motion — repeat the
-  // test against the detail levels as repaired so far. Each pass pushes the
-  // reference outwards by one frame until the run is eaten from both ends.
-  const damaged = new Set();
-  const D = E.slice();
-  for (let pass = 0; pass < MAX_PASSES; pass++) {
-    let found = 0;
-    for (let i = 1; i < n - 1; i++) {
-      if (damaged.has(i)) continue;
-      // The better neighbour, not the average: in a strobe one neighbour is
-      // intact and one is not, and averaging splits the difference.
-      const ref = Math.max(D[i - 1], D[i + 1]);
-      if (D[i] < ref * DETAIL_RATIO && ref - D[i] > DETAIL_FLOOR) { damaged.add(i); found++; }
+  const blockTexture = (i, bx, by) => {
+    const a = frame(i);
+    let g = 0, c = 0;
+    for (let y = by * BLOCK; y < (by + 1) * BLOCK; y++) {
+      for (let x = bx * BLOCK; x < (bx + 1) * BLOCK - 1; x++, c++) {
+        g += Math.abs(a[y * W + x + 1] - a[y * W + x]);
+      }
     }
-    if (!found) break;
-    // A repaired frame carries its donor's detail, which is what the next pass
-    // must compare against.
-    for (let i = 1; i < n; i++) if (damaged.has(i)) D[i] = D[i - 1];
-    // Runaway guard: past this the sequence is not strobing, it is just soft,
-    // and holding more of it would do more harm than the artefact.
-    if (damaged.size > n * MAX_REPAIR_FRACTION) break;
+    return g / c;
+  };
+  const blockDiff = (i, j, bx, by) => {
+    const a = frame(i), b = frame(j);
+    let s = 0, c = 0;
+    for (let y = by * BLOCK; y < (by + 1) * BLOCK; y++) {
+      for (let x = bx * BLOCK; x < (bx + 1) * BLOCK; x++, c++) {
+        s += Math.abs(a[y * W + x] - b[y * W + x]);
+      }
+    }
+    return s / c;
+  };
+
+  // A strobe reverses direction again and again; a dissolve never does.
+  const reversals = (i) => {
+    let r = 0, dir = 0;
+    for (let j = Math.max(1, i - 3); j <= Math.min(n - 1, i + 3); j++) {
+      const d = E[j] - E[j - 1];
+      if (Math.abs(d) < REVERSAL_FLOOR) continue;
+      const s = Math.sign(d);
+      if (dir && s !== dir) r++;
+      dir = s;
+    }
+    return r;
+  };
+
+  const flagged = new Set();
+  // The nearest frame not already condemned, preferring the most detailed —
+  // needed because damage arrives in adjacent pairs, and an immediate
+  // neighbour that is itself damaged makes the pair excuse each other.
+  const nearestClean = (i) => {
+    let best = -1;
+    for (let d = 1; d <= 4; d++) {
+      for (const j of [i - d, i + d]) {
+        if (j < 0 || j >= n || flagged.has(j)) continue;
+        if (best < 0 || E[j] > E[best]) best = j;
+      }
+    }
+    return best;
+  };
+
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 1; i < n - 1; i++) {
+      if (flagged.has(i)) continue;
+      const ref = pass === 0 ? (E[i - 1] >= E[i + 1] ? i - 1 : i + 1) : nearestClean(i);
+      if (ref < 0 || E[i] >= E[ref] * DETAIL_RATIO) continue;
+      if (reversals(i) < MIN_REVERSALS) continue;
+
+      let same = 0, lost = 0, total = 0;
+      for (let by = 0; by < BY; by++) {
+        for (let bx = 0; bx < BX; bx++) {
+          total++;
+          if (blockDiff(i, ref, bx, by) < 2) { same++; continue; }
+          const here = blockTexture(i, bx, by);
+          const there = blockTexture(ref, bx, by);
+          if (there > MIN_REF_TEXTURE && here < there * 0.5) lost++;
+        }
+      }
+      if (same / total > MIN_SAME && lost / total > MIN_LOST) flagged.add(i);
+    }
   }
 
   let lastGood = 0;
   for (let i = 0; i < n; i++) {
-    if (damaged.has(i)) await copyFile(frameFile(framesDir, lastGood), frameFile(framesDir, i));
+    if (flagged.has(i)) await copyFile(frameFile(framesDir, lastGood), frameFile(framesDir, i));
     else lastGood = i;
   }
 
-  // Grouped for the log — one line per burst is readable, 111 lines is not.
-  const idx = [...damaged].sort((a, b) => a - b);
+  // Grouped for the log — one line per burst is readable, twenty is not.
   const clusters = [];
-  for (const i of idx) {
+  for (const i of [...flagged].sort((a, b) => a - b)) {
     const last = clusters[clusters.length - 1];
     if (last && i - last.end <= 6) { last.end = i; last.count++; }
     else clusters.push({ start: i, end: i, count: 1 });
   }
 
   await rm(rawPath, { force: true });
-  return { checked: n, repaired: damaged.size, clusters };
+  return { checked: n, repaired: flagged.size, clusters };
 }
