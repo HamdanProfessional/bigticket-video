@@ -319,9 +319,24 @@ export function direct(prompt, opts = {}) {
   // strong material and still varies between seeds.
   const padPick = (pool) => pool[Math.min(pool.length - 1, Math.floor(rng() ** 2 * pool.length))];
 
+  // At most one revisit per component.
+  //
+  // Padding already refuses to splice a component next to itself — but under a
+  // narrative the cast is re-sorted into spine order immediately afterwards,
+  // and that gathers every copy of a component into one run. Three separate
+  // retailerList insertions, each legal where it landed, became four
+  // consecutive retailerList shots. Every shot starts its camera from wide, so
+  // that plays as zoom in, cut, zoom in, cut, four times on one list: the
+  // "keeps zooming in and out" this looked like a renderer bug for.
+  //
+  // Capping visits is what actually bounds the run length, because the sort
+  // decides adjacency, not the insertion.
+  const visits = () => cast.reduce((m, c) => (m[c] = (m[c] || 0) + 1, m), {});
   while (cast.length < n) {
+    const seen = visits();
     const unused = FILLER_LIST.filter((c) => !cast.includes(c));
-    const pool = unused.length ? unused : FILLER_LIST;
+    const spare = FILLER_LIST.filter((c) => (seen[c] || 0) < 2);
+    const pool = unused.length ? unused : (spare.length ? spare : FILLER_LIST);
     let inserted = false;
     for (let attempt = 0; attempt < 8 && !inserted; attempt++) {
       const pick = padPick(pool);
