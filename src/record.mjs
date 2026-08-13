@@ -327,14 +327,12 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     const cdp = await ctx.newCDPSession(page);
     let virtualTime = false;
     try {
-      // OPT-IN, and off by default. On a single-route probe this was a clear
-      // win: mid-shot half-painted frames 13 -> 0 and 163s -> 49s. On the real
-      // two-route render it hangs on the very first capture, with BOTH raw CDP
-      // and Playwright's screenshot — the clock is held and the frame the
-      // capture waits for never arrives. Left in, behind BT_VT=1, because the
-      // measurement is real and the remaining problem is scoped to more than
-      // one page; shipped off, because a hang is worse than an artifact.
-      if (process.env.BT_VT !== '1') throw new Error('virtual time is opt-in');
+      // On by default now that the two-route hang is understood. It was never
+      // the clock: a BACKGROUND tab was being held too, and the capture waited
+      // on a suspended compositor that would never produce a frame. Background
+      // tabs run free (see the route switch below); only the tab on camera is
+      // stepped. BT_NO_VT=1 disables it.
+      if (process.env.BT_NO_VT === '1') throw new Error('virtual time disabled');
       await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pause' });
       virtualTime = true;
     } catch {
@@ -538,6 +536,15 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
       // before its frames are captured.
       await page.bringToFront();
       lastRoute = shot.route;
+      // Only the tab being filmed gets a controlled clock. Holding the clock on
+      // a BACKGROUND tab is what hung the two-route render: its compositor is
+      // suspended, and the capture ends up waiting on a frame that a paused
+      // page will never produce. Background tabs run free; they are not on
+      // camera, so their timing does not matter.
+      for (const [r, e] of pages) {
+        if (!e.virtualTime || r === shot.route) continue;
+        await e.cdp.send('Emulation.setVirtualTimePolicy', { policy: 'advance' }).catch(() => {});
+      }
     }
 
     const comp = { ...COMPS[shot.component], selResolved: '@' + shot.component };
@@ -856,7 +863,13 @@ async function recordInner(storyboard, outDir, { onProgress, components, auth, a
     // second page's compositor is suspended in the background, and a surface
     // capture waits for a frame the paused clock will not produce. Playwright's
     // helper drives the frame it needs, so it returns.
-    const shoot = () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });
+    // Under a controlled clock the capture MUST go through CDP: Playwright's
+    // screenshot waits for fonts and disables animations on every call, and on
+    // a held clock that wait never resolves (30s timeout, every render).
+    const shoot = virtualTime
+      ? () => cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92 })
+        .then((r) => Buffer.from(r.data, 'base64'))
+      : () => page.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled' });
     if (DBG) console.error(`  [dbg] f${f} capturing`);
     let buf = await shoot();
     if (DBG) console.error(`  [dbg] f${f} captured ${buf.length}b`);
